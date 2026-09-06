@@ -96,6 +96,18 @@ const SEED_META: Record<string, string> = {
   rotom: '洛托姆',
   kangaskhan: '袋獸',
   hippowdon: '河馬獸',
+  // team-preview-test-1/2 ROI crops
+  gengar: '耿鬼',
+  sableye: '勾魂眼',
+  zoroark: '索羅亞克',
+  basculegion: '幽尾玄魚',
+  annihilape: '棄世猴',
+  sinistcha: '來悲粗茶',
+  charizard: '噴火龍',
+  bellibolt: '電肚蛙',
+  scovillain: '辣椒傑作',
+  archaludon: '鋁鋼橋龍',
+  blastoise: '水箭龜',
 };
 
 /** 執行期模板庫（載入後填入；空 → 低信心／未識別） */
@@ -189,9 +201,76 @@ function imageDataFromBitmap(bmp: ImageBitmap): ImageData {
   return ctx.getImageData(0, 0, TEMPLATE_SIZE, TEMPLATE_SIZE);
 }
 
-async function fetchTemplatePng(speciesId: string): Promise<ImageData | null> {
+/** Manifest / seed template entries under public/templates/. */
+interface ManifestTemplateEntry {
+  speciesId: string;
+  speciesNameZh?: string;
+  file?: string;
+  source?: string;
+}
+
+interface TemplatesManifest {
+  templates?: ManifestTemplateEntry[];
+  defaultSource?: string;
+}
+
+interface ResolvedTemplateFile {
+  speciesId: string;
+  nameZh: string;
+  /** File under public/templates/ (may include variants e.g. sableye-test2.png) */
+  file: string;
+}
+
+/**
+ * Resolve template files to load: manifest.json ROI-crop entries (multi-file per
+ * showdownId allowed) ∪ SEED_TEMPLATE_IDS as `{id}.png` fallback.
+ */
+async function resolveTemplateFiles(): Promise<ResolvedTemplateFile[]> {
+  const files: ResolvedTemplateFile[] = [];
+  const seenFiles = new Set<string>();
   try {
-    const url = `${templatesBaseUrl()}${speciesId}.png`;
+    const url = `${templatesBaseUrl()}manifest.json`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const manifest = (await res.json()) as TemplatesManifest;
+      for (const t of manifest.templates ?? []) {
+        if (!t?.speciesId) continue;
+        if (t.source && t.source !== 'roi-crop') continue;
+        const file = t.file || `${t.speciesId}.png`;
+        if (seenFiles.has(file)) continue;
+        seenFiles.add(file);
+        files.push({
+          speciesId: t.speciesId,
+          nameZh: t.speciesNameZh || SEED_META[t.speciesId] || t.speciesId,
+          file,
+        });
+      }
+    }
+  } catch {
+    /* fall back below */
+  }
+  if (files.length === 0) {
+    for (const id of SEED_TEMPLATE_IDS) {
+      const file = `${id}.png`;
+      if (seenFiles.has(file)) continue;
+      seenFiles.add(file);
+      files.push({ speciesId: id, nameZh: SEED_META[id] ?? id, file });
+    }
+  } else {
+    // Ensure seed files are present even if omitted from an older manifest
+    for (const id of SEED_TEMPLATE_IDS) {
+      const file = `${id}.png`;
+      if (seenFiles.has(file)) continue;
+      seenFiles.add(file);
+      files.push({ speciesId: id, nameZh: SEED_META[id] ?? id, file });
+    }
+  }
+  return files;
+}
+
+async function fetchTemplateFile(file: string): Promise<ImageData | null> {
+  try {
+    const url = `${templatesBaseUrl()}${file}`;
     const res = await fetch(url);
     if (!res.ok) return null;
     const blob = await res.blob();
@@ -204,10 +283,6 @@ async function fetchTemplatePng(speciesId: string): Promise<ImageData | null> {
   }
 }
 
-/**
- * 載入 public/templates/ 種子庫（一次；之後快取）。
- * 失敗的檔案略過；全空時辨認一律未識別。
- */
 export async function loadPreviewThumbTemplates(
   force = false,
 ): Promise<ThumbTemplate[]> {
@@ -216,12 +291,13 @@ export async function loadPreviewThumbTemplates(
 
   loadPromise = (async () => {
     const loaded: ThumbTemplate[] = [];
-    for (const id of SEED_TEMPLATE_IDS) {
-      const imageData = await fetchTemplatePng(id);
+    const entries = await resolveTemplateFiles();
+    for (const { speciesId, nameZh, file } of entries) {
+      const imageData = await fetchTemplateFile(file);
       if (!imageData) continue;
-      const zh = findSpecies(id)?.nameZh ?? SEED_META[id] ?? id;
+      const zh = findSpecies(speciesId)?.nameZh ?? nameZh ?? SEED_META[speciesId] ?? speciesId;
       loaded.push({
-        speciesId: id,
+        speciesId,
         speciesNameZh: zh,
         aHash: averageHash(imageData),
         gray: toGray(imageData),
@@ -351,12 +427,10 @@ export async function recognizeEnemyTeamFromCanvas(
         let speciesNameZh = matched.speciesNameZh;
         if (speciesId) {
           const sp = findSpecies(speciesId);
-          if (!sp) {
-            speciesId = null;
-            speciesNameZh = null;
-          } else {
+          if (sp) {
             speciesNameZh = sp.nameZh;
           }
+          // Keep matched showdownId even if species DB lacks an entry (template zh retained).
         }
         results.push({
           slot,

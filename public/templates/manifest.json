@@ -1,5 +1,5 @@
 {
-  "source": "圖二 Team Preview (official) — roi-crop",
+  "source": "ROI Doc v1.2 crops — 圖二 + team-preview-test-1/2",
   "roiDoc": "v1.2",
   "panel": {
     "left": 0.811,
@@ -14,7 +14,7 @@
     "bottomInset": 0.05
   },
   "templateSize": 64,
-  "notes": "PRIMARY recognition templates: ROI crops from 圖二 Team Preview (official). Forms/Mega/shiny separate later. Rotom appliances, Lycanroc day/night, Hippowdon gender color diffs need separate templates when expanded. CBD menu sprites (assets/templates/preview-thumbs/, source=cbd) are optional secondary and often mismatch Team Preview thumbs.",
+  "notes": "PRIMARY recognition templates: ROI Doc v1.2 Team Preview crops (NOT HOME art). Multiple files may share a showdownId (pose/fixture variants). CBD menu sprites under assets/templates/preview-thumbs/ (source: cbd) are optional secondary.",
   "templates": [
     {
       "speciesId": "noivern",
@@ -105,6 +105,198 @@
         "h": 72
       },
       "source": "roi-crop"
+    },
+    {
+      "speciesId": "annihilape",
+      "speciesNameZh": "棄世猴",
+      "speciesNameEn": "Annihilape",
+      "file": "annihilape.png",
+      "formNote": null,
+      "slotSource": 4,
+      "cropPx": {
+        "x": 734,
+        "y": 310,
+        "w": 46,
+        "h": 39
+      },
+      "source": "roi-crop",
+      "fixture": "team-preview-test-1"
+    },
+    {
+      "speciesId": "archaludon",
+      "speciesNameZh": "鋁鋼橋龍",
+      "speciesNameEn": "Archaludon",
+      "file": "archaludon.png",
+      "formNote": null,
+      "slotSource": 3,
+      "cropPx": {
+        "x": 734,
+        "y": 254,
+        "w": 46,
+        "h": 39
+      },
+      "source": "roi-crop",
+      "fixture": "team-preview-test-2"
+    },
+    {
+      "speciesId": "basculegion",
+      "speciesNameZh": "幽尾玄魚",
+      "speciesNameEn": "Basculegion",
+      "file": "basculegion.png",
+      "formNote": "Male",
+      "slotSource": 3,
+      "cropPx": {
+        "x": 734,
+        "y": 254,
+        "w": 46,
+        "h": 39
+      },
+      "source": "roi-crop",
+      "fixture": "team-preview-test-1"
+    },
+    {
+      "speciesId": "bellibolt",
+      "speciesNameZh": "電肚蛙",
+      "speciesNameEn": "Bellibolt",
+      "file": "bellibolt.png",
+      "formNote": null,
+      "slotSource": 1,
+      "cropPx": {
+        "x": 734,
+        "y": 141,
+        "w": 46,
+        "h": 39
+      },
+      "source": "roi-crop",
+      "fixture": "team-preview-test-2"
+    },
+    {
+      "speciesId": "blastoise",
+      "speciesNameZh": "水箭龜",
+      "speciesNameEn": "Blastoise",
+      "file": "blastoise.png",
+      "formNote": null,
+      "slotSource": 4,
+      "cropPx": {
+        "x": 734,
+        "y": 310,
+        "w": 46,
+        "h": 39
+      },
+      "source": "roi-crop",
+      "fixture": "team-preview-test-2"
+    },
+    {
+      "speciesId": "charizard",
+      "speciesNameZh": "噴火龍",
+      "speciesNameEn": "Charizard",
+      "file": "charizard.png",
+      "formNote": "shiny appearance in fixture (still showdownId charizard)",
+      "slotSource": 0,
+      "cropPx": {
+        "x": 734,
+        "y": 85,
+        "w": 46,
+        "h": 39
+      },
+      "source": "roi-crop",
+      "fixture": "team-preview-test-2"
+    },
+    {
+      "speciesId": "gengar",
+      "speciesNameZh": "耿鬼",
+      "speciesNameEn": "Gengar",
+      "file": "gengar.png",
+      "formNote": null,
+      "slotSource": 0,
+      "cropPx": {
+        "x": 734,
+        "y": 85,
+        "w": 46,
+        "h": 39
+      },
+      "source": "roi-crop",
+      "fixture": "team-preview-test-1"
+    },
+    {
+      "speciesId": "sableye",
+      "speciesNameZh": "勾魂眼",
+      "speciesNameEn": "Sableye",
+      "file": "sableye-test2.png",
+      "formNote": "variant from test-2 slot 6",
+      "slotSource": 5,
+      "cropPx": {
+        "x": 734,
+        "y": 366,
+        "w": 46,
+        "h": 39
+      },
+      "source": "roi-crop",
+      "fixture": "team-preview-test-2"
+    },
+    {
+      "speciesId": "sableye",
+      "speciesNameZh": "勾魂眼",
+      "speciesNameEn": "Sableye",
+      "file": "sableye.png",
+      "formNote": null,
+      "slotSource": 1,
+      "cropPx": {
+        "x": 734,
+        "y": 141,
+        "w": 46,
+        "h": 39
+      },
+      "source": "roi-crop",
+      "fixture": "team-preview-test-1"
+    },
+    {
+      "speciesId": "scovillain",
+      "speciesNameZh": "辣椒傑作",
+      "speciesNameEn": "Scovillain",
+      "file": "scovillain.png",
+      "formNote": null,
+      "slotSource": 2,
+      "cropPx": {
+        "x": 734,
+        "y": 197,
+        "w": 46,
+        "h": 39
+      },
+      "source": "roi-crop",
+      "fixture": "team-preview-test-2"
+    },
+    {
+      "speciesId": "sinistcha",
+      "speciesNameZh": "來悲粗茶",
+      "speciesNameEn": "Sinistcha",
+      "file": "sinistcha.png",
+      "formNote": "identified from crop (tea bowl + whisk; not Poltchageist/Brambleghast)",
+      "slotSource": 5,
+      "cropPx": {
+        "x": 734,
+        "y": 366,
+        "w": 46,
+        "h": 39
+      },
+      "source": "roi-crop",
+      "fixture": "team-preview-test-1"
+    },
+    {
+      "speciesId": "zoroark",
+      "speciesNameZh": "索羅亞克",
+      "speciesNameEn": "Zoroark",
+      "file": "zoroark.png",
+      "formNote": "Unovan / base (Dark/Ghost)",
+      "slotSource": 2,
+      "cropPx": {
+        "x": 734,
+        "y": 197,
+        "w": 46,
+        "h": 39
+      },
+      "source": "roi-crop",
+      "fixture": "team-preview-test-1"
     }
   ],
   "defaultSource": "roi-crop",

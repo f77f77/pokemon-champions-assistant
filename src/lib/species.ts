@@ -46,6 +46,18 @@ export const SPECIES_DB: SpeciesData[] = [
   { key: 'rotom', nameZh: '洛托姆', nameEn: 'Rotom', nationalDex: 479, types: ['電', '幽靈'], baseStats: { hp: 50, atk: 50, def: 77, spa: 95, spd: 77, spe: 91 } },
   { key: 'kangaskhan', nameZh: '袋獸', nameEn: 'Kangaskhan', nationalDex: 115, types: ['一般'], baseStats: { hp: 105, atk: 95, def: 80, spa: 40, spd: 80, spe: 90 } },
   { key: 'hippowdon', nameZh: '河馬獸', nameEn: 'Hippowdon', nationalDex: 450, types: ['地面'], baseStats: { hp: 108, atk: 112, def: 118, spa: 68, spd: 72, spe: 47 } },
+  // Fixture recognition extras (not always in top-50 allowlist)
+  { key: 'gengar', nameZh: '耿鬼', nameEn: 'Gengar', nationalDex: 94, types: ['幽靈', '毒'], baseStats: { hp: 60, atk: 65, def: 60, spa: 130, spd: 75, spe: 110 } },
+  { key: 'sableye', nameZh: '勾魂眼', nameEn: 'Sableye', nationalDex: 302, types: ['惡', '幽靈'], baseStats: { hp: 50, atk: 75, def: 75, spa: 65, spd: 65, spe: 50 } },
+  { key: 'zoroark', nameZh: '索羅亞克', nameEn: 'Zoroark', nationalDex: 571, types: ['惡'], baseStats: { hp: 60, atk: 105, def: 60, spa: 120, spd: 60, spe: 105 } },
+  { key: 'basculegion', nameZh: '幽尾玄魚', nameEn: 'Basculegion', nationalDex: 902, types: ['水', '幽靈'], baseStats: { hp: 120, atk: 112, def: 65, spa: 80, spd: 75, spe: 78 } },
+  { key: 'annihilape', nameZh: '棄世猴', nameEn: 'Annihilape', nationalDex: 979, types: ['格鬥', '幽靈'], baseStats: { hp: 110, atk: 115, def: 80, spa: 50, spd: 90, spe: 90 } },
+  { key: 'sinistcha', nameZh: '來悲粗茶', nameEn: 'Sinistcha', nationalDex: 1013, types: ['草', '幽靈'], baseStats: { hp: 71, atk: 60, def: 106, spa: 121, spd: 80, spe: 70 } },
+  { key: 'charizard', nameZh: '噴火龍', nameEn: 'Charizard', nationalDex: 6, types: ['火', '飛行'], baseStats: { hp: 78, atk: 84, def: 78, spa: 109, spd: 85, spe: 100 } },
+  { key: 'bellibolt', nameZh: '電肚蛙', nameEn: 'Bellibolt', nationalDex: 939, types: ['電'], baseStats: { hp: 109, atk: 64, def: 91, spa: 103, spd: 83, spe: 45 } },
+  { key: 'scovillain', nameZh: '辣椒傑作', nameEn: 'Scovillain', nationalDex: 952, types: ['草', '火'], baseStats: { hp: 65, atk: 108, def: 65, spa: 108, spd: 65, spe: 75 } },
+  { key: 'archaludon', nameZh: '鋁鋼橋龍', nameEn: 'Archaludon', nationalDex: 1018, types: ['鋼', '龍'], baseStats: { hp: 90, atk: 105, def: 130, spa: 125, spd: 65, spe: 85 } },
+  { key: 'blastoise', nameZh: '水箭龜', nameEn: 'Blastoise', nationalDex: 9, types: ['水'], baseStats: { hp: 79, atk: 83, def: 100, spa: 85, spd: 105, spe: 78 } },
 ];
 
 const byKey = new Map<string, SpeciesData>();

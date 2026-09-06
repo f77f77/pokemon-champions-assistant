@@ -77,14 +77,16 @@ Do not guess held items. Templates must be Team Preview small thumbs, NOT large 
 
 | File | showdownId | Notes |
 |------|------------|-------|
-| noivern.png | noivern | |
-| lycanroc.png | lycanroc | Midday / day |
-| politoed.png | politoed | |
-| rotom.png | rotom | base form (not appliances) |
-| kangaskhan.png | kangaskhan | |
-| hippowdon.png | hippowdon | |
+| noivern.png | noivern | 圖二 |
+| lycanroc.png | lycanroc | Midday / day · 圖二 |
+| politoed.png | politoed | 圖二 |
+| rotom.png | rotom | base form (not appliances) · 圖二 |
+| kangaskhan.png | kangaskhan | 圖二 |
+| hippowdon.png | hippowdon | 圖二 |
+| gengar.png … sinistcha.png | test-1 enemy | ROI crops from `team-preview-test-1` |
+| charizard.png … blastoise.png + `sableye-test2.png` | test-2 enemy | ROI crops from `team-preview-test-2` (sableye has 2 variants) |
 
-manifest: `public/templates/manifest.json` (showdownId -> file).
+manifest: `public/templates/manifest.json` (entries may share a showdownId across multiple files).
 
 Forms / Mega / shiny, Rotom appliances, Lycanroc day/night, Hippowdon gender colors need separate template files when expanded. Do not scrape/download from the web without an authorized VGC source.
 
@@ -93,14 +95,15 @@ Forms / Mega / shiny, Rotom appliances, Lycanroc day/night, Hippowdon gender col
 When VGC provides an authorized Team Preview source screenshot:
 
 1. Save the 16:9 shot (enemy column on the right).
-2. Run: `python scripts/crop-preview-templates.py path/to/shot.png public/templates`
-   (same panel/thumb constants as `src/lib/roi.ts`).
-3. Keep/rename files as `public/templates/{showdownId}.png`.
-4. Add showdownId to `SEED_TEMPLATE_IDS` in `src/lib/recognize.ts` and `SPECIES_DB` in `src/lib/species.ts` if missing.
-5. Update `public/templates/manifest.json`.
-6. Reload; templates load once via `loadPreviewThumbTemplates()`.
+2. Run: `python scripts/crop-preview-templates.py path/to/shot.png public/templates --slots=id1,id2,id3,id4,id5,id6 --merge`
+   (same panel/thumb constants as `src/lib/roi.ts` — **do not change ROI**).
+3. Keep/rename files as `public/templates/{showdownId}.png` (or `{showdownId}-variant.png` for pose variants).
+4. `recognize.ts` loads **all** `manifest.json` ROI-crop entries automatically; add `SPECIES_DB` fallback if the species is missing from `pokemon.json`.
+5. Reload; templates load once via `loadPreviewThumbTemplates()`.
 
-Acceptance: load test fixture -> recognize enemy team -> 6 slots should hit seed templates on figure 2.
+Acceptance:
+- 圖二 fixture → `python scripts/match-seed-templates.py` (~6/6)
+- test-1 + test-2 → `python scripts/match-test-fixtures.py` (12/12 enemy slots)
 
 ## Type / Tera icons
 
@@ -118,7 +121,8 @@ Pokemon trademarks belong to their owners; unaffiliated project.
 
 ## CBD templates (optional secondary)
 
-Champions Battle Data menu sprites can be fetched **only** for a small allowlist (never whole-dex):
+Champions Battle Data menu sprites can be fetched **only** for a small allowlist (never whole-dex).
+Default `--allowlist` = top-50 CBD Doubles ∪ seed ∪ test-fixture species (max 64 / run):
 
 ```bash
 node scripts/fetch-cbd-templates.mjs --allowlist
@@ -127,14 +131,15 @@ node scripts/fetch-cbd-templates.mjs --ids=noivern,lycanroc
 
 - Output: `assets/templates/preview-thumbs/{showdownId}.png` + `manifest.jsonl` (`source: cbd`)
 - PNGs are gitignored; see `assets/CREDITS.md`
-- **Recognition default** remains `public/templates/` ROI crops (`source: roi-crop`)
+- **Recognition default** remains `public/templates/` ROI crops (`source: roi-crop`); CBD only fills gaps
 - CBD menu-style art often mismatches Team Preview thumbs — keep as optional secondary
-- Never HOME / official-artwork
+- Never HOME / official-artwork; ask before expanding beyond top50∪test set
 
-Offline seed match (expect ~6/6 on 圖二 fixture):
+Offline match:
 
 ```bash
-python scripts/match-seed-templates.py
+python scripts/match-seed-templates.py          # 圖二 ~6/6
+python scripts/match-test-fixtures.py           # test-1+2 → docs/match-test-fixtures-results.md
 ```
 
 Results: `docs/match-seed-results.md`

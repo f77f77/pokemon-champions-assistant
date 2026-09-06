@@ -12,7 +12,10 @@
     "electron:dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && tsc -p tsconfig.electron.json && electron .\"",
     "electron:build": "npm run build && electron-builder",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit",
-    "build:pokemon-data": "node scripts/build-pokemon-data.mjs"
+    "build:pokemon-data": "node scripts/build-pokemon-data.mjs",
+    "match:fixtures": "python3 scripts/match-test-fixtures.py",
+    "match:seed": "python3 scripts/match-seed-templates.py",
+    "fetch:cbd": "node scripts/fetch-cbd-templates.mjs --allowlist"
   },
   "dependencies": {
     "react": "^18.3.1",
