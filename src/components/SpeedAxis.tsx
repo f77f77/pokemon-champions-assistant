@@ -84,8 +84,11 @@ function AllySpeedRow({ pokemon }: { pokemon: PokemonSet }) {
             ◆
           </span>
         )}
+        {/* Spe overlay inside track so track width matches enemy rows */}
+        <span className="speed-row__value speed-row__value--overlay" aria-label="Spe">
+          {entered ? spe : '—'}
+        </span>
       </div>
-      <span className="speed-row__value">{entered ? spe : '—'}</span>
     </div>
   );
 }
@@ -109,12 +112,15 @@ export function SpeedAxis({ myTeam, enemyTeam, selectedAllyIndex }: Props) {
         </span>
       </header>
       <div className="speed-axis">
-        <div className="speed-axis__scale">
-          {ticks.map((t) => (
-            <span key={t} style={{ left: `${pct(t)}%` }}>
-              {t}
-            </span>
-          ))}
+        <div className="speed-axis__scale speed-row" aria-hidden="true">
+          <span className="speed-row__label" />
+          <div className="speed-row__track speed-axis__scale-track">
+            {ticks.map((t) => (
+              <span key={t} style={{ left: `${pct(t)}%` }}>
+                {t}
+              </span>
+            ))}
+          </div>
         </div>
 
         {selectedAlly ? (

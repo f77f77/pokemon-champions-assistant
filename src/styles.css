@@ -283,42 +283,62 @@ button, input, select, textarea {
 
 .speed-axis { overflow: auto; padding: 0.25rem 0.2rem 0.5rem; }
 .speed-axis__scale {
-  position: relative; height: 1.1rem; margin: 0 0 0.35rem 5.5rem; color: var(--muted); font-size: 0.65rem;
+  /* Shares .speed-row grid so tick positions match track % exactly */
+  margin: 0 0 0.35rem; color: var(--muted); font-size: 0.65rem; height: auto;
 }
-.speed-axis__scale span { position: absolute; transform: translateX(-50%); }
+.speed-axis__scale-track {
+  height: 1.1rem; background: transparent; border-color: transparent;
+}
+.speed-axis__scale-track span { position: absolute; top: 0; transform: translateX(-50%); }
 .speed-row {
-  display: grid; grid-template-columns: 5.2rem 1fr auto; gap: 0.35rem; align-items: center; margin-bottom: 0.35rem;
+  /* Label + track only — Spe value overlays inside track so all tracks share width */
+  display: grid; grid-template-columns: 5.2rem minmax(0, 1fr); gap: 0.35rem; align-items: center; margin-bottom: 0.35rem;
 }
 .speed-row__label {
   font-size: 0.72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted);
 }
 .speed-row__track {
-  position: relative; height: 18px; background: #0e1118; border-radius: 6px; border: 1px solid #222838;
+  position: relative; height: 18px; width: 100%; min-width: 0;
+  background: #0e1118; border-radius: 6px; border: 1px solid #222838;
 }
-.speed-row__value { font-size: 0.72rem; min-width: 2rem; text-align: right; }
-.speed-band { position: absolute; top: 2px; bottom: 2px; border-radius: 4px; opacity: 0.7; }
-.speed-band--slow { background: rgba(77, 184, 255, 0.35); }
-.speed-band--mid { background: rgba(255, 255, 255, 0.12); }
-.speed-band--fast { background: rgba(255, 77, 141, 0.35); }
+.speed-row__value {
+  font-size: 0.72rem; min-width: 2rem; text-align: right;
+}
+.speed-row__value--overlay {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  z-index: 2; min-width: 0; pointer-events: none;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.9), 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+/* Four anchors: 減速0 / 中性0 / 中性32 / 加速0 — high-contrast on dark navy */
+.speed-band { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; opacity: 1; }
+.speed-band--slow { background: rgba(64, 196, 255, 0.72); box-shadow: inset 0 0 0 1px rgba(120, 220, 255, 0.45); }
+.speed-band--mid { background: rgba(230, 236, 255, 0.38); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28); }
+.speed-band--fast { background: rgba(255, 72, 148, 0.72); box-shadow: inset 0 0 0 1px rgba(255, 140, 190, 0.45); }
 .speed-mark {
-  position: absolute; top: 1px; bottom: 1px; width: 2px; background: #fff; transform: translateX(-1px);
+  position: absolute; top: 0; bottom: 0; width: 2px; transform: translateX(-1px); z-index: 1;
+  background: #fff; box-shadow: 0 0 4px rgba(255, 255, 255, 0.55);
 }
+.speed-mark--slow { background: #5ad0ff; }
+.speed-mark--neutral0 { background: #e8eefc; }
+.speed-mark--neutral32 { background: #ffe566; }
+.speed-mark--fast { background: #ff5a9e; }
 .speed-point {
   position: absolute; top: 50%; transform: translate(-50%, -50%); color: var(--accent); font-size: 0.85rem;
-  text-shadow: 0 0 6px rgba(182, 255, 74, 0.8);
+  text-shadow: 0 0 6px rgba(182, 255, 74, 0.8); z-index: 3;
 }
 .speed-divider {
   margin: 0.55rem 0 0.35rem; font-size: 0.75rem; color: var(--accent); border-top: 1px dashed var(--border);
   padding-top: 0.35rem;
 }
 .speed-row--selected-ally {
+  /* Outline/background only — no horizontal padding/border so track width matches enemies */
   margin: 0.45rem 0;
-  padding: 0.3rem 0.25rem;
+  padding: 0.3rem 0;
   border-radius: 8px;
   background: rgba(182, 255, 74, 0.08);
-  border: 1px solid rgba(182, 255, 74, 0.35);
-  outline: 1px dashed rgba(182, 255, 74, 0.45);
-  outline-offset: 1px;
+  outline: 1px dashed rgba(182, 255, 74, 0.5);
+  outline-offset: 2px;
 }
 .speed-row--selected-ally .speed-row__label {
   color: var(--accent);
