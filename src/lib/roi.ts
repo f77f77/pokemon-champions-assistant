@@ -3,7 +3,7 @@
  *
  * 座標系一律相對「去黑邊後的 16:9 內容區」(contentRect)，不是整幀。
  * 預設敵方面板：(left,top)=(0.811,0.143) → (right,bottom)=(0.965,0.832)
- * 再均分成 6 格；每格內再裁縮圖：水平 5%–38%、上內縮 25%／下內縮 5%（圖二 overlay：精靈偏下）。
+ * 再均分成 6 格；每格內再裁縮圖：水平 20%–55%、上內縮 25%／下內縮 5%（ROI Doc v1.2）。
  *
  * 微調：Settings 可對面板四邊做 ±2%（相對內容寬／高）偏移。
  */
@@ -21,9 +21,9 @@ export const ENEMY_PANEL_DEFAULT = {
 /** 單格內縮圖裁切（相對該 slot 矩形） */
 export const THUMB_CROP = {
   /** 左緣（相對 slot 寬） */
-  left: 0.05,
-  /** 右緣（相對 slot 寬）— 5%–38% → 寬度 33% */
-  right: 0.38,
+  left: 0.20,
+  /** 右緣（相對 slot 寬）— 20%–55% → 寬度 35% */
+  right: 0.55,
   /** 上內縮（相對 slot 高）— 精靈偏下，多裁上方空白 */
   topInset: 0.25,
   /** 下內縮（相對 slot 高） */
@@ -145,7 +145,7 @@ export function slotRect(panelPx: PixelRect, slot: number, slots: number = SLOT_
 }
 
 /**
- * 單格內縮圖裁切（相對 slot：水平 5%–38%，上內縮 25%／下內縮 5%）。
+ * 單格內縮圖裁切（相對 slot：水平 20%–55%，上內縮 25%／下內縮 5%）。
  * 回傳整幀像素座標。
  */
 export function thumbRectInSlot(slot: PixelRect): PixelRect {

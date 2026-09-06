@@ -2,7 +2,7 @@
  * Team Preview 敵方小縮圖辨認（本地 hash／模板 stub）。
  *
  * 流程：抓一幀 → contentRect（去黑邊）→ 敵方面板 ROI → 6 等分 →
- * 每格 thumb 裁切（左 5–38%、上內縮 25%／下內縮 5%）→ 縮放 TEMPLATE_SIZE → 比對。
+ * 每格 thumb 裁切（左 20–55%、上內縮 25%／下內縮 5%）→ 縮放 TEMPLATE_SIZE → 比對。
  *
  * 模板庫僅限 Team Preview 小縮圖（非大美術／HOME art）。
  * 低信心 → speciesId/speciesNameZh = null（UI「未識別」）。不猜道具。

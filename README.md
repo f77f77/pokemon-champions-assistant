@@ -43,7 +43,7 @@ Coordinates relative to letterboxed 16:9 contentRect (computeContentRect).
 
 | SLOT_COUNT | 6 equal vertical slots | |
 
-| THUMB_CROP | horizontal 5%-38%; top inset 25% / bottom 5% | Per-slot thumb |
+| THUMB_CROP | horizontal 20%-55%; top inset 25% / bottom 5% | Per-slot thumb |
 
 | TEMPLATE_SIZE | 64 | Resize before match |
 
