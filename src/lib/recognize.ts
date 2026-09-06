@@ -5,6 +5,8 @@
  * 每格 thumb 裁切（左 20–55%、上內縮 25%／下內縮 5%）→ 縮放 TEMPLATE_SIZE → 比對。
  *
  * 模板庫：public/templates/{showdownId}.png（僅 Team Preview 小縮圖，非大美術／HOME art）。
+ * 預設比對 ROI-crop 種子（source: roi-crop）。CBD menu sprites
+ * （assets/templates/preview-thumbs/，source: cbd）為可選次要來源，畫面風格常與選隊縮圖不合。
  * 低信心 → speciesId/speciesNameZh = null（UI「未識別」）。不猜道具。
  * 不做逐幀即時辨認。
  */

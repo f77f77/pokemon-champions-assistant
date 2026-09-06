@@ -1,0 +1,233 @@
+#!/usr/bin/env python3
+"""
+Offline seed match test: crop 6 Team Preview slots with locked ROI Doc v1.2
+and match against public/templates/ ROI-crop seeds (NCC + SSD + aHash).
+
+Expect ~6/6 when templates were cropped from the same fixture image.
+
+Usage:
+  python scripts/match-seed-templates.py
+  python scripts/match-seed-templates.py public/fixtures/team-preview.png
+"""
+from __future__ import annotations
+
+import json
+import math
+import sys
+from pathlib import Path
+
+try:
+    from PIL import Image
+except ImportError as e:
+    raise SystemExit("Need Pillow: pip install pillow") from e
+
+ROOT = Path(__file__).resolve().parents[1]
+
+# Locked — mirror src/lib/roi.ts (DO NOT change)
+ENEMY_PANEL = {"left": 0.811, "top": 0.143, "right": 0.965, "bottom": 0.832}
+THUMB_CROP = {"left": 0.20, "right": 0.55, "topInset": 0.25, "bottomInset": 0.05}
+TEMPLATE_SIZE = 64
+SLOT_COUNT = 6
+TARGET_ASPECT = 16 / 9
+CONFIDENCE_THRESHOLD = 0.55
+
+SEED_ORDER = [
+    "noivern",
+    "lycanroc",
+    "politoed",
+    "rotom",
+    "kangaskhan",
+    "hippowdon",
+]
+
+
+def content_rect(frame_w: int, frame_h: int) -> tuple[int, int, int, int]:
+    if frame_w <= 0 or frame_h <= 0:
+        return 0, 0, max(1, frame_w), max(1, frame_h)
+    aspect = frame_w / frame_h
+    if aspect > TARGET_ASPECT:
+        width = int(frame_h * TARGET_ASPECT)
+        x = (frame_w - width) // 2
+        return x, 0, width, frame_h
+    if aspect < TARGET_ASPECT:
+        height = int(frame_w / TARGET_ASPECT)
+        y = (frame_h - height) // 2
+        return 0, y, frame_w, height
+    return 0, 0, frame_w, frame_h
+
+
+def to_gray(im: Image.Image) -> list[float]:
+    rgb = im.convert("RGB").resize((TEMPLATE_SIZE, TEMPLATE_SIZE), Image.Resampling.LANCZOS)
+    pix = rgb.load()
+    out: list[float] = []
+    for y in range(TEMPLATE_SIZE):
+        for x in range(TEMPLATE_SIZE):
+            r, g, b = pix[x, y]
+            out.append(0.299 * r + 0.587 * g + 0.114 * b)
+    return out
+
+
+def average_hash(gray: list[float], size: int = 8) -> str:
+    # downsample gray 64x64 → 8x8 by block average
+    side = TEMPLATE_SIZE
+    block = side // size
+    vals = []
+    for gy in range(size):
+        for gx in range(size):
+            s = 0.0
+            for by in range(block):
+                for bx in range(block):
+                    s += gray[(gy * block + by) * side + (gx * block + bx)]
+            vals.append(s / (block * block))
+    avg = sum(vals) / len(vals)
+    return "".join("1" if v >= avg else "0" for v in vals)
+
+
+def ncc(a: list[float], b: list[float]) -> float:
+    n = min(len(a), len(b))
+    if n == 0:
+        return 0.0
+    mean_a = sum(a[:n]) / n
+    mean_b = sum(b[:n]) / n
+    num = den_a = den_b = 0.0
+    for i in range(n):
+        da = a[i] - mean_a
+        db = b[i] - mean_b
+        num += da * db
+        den_a += da * da
+        den_b += db * db
+    den = math.sqrt(den_a * den_b)
+    if den < 1e-6:
+        return 0.0
+    return num / den
+
+
+def ssd_similarity(a: list[float], b: list[float]) -> float:
+    n = min(len(a), len(b))
+    if n == 0:
+        return 0.0
+    s = 0.0
+    for i in range(n):
+        d = (a[i] - b[i]) / 255.0
+        s += d * d
+    return max(0.0, 1.0 - math.sqrt(s / n) * 2.0)
+
+
+def hamming(a: str, b: str) -> int:
+    n = min(len(a), len(b))
+    return sum(1 for i in range(n) if a[i] != b[i]) + abs(len(a) - len(b))
+
+
+def confidence(gray: list[float], hash_s: str, tmpl_gray: list[float], tmpl_hash: str) -> float:
+    ncc_score = (ncc(gray, tmpl_gray) + 1) / 2
+    ssd_score = ssd_similarity(gray, tmpl_gray)
+    hash_bits = max(len(hash_s), len(tmpl_hash)) or 64
+    hash_score = max(0.0, 1.0 - hamming(hash_s, tmpl_hash) / (hash_bits * 0.35))
+    return min(1.0, ncc_score * 0.55 + ssd_score * 0.25 + hash_score * 0.2)
+
+
+def crop_slot(im: Image.Image, slot: int) -> Image.Image:
+    cx, cy, cw, ch = content_rect(*im.size)
+    px = int(cx + ENEMY_PANEL["left"] * cw)
+    py = int(cy + ENEMY_PANEL["top"] * ch)
+    pw = max(1, int((ENEMY_PANEL["right"] - ENEMY_PANEL["left"]) * cw))
+    ph = max(1, int((ENEMY_PANEL["bottom"] - ENEMY_PANEL["top"]) * ch))
+    slot_h = ph / SLOT_COUNT
+    sx, sy, sw, sh = px, int(py + slot * slot_h), pw, max(1, int(slot_h))
+    tx = int(sx + sw * THUMB_CROP["left"])
+    ty = int(sy + sh * THUMB_CROP["topInset"])
+    tw = max(1, int(sw * (THUMB_CROP["right"] - THUMB_CROP["left"])))
+    th = max(1, int(sh * (1 - THUMB_CROP["topInset"] - THUMB_CROP["bottomInset"])))
+    return im.crop((tx, ty, tx + tw, ty + th))
+
+
+def main() -> int:
+    src = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "public/fixtures/team-preview.png"
+    tmpl_dir = ROOT / "public/templates"
+    out_md = ROOT / "docs/match-seed-results.md"
+
+    missing = [sid for sid in SEED_ORDER if not (tmpl_dir / f"{sid}.png").exists()]
+    if missing:
+        print("Missing ROI-crop templates:", ", ".join(missing))
+        print("Re-crop with: python scripts/crop-preview-templates.py")
+        return 1
+
+    templates = {}
+    for sid in SEED_ORDER:
+        g = to_gray(Image.open(tmpl_dir / f"{sid}.png"))
+        templates[sid] = {"gray": g, "hash": average_hash(g)}
+
+    im = Image.open(src).convert("RGB")
+    rows = []
+    correct = 0
+    print(f"Fixture: {src.relative_to(ROOT)}")
+    print(f"Templates: {tmpl_dir.relative_to(ROOT)} (source=roi-crop)")
+    print(f"{'slot':<4} {'expected':<12} {'matched':<12} {'conf':>6}  ok")
+    for slot, expected in enumerate(SEED_ORDER):
+        crop = crop_slot(im, slot)
+        gray = to_gray(crop)
+        h = average_hash(gray)
+        best_id, best_c = None, -1.0
+        for sid, t in templates.items():
+            c = confidence(gray, h, t["gray"], t["hash"])
+            if c > best_c:
+                best_id, best_c = sid, c
+        ok = best_id == expected and best_c >= CONFIDENCE_THRESHOLD
+        if ok:
+            correct += 1
+        mark = "Y" if ok else "N"
+        print(f"{slot:<4} {expected:<12} {best_id or '-':<12} {best_c:6.3f}  {mark}")
+        rows.append(
+            {
+                "slot": slot,
+                "expected": expected,
+                "matched": best_id,
+                "confidence": round(best_c, 4),
+                "ok": ok,
+            }
+        )
+
+    accuracy = f"{correct}/{SLOT_COUNT}"
+    print(f"Accuracy: {accuracy}")
+
+    out_md.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "# Seed template match results",
+        "",
+        f"- Fixture: `public/fixtures/team-preview.png` (圖二)",
+        f"- Templates: `public/templates/*.png` (ROI Doc v1.2 crops, `source: roi-crop`)",
+        f"- Matcher: NCC×0.55 + SSD×0.25 + aHash×0.20 (same weights as `recognize.ts`)",
+        f"- Threshold: {CONFIDENCE_THRESHOLD}",
+        f"- **Accuracy: {accuracy}**",
+        "",
+        "| slot | expected | matched | confidence | ok |",
+        "|------|----------|---------|------------|----|",
+    ]
+    for r in rows:
+        lines.append(
+            f"| {r['slot']} | {r['expected']} | {r['matched']} | {r['confidence']:.4f} | {'Y' if r['ok'] else 'N'} |"
+        )
+    lines += [
+        "",
+        "## Notes",
+        "",
+        "- Prefer **ROI-crop** seeds in `public/templates/` for Team Preview recognition.",
+        "- CBD menu sprites under `assets/templates/preview-thumbs/` (`source: cbd`) are optional secondary;",
+        "  menu-style art often does **not** match Team Preview thumbs well — do not use as primary matcher.",
+        "- Never bulk-download the dex; use `scripts/fetch-cbd-templates.mjs --allowlist` / `--ids=...` only.",
+        "",
+    ]
+    out_md.write_text("\n".join(lines), encoding="utf-8")
+    print(f"Wrote {out_md.relative_to(ROOT)}")
+
+    # also dump json beside md for tooling
+    (ROOT / "docs/match-seed-results.json").write_text(
+        json.dumps({"accuracy": accuracy, "correct": correct, "total": SLOT_COUNT, "rows": rows}, indent=2)
+        + "\n",
+        encoding="utf-8",
+    )
+    return 0 if correct == SLOT_COUNT else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

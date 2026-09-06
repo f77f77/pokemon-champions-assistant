@@ -1,5 +1,5 @@
 {
-  "source": "圖二 Team Preview (official)",
+  "source": "圖二 Team Preview (official) — roi-crop",
   "roiDoc": "v1.2",
   "panel": {
     "left": 0.811,
@@ -14,7 +14,7 @@
     "bottomInset": 0.05
   },
   "templateSize": 64,
-  "notes": "Forms/Mega/shiny separate later. Rotom appliances, Lycanroc day/night, Hippowdon gender color diffs need separate templates when expanded.",
+  "notes": "PRIMARY recognition templates: ROI crops from 圖二 Team Preview (official). Forms/Mega/shiny separate later. Rotom appliances, Lycanroc day/night, Hippowdon gender color diffs need separate templates when expanded. CBD menu sprites (assets/templates/preview-thumbs/, source=cbd) are optional secondary and often mismatch Team Preview thumbs.",
   "templates": [
     {
       "speciesId": "noivern",
@@ -28,7 +28,8 @@
         "y": 153,
         "w": 86,
         "h": 72
-      }
+      },
+      "source": "roi-crop"
     },
     {
       "speciesId": "lycanroc",
@@ -42,7 +43,8 @@
         "y": 256,
         "w": 86,
         "h": 72
-      }
+      },
+      "source": "roi-crop"
     },
     {
       "speciesId": "politoed",
@@ -56,7 +58,8 @@
         "y": 359,
         "w": 86,
         "h": 72
-      }
+      },
+      "source": "roi-crop"
     },
     {
       "speciesId": "rotom",
@@ -70,7 +73,8 @@
         "y": 463,
         "w": 86,
         "h": 72
-      }
+      },
+      "source": "roi-crop"
     },
     {
       "speciesId": "kangaskhan",
@@ -84,7 +88,8 @@
         "y": 566,
         "w": 86,
         "h": 72
-      }
+      },
+      "source": "roi-crop"
     },
     {
       "speciesId": "hippowdon",
@@ -98,7 +103,10 @@
         "y": 669,
         "w": 86,
         "h": 72
-      }
+      },
+      "source": "roi-crop"
     }
-  ]
+  ],
+  "defaultSource": "roi-crop",
+  "sourceKind": "roi-crop"
 }

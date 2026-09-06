@@ -115,3 +115,27 @@ Acceptance: load test fixture -> recognize enemy team -> 6 slots should hit seed
 Cloud vision / memory read / full dex / live championsbattledata scrape / release pipeline.
 
 Pokemon trademarks belong to their owners; unaffiliated project.
+
+## CBD templates (optional secondary)
+
+Champions Battle Data menu sprites can be fetched **only** for a small allowlist (never whole-dex):
+
+```bash
+node scripts/fetch-cbd-templates.mjs --allowlist
+node scripts/fetch-cbd-templates.mjs --ids=noivern,lycanroc
+```
+
+- Output: `assets/templates/preview-thumbs/{showdownId}.png` + `manifest.jsonl` (`source: cbd`)
+- PNGs are gitignored; see `assets/CREDITS.md`
+- **Recognition default** remains `public/templates/` ROI crops (`source: roi-crop`)
+- CBD menu-style art often mismatches Team Preview thumbs — keep as optional secondary
+- Never HOME / official-artwork
+
+Offline seed match (expect ~6/6 on 圖二 fixture):
+
+```bash
+python scripts/match-seed-templates.py
+```
+
+Results: `docs/match-seed-results.md`
+
