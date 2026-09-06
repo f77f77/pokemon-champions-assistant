@@ -28,7 +28,13 @@ export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange
     <article className={`pkmn-card pkmn-card--${variant} ${pokemon.identified ? '' : 'is-unidentified'}`}>
       <header className="pkmn-card__header">
         <div className="pkmn-card__sprite" aria-hidden>
-          {pokemon.speciesKey ? pokemon.speciesKey.slice(0, 2).toUpperCase() : '??'}
+          {pokemon.thumbnailDataUrl ? (
+            <img src={pokemon.thumbnailDataUrl} alt="" className="pkmn-card__thumb" />
+          ) : pokemon.speciesKey ? (
+            pokemon.speciesKey.slice(0, 2).toUpperCase()
+          ) : (
+            '??'
+          )}
         </div>
         <div className="pkmn-card__title">
           {variant === 'enemy' && onSpeciesOverride ? (
@@ -50,7 +56,11 @@ export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange
           )}
           {pokemon.formLabel && <span className="pkmn-card__form">{pokemon.formLabel}</span>}
           <div className="pkmn-card__meta">
-            <span>{pokemon.item || '無道具'}</span>
+            {variant === "enemy" ? (
+              <span className="muted" title="do not guess held items">道具：—</span>
+            ) : (
+              <span>{pokemon.item || "無道具"}</span>
+            )}
             <span>{pokemon.ability || '—'}</span>
           </div>
         </div>
@@ -108,8 +118,8 @@ export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange
         </div>
       )}
 
-      <div className="move-grid">
-        {pokemon.moves.slice(0, 4).map((mv, i) => (
+      <div className={`move-grid ${variant === "enemy" ? "move-grid--six" : ""}`}>
+        {pokemon.moves.slice(0, variant === "enemy" ? 6 : 4).map((mv, i) => (
           <button
             key={i}
             type="button"

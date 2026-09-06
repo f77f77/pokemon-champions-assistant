@@ -2,6 +2,9 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 
+/** GitHub Pages project site base */
+const PAGES_BASE = "/pokemon-champions-assistant/";
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -9,7 +12,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
-  base: "./",
+  base: PAGES_BASE,
   server: {
     port: 5173,
     strictPort: true,

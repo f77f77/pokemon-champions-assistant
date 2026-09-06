@@ -34,12 +34,19 @@ export interface PokemonSet {
   identified: boolean;
   confidence?: number;
   formLabel?: string;
+  /** 辨認裁切預覽（data URL）；不猜道具 */
+  thumbnailDataUrl?: string;
 }
 
 export interface RecognizeResult {
   slot: number;
-  species: string | null;
   confidence: number;
+  /** 種族 key；低信心為 null → UI 顯示「未識別」 */
+  speciesId?: string | null;
+  speciesNameZh?: string | null;
+  /** @deprecated 相容舊欄位；等同 speciesId */
+  species?: string | null;
+  thumbnailDataUrl?: string;
   hash?: string;
 }
 

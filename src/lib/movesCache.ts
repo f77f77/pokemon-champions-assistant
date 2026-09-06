@@ -95,3 +95,10 @@ export function top4ForCard(moves: MoveSlot[]): MoveSlot[] {
 
 /** 文件用：建議的磁碟快取相對路徑 */
 export const MOVES_CACHE_PATH_DOC = '{userData}/.moves-cache/YYYY-MM-DD/{speciesKey}.json';
+
+/** 敵方卡顯示 Doubles top-6（不足則補 —） */
+export function top6ForCard(moves: MoveSlot[]): MoveSlot[] {
+  const pad: MoveSlot[] = [...moves];
+  while (pad.length < 6) pad.push({ name: "—", type: "一般" as PokemonType });
+  return pad.slice(0, 6);
+}

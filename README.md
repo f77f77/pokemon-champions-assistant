@@ -1,53 +1,71 @@
-# Pokémon Champions 對戰助手（v0.1 scaffold）
+# Pokemon Champions battle assistant (v0.1)
 
-Electron + Vite + React（TypeScript）四區深色 UI 骨架。
+Electron + Vite + React (TypeScript). Defaults: AverMedia GC551, local Team Preview thumbs, Spe hand-fill, championsbattledata Doubles stub.
 
-對齊預設：OBS 虛擬鏡頭、本地縮圖辨認、Spe 手填、championsbattledata Doubles。
+UI strings remain Traditional Chinese.
 
-## 快速開始
+## Quick start
 
-安裝依賴後：
+```bash
+npm install
+npm run dev
+npm run electron:dev
+npm run typecheck
+```
 
-- 網頁預覽：執行套件腳本 dev
-- 桌面：執行套件腳本 electron:dev
-- 建置：執行套件腳本 build
+## Capture device
 
-指令形式為套件管理器的 run <腳本名>。
+1. Plug in AverMedia GC551 (normal videoinput)
 
-## 介面四區
+2. Open camera; picker prefers GC551/AVerMedia, then OBS Virtual Camera
 
-1. 左：我方隊伍 — 6 卡；Showdown paste / JSON 匯入
-2. 中上：擷取預覽 — getUserMedia / OBS；辨認敵方隊伍、生成對方隊伍
-3. 中下：速度軸 — 敵方減速0/中性0/中性32/加速0；我方 Spe 手填
-4. 右：敵方隊伍 — 未識別 + 手動覆寫；離線屬性抗性；top-6 招式 stub
+3. Persist deviceId in localStorage key pkmn-champions-video-device
 
-## OBS 設定
+4. No stream shows Traditional Chinese no-signal message
 
-1. OBS 啟動虛擬攝影機
-2. 本程式開啟鏡頭，選 OBS Virtual Camera
-3. 調整畫面使敵方右側六縮圖落入紅色 ROI
+5. Recognize button grabs ONE frame via canvas then ROI crop (not per-frame)
 
-## ROI 備註
+Busy label uses Traditional Chinese recognizing-state text.
 
-見 src/lib/recognize.ts 的 ROI 常數（相對座標 0-1）。
-辨認：抓幀 -> 裁切 -> 本地 hash stub -> 低信心顯示未識別。無雲端 vision。
+## ROI (VGC spec)
 
-## 招式快取
+Coordinates relative to letterboxed 16:9 contentRect (computeContentRect).
 
-src/lib/movesCache.ts：建議路徑 {userData}/.moves-cache/YYYY-MM-DD/{speciesKey}.json
-目前為 memory + localStorage stub（Doubles 取向）。
+| Constant | Value | Notes |
 
-## 非目標
+|----------|-------|-------|
 
-- 雲端 vision / 讀遊戲記憶體 / 完整圖鑑
-- 真實爬取 championsbattledata
-- 正式發行流程細節
+| ENEMY_PANEL_DEFAULT | (0.811,0.143)-(0.965,0.832) | Enemy panel |
 
-## 目錄
+| SLOT_COUNT | 6 equal vertical slots | |
 
-- electron/
-- src/components/
-- src/lib/
-- src/App.tsx
+| THUMB_CROP | horizontal 5%-38%; vertical inset 12% | Per-slot thumb |
 
-Pokémon 為相關權利方商標；本專案與官方無關。
+| TEMPLATE_SIZE | 64 | Resize before match |
+
+| ROI_FINE_TUNE_MAX | +/-2% | Settings sliders |
+
+
+Files: src/lib/roi.ts, src/lib/recognize.ts.
+
+Settings: ROI fine-tune + green/yellow debug overlay.
+
+## Recognize result
+
+Per slot: { slot, confidence, speciesId?, speciesNameZh?, thumbnailDataUrl? }.
+
+Low confidence -> null species + unidentified label; manual override OK. Do not guess held items.
+
+PREVIEW_THUMB_TEMPLATES = Team Preview small thumbs only (NOT large art / HOME art). Empty stub; still emits 6 crops.
+
+Acceptance: recognizeEnemyTeamFromCanvas(team-preview frame) -> 6 slots once.
+
+## Layout
+
+1. Left my team / 2. Capture preview / 3. Speed axis / 4. Enemy panel
+
+## Out of scope
+
+Cloud vision / memory read / full dex / live championsbattledata scrape / release pipeline.
+
+Pokemon trademarks belong to their owners; unaffiliated project.

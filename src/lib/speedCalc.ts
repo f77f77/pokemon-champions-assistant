@@ -28,6 +28,12 @@ export function calcAllStats(base: Stats, evs: Partial<Stats> = {}, nature: Part
 }
 
 /** 敵方速度軸四段：減速0 / 中性0 / 中性252(標為32示意)/ 加速0 — 規格：減速0/中性0/中性32/加速0 */
+
+/** Champions investment pts -> EV: min(252, pts * 8) */
+export function championsPtsToEv(pts: number): number {
+  return Math.min(252, Math.max(0, Math.floor(pts) * 8));
+}
+
 export interface SpeedBand {
   id: string;
   label: string;
@@ -37,13 +43,13 @@ export interface SpeedBand {
 }
 
 /**
- * 中性32：以 EV=32（常見微調）計算；其餘依規格。
+ * 中性32：Champions pts 32 -> EV=min(252, 32*8)=252；其餘依規格。
  * 減速 = 性格 -Spe × EV0；加速 = 性格 +Spe × EV0
  */
 export function enemySpeedBands(baseSpe: number): SpeedBand[] {
   const slow = calcStat(baseSpe, 31, 0, 50, 0.9);
   const n0 = calcStat(baseSpe, 31, 0, 50, 1);
-  const n32 = calcStat(baseSpe, 31, 32, 50, 1);
+  const n32 = calcStat(baseSpe, 31, championsPtsToEv(32), 50, 1);
   const fast = calcStat(baseSpe, 31, 0, 50, 1.1);
   return [
     { id: 'slow0', label: '減速0', value: slow, kind: 'slow' },
