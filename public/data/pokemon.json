@@ -31,7 +31,52 @@
       "infiltrator",
       "telepathy"
     ],
-    "championsLegal": true
+    "championsLegal": true,
+    "vgcDoublesMoves": [
+      {
+        "id": "tailwind",
+        "nameEn": "Tailwind",
+        "usage": "74.9%",
+        "rank": 1
+      },
+      {
+        "id": "dracometeor",
+        "nameEn": "Draco Meteor",
+        "usage": "63.0%",
+        "rank": 2
+      },
+      {
+        "id": "airslash",
+        "nameEn": "Air Slash",
+        "usage": "40.2%",
+        "rank": 3
+      },
+      {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "37.8%",
+        "rank": 4
+      },
+      {
+        "id": "taunt",
+        "nameEn": "Taunt",
+        "usage": "21.0%",
+        "rank": 5
+      },
+      {
+        "id": "heatwave",
+        "nameEn": "Heat Wave",
+        "usage": "20.9%",
+        "rank": 6
+      }
+    ],
+    "vgcDoublesMeta": {
+      "source": "championsbattledata.com",
+      "format": "Doubles",
+      "season": "Current",
+      "battleSource": "pokemon_champions_assets/battle_data/Doubles/Noivern.csv",
+      "label": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com"
+    }
   },
   {
     "showdownId": "lycanroc",
@@ -64,7 +109,52 @@
       "sand-rush",
       "steadfast"
     ],
-    "championsLegal": true
+    "championsLegal": true,
+    "vgcDoublesMoves": [
+      {
+        "id": "rockslide",
+        "nameEn": "Rock Slide",
+        "usage": "87.8%",
+        "rank": 1
+      },
+      {
+        "id": "accelerock",
+        "nameEn": "Accelerock",
+        "usage": "73.6%",
+        "rank": 2
+      },
+      {
+        "id": "closecombat",
+        "nameEn": "Close Combat",
+        "usage": "65.4%",
+        "rank": 3
+      },
+      {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "59.0%",
+        "rank": 4
+      },
+      {
+        "id": "psychicfangs",
+        "nameEn": "Psychic Fangs",
+        "usage": "20.9%",
+        "rank": 5
+      },
+      {
+        "id": "endeavor",
+        "nameEn": "Endeavor",
+        "usage": "12.6%",
+        "rank": 6
+      }
+    ],
+    "vgcDoublesMeta": {
+      "source": "championsbattledata.com",
+      "format": "Doubles",
+      "season": "Current",
+      "battleSource": "pokemon_champions_assets/battle_data/Doubles/Lycanroc.csv",
+      "label": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com"
+    }
   },
   {
     "showdownId": "politoed",
@@ -97,7 +187,46 @@
       "damp",
       "drizzle"
     ],
-    "championsLegal": true
+    "championsLegal": true,
+    "vgcDoublesMoves": [
+      {
+        "id": "hypnosis",
+        "nameEn": "Hypnosis",
+        "usage": "22.9%",
+        "rank": 6
+      },
+      {
+        "id": "encore",
+        "nameEn": "Encore",
+        "usage": "20.7%",
+        "rank": 7
+      },
+      {
+        "id": "earthpower",
+        "nameEn": "Earth Power",
+        "usage": "14.6%",
+        "rank": 8
+      },
+      {
+        "id": "icywind",
+        "nameEn": "Icy Wind",
+        "usage": "13.7%",
+        "rank": 9
+      },
+      {
+        "id": "helpinghand",
+        "nameEn": "Helping Hand",
+        "usage": "13.2%",
+        "rank": 10
+      }
+    ],
+    "vgcDoublesMeta": {
+      "source": "championsbattledata.com",
+      "format": "Doubles",
+      "season": "Current",
+      "battleSource": "pokemon_champions_assets/battle_data/Doubles/Politoed.csv",
+      "label": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com"
+    }
   },
   {
     "showdownId": "rotom",
@@ -129,7 +258,46 @@
     "abilities": [
       "levitate"
     ],
-    "championsLegal": true
+    "championsLegal": true,
+    "vgcDoublesMoves": [
+      {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "27.4%",
+        "rank": 6
+      },
+      {
+        "id": "electroweb",
+        "nameEn": "Electroweb",
+        "usage": "23.5%",
+        "rank": 7
+      },
+      {
+        "id": "trick",
+        "nameEn": "Trick",
+        "usage": "21.5%",
+        "rank": 8
+      },
+      {
+        "id": "hex",
+        "nameEn": "Hex",
+        "usage": "16.3%",
+        "rank": 9
+      },
+      {
+        "id": "darkpulse",
+        "nameEn": "Dark Pulse",
+        "usage": "12.1%",
+        "rank": 10
+      }
+    ],
+    "vgcDoublesMeta": {
+      "source": "championsbattledata.com",
+      "format": "Doubles",
+      "season": "Current",
+      "battleSource": "pokemon_champions_assets/battle_data/Doubles/Rotom.csv",
+      "label": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com"
+    }
   },
   {
     "showdownId": "kangaskhan",
@@ -162,7 +330,52 @@
       "scrappy",
       "inner-focus"
     ],
-    "championsLegal": true
+    "championsLegal": true,
+    "vgcDoublesMoves": [
+      {
+        "id": "fakeout",
+        "nameEn": "Fake Out",
+        "usage": "97.1%",
+        "rank": 1
+      },
+      {
+        "id": "doubleedge",
+        "nameEn": "Double-Edge",
+        "usage": "48.6%",
+        "rank": 2
+      },
+      {
+        "id": "lastresort",
+        "nameEn": "Last Resort",
+        "usage": "39.4%",
+        "rank": 3
+      },
+      {
+        "id": "suckerpunch",
+        "nameEn": "Sucker Punch",
+        "usage": "31.5%",
+        "rank": 4
+      },
+      {
+        "id": "icepunch",
+        "nameEn": "Ice Punch",
+        "usage": "24.2%",
+        "rank": 5
+      },
+      {
+        "id": "drainpunch",
+        "nameEn": "Drain Punch",
+        "usage": "19.9%",
+        "rank": 6
+      }
+    ],
+    "vgcDoublesMeta": {
+      "source": "championsbattledata.com",
+      "format": "Doubles",
+      "season": "Current",
+      "battleSource": "pokemon_champions_assets/battle_data/Doubles/Kangaskhan.csv",
+      "label": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com"
+    }
   },
   {
     "showdownId": "hippowdon",
@@ -194,6 +407,286 @@
       "sand-stream",
       "sand-force"
     ],
-    "championsLegal": true
+    "championsLegal": true,
+    "vgcDoublesMoves": [
+      {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "57.4%",
+        "rank": 1
+      },
+      {
+        "id": "slackoff",
+        "nameEn": "Slack Off",
+        "usage": "35.5%",
+        "rank": 2
+      },
+      {
+        "id": "highhorsepower",
+        "nameEn": "High Horsepower",
+        "usage": "53.5%",
+        "rank": 3
+      },
+      {
+        "id": "earthquake",
+        "nameEn": "Earthquake",
+        "usage": "36.8%",
+        "rank": 4
+      },
+      {
+        "id": "yawn",
+        "nameEn": "Yawn",
+        "usage": "33.2%",
+        "rank": 5
+      },
+      {
+        "id": "rocktomb",
+        "nameEn": "Rock Tomb",
+        "usage": "30.2%",
+        "rank": 6
+      }
+    ],
+    "vgcDoublesMeta": {
+      "source": "championsbattledata.com",
+      "format": "Doubles",
+      "season": "Current",
+      "battleSource": "pokemon_champions_assets/battle_data/Doubles/Hippowdon.csv",
+      "label": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com"
+    }
+  },
+  {
+    "showdownId": "incineroar",
+    "pokeapiId": 727,
+    "speciesKey": "incineroar",
+    "formKey": "incineroar",
+    "names": {
+      "en": "Incineroar",
+      "zh-Hant": "熾焰咆哮虎",
+      "ja": "ガオガエン"
+    },
+    "formNames": {
+      "en": null,
+      "zh-Hant": null,
+      "ja": null
+    },
+    "types": [
+      "fire",
+      "dark"
+    ],
+    "baseStats": {
+      "hp": 95,
+      "atk": 115,
+      "def": 90,
+      "spa": 80,
+      "spd": 90,
+      "spe": 60
+    },
+    "abilities": [
+      "blaze",
+      "intimidate"
+    ],
+    "championsLegal": true,
+    "vgcDoublesMoves": [
+      {
+        "id": "fakeout",
+        "nameEn": "Fake Out",
+        "usage": "98.8%",
+        "rank": 1
+      },
+      {
+        "id": "partingshot",
+        "nameEn": "Parting Shot",
+        "usage": "89.5%",
+        "rank": 2
+      },
+      {
+        "id": "flareblitz",
+        "nameEn": "Flare Blitz",
+        "usage": "88.0%",
+        "rank": 3
+      },
+      {
+        "id": "darkestlariat",
+        "nameEn": "Darkest Lariat",
+        "usage": "48.0%",
+        "rank": 4
+      },
+      {
+        "id": "throatchop",
+        "nameEn": "Throat Chop",
+        "usage": "28.6%",
+        "rank": 5
+      },
+      {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "14.8%",
+        "rank": 6
+      }
+    ],
+    "vgcDoublesMeta": {
+      "source": "championsbattledata.com",
+      "format": "Doubles",
+      "season": "Current",
+      "battleSource": "pokemon_champions_assets/battle_data/Doubles/Incineroar.csv",
+      "label": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com"
+    }
+  },
+  {
+    "showdownId": "garchomp",
+    "pokeapiId": 445,
+    "speciesKey": "garchomp",
+    "formKey": "garchomp",
+    "names": {
+      "en": "Garchomp",
+      "zh-Hant": "烈咬陸鯊",
+      "ja": "ガブリアス"
+    },
+    "formNames": {
+      "en": null,
+      "zh-Hant": null,
+      "ja": null
+    },
+    "types": [
+      "dragon",
+      "ground"
+    ],
+    "baseStats": {
+      "hp": 108,
+      "atk": 130,
+      "def": 95,
+      "spa": 80,
+      "spd": 85,
+      "spe": 102
+    },
+    "abilities": [
+      "sand-veil",
+      "rough-skin"
+    ],
+    "championsLegal": true,
+    "vgcDoublesMoves": [
+      {
+        "id": "rockslide",
+        "nameEn": "Rock Slide",
+        "usage": "82.4%",
+        "rank": 1
+      },
+      {
+        "id": "earthquake",
+        "nameEn": "Earthquake",
+        "usage": "81.7%",
+        "rank": 2
+      },
+      {
+        "id": "dragonclaw",
+        "nameEn": "Dragon Claw",
+        "usage": "80.2%",
+        "rank": 3
+      },
+      {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "71.3%",
+        "rank": 4
+      },
+      {
+        "id": "stompingtantrum",
+        "nameEn": "Stomping Tantrum",
+        "usage": "32.4%",
+        "rank": 5
+      },
+      {
+        "id": "poisonjab",
+        "nameEn": "Poison Jab",
+        "usage": "14.2%",
+        "rank": 6
+      }
+    ],
+    "vgcDoublesMeta": {
+      "source": "championsbattledata.com",
+      "format": "Doubles",
+      "season": "Current",
+      "battleSource": "pokemon_champions_assets/battle_data/Doubles/Garchomp.csv",
+      "label": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com"
+    }
+  },
+  {
+    "showdownId": "pelipper",
+    "pokeapiId": 279,
+    "speciesKey": "pelipper",
+    "formKey": "pelipper",
+    "names": {
+      "en": "Pelipper",
+      "zh-Hant": "大嘴鷗",
+      "ja": "ペリッパー"
+    },
+    "formNames": {
+      "en": null,
+      "zh-Hant": null,
+      "ja": null
+    },
+    "types": [
+      "water",
+      "flying"
+    ],
+    "baseStats": {
+      "hp": 60,
+      "atk": 50,
+      "def": 100,
+      "spa": 95,
+      "spd": 70,
+      "spe": 65
+    },
+    "abilities": [
+      "keen-eye",
+      "drizzle",
+      "rain-dish"
+    ],
+    "championsLegal": true,
+    "vgcDoublesMoves": [
+      {
+        "id": "hurricane",
+        "nameEn": "Hurricane",
+        "usage": "97.4%",
+        "rank": 1
+      },
+      {
+        "id": "tailwind",
+        "nameEn": "Tailwind",
+        "usage": "82.5%",
+        "rank": 2
+      },
+      {
+        "id": "weatherball",
+        "nameEn": "Weather Ball",
+        "usage": "79.8%",
+        "rank": 3
+      },
+      {
+        "id": "wideguard",
+        "nameEn": "Wide Guard",
+        "usage": "62.3%",
+        "rank": 4
+      },
+      {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "29.9%",
+        "rank": 5
+      },
+      {
+        "id": "muddywater",
+        "nameEn": "Muddy Water",
+        "usage": "10.0%",
+        "rank": 6
+      }
+    ],
+    "vgcDoublesMeta": {
+      "source": "championsbattledata.com",
+      "format": "Doubles",
+      "season": "Current",
+      "battleSource": "pokemon_champions_assets/battle_data/Doubles/Pelipper.csv",
+      "label": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com"
+    }
   }
 ]

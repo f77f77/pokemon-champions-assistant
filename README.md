@@ -1,6 +1,6 @@
 # Pokemon Champions battle assistant (v0.1)
 
-Electron + Vite + React (TypeScript). Defaults: AverMedia GC551, local Team Preview thumbs, Spe hand-fill, championsbattledata Doubles stub.
+Electron + Vite + React (TypeScript). Defaults: AverMedia GC551, local Team Preview thumbs, Spe hand-fill, championsbattledata VGC Doubles (2v2 / 6-pick-4) usage.
 
 UI strings remain Traditional Chinese.
 
@@ -146,7 +146,7 @@ Offline species / move tables live under `data/` (mirrored to `public/data/` for
 | File | Contents |
 |------|--------|
 | `data/allowlist.json` | Champions `showdownId` allowlist (start small; expand here) |
-| `data/pokemon.json` | One record per form: names `en` / `zh-Hant` / `ja`, classic base stats, types, abilities |
+| `data/pokemon.json` | One record per form: names `en` / `zh-Hant` / `ja`, classic base stats, types, abilities; optional `vgcDoublesMoves` (CBD VGC Doubles usage %) |
 | `data/moves.json` | Moves referenced by allowlisted Pokémon (localized names + combat fields) |
 | `data/meta.json` | `schemaVersion`, `generatedAt`, `sources`, `pokemonCount`, `movesCount` |
 
@@ -170,7 +170,7 @@ node scripts/build-pokemon-data.mjs --allowlist=data/allowlist.json
 node scripts/build-pokemon-data.mjs --dry-run
 ```
 
-Writes both `data/*` and `public/data/*`. The app loads `public/data/pokemon.json` on boot (`loadGeneratedSpeciesData`) to overlay Traditional Chinese display names / stats onto `SPECIES_DB` stubs.
+Writes both `data/*` and `public/data/*`. The app loads `public/data/pokemon.json` + `moves.json` on boot (`loadGeneratedSpeciesData` / `loadMovesData`) for 繁中 names/stats and CBD Doubles move usage (missing → 未載入).
 
 ### GitHub Actions
 

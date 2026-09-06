@@ -1,52 +1,152 @@
 import type { MoveSlot, PokemonType } from '../types';
+import { TYPE_ID_TO_ZH, type TypeIconId } from './typeIcons';
 
 /**
- * championsbattledata.com Doubles top-6 moves 快取 stub。
+ * VGC Doubles (2v2 / 6-pick-4) top moves cache.
  *
- * 每日快取路徑（文件約定，本 stub 使用 memory + localStorage）：
- * - Electron 生產環境建議：`{userData}/.moves-cache/YYYY-MM-DD/{speciesKey}.json`
- * - 開發／瀏覽器：`localStorage` key `pkmn-moves-cache:v1:{date}:{speciesKey}`
+ * - Move **names / types**: `public/data/moves.json` (PokéAPI, zh-Hant)
+ * - **Usage %**: only from championsbattledata.com Doubles battle meta baked into
+ *   `public/data/pokemon.json` (`vgcDoublesMoves`). Never invent learnsets or fake %.
  *
- * 非目標：真正爬取 championsbattledata（需 CORS／後端 proxy）；此處僅 placeholder + 示範資料。
+ * Daily browser cache (optional overlay after static load):
+ * - `localStorage` key `pkmn-moves-cache:v2:{date}:{speciesKey}`
+ * - Electron prod suggestion: `{userData}/.moves-cache/YYYY-MM-DD/{speciesKey}.json`
  */
 
-const MEMORY = new Map<string, { fetchedAt: string; moves: MoveSlot[] }>();
+export const MOVES_SOURCE_LABEL = 'VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com';
+
+export interface GeneratedMoveRecord {
+  id: string;
+  pokeapiId: number | null;
+  names: { en: string | null; 'zh-Hant': string | null; ja: string | null };
+  type: string | null;
+  category?: string | null;
+  power?: number | null;
+  accuracy?: number | null;
+  pp?: number | null;
+}
+
+export interface VgcDoublesMoveRow {
+  id: string;
+  nameEn: string;
+  usage: string | null;
+  rank?: number | null;
+}
+
+export interface VgcDoublesMeta {
+  source?: string;
+  format?: string;
+  season?: string | null;
+  battleSource?: string | null;
+  label?: string;
+}
+
+interface PokemonMovesRecord {
+  showdownId: string;
+  vgcDoublesMoves?: VgcDoublesMoveRow[];
+  vgcDoublesMeta?: VgcDoublesMeta | null;
+}
+
+const MEMORY = new Map<string, { fetchedAt: string; moves: MoveSlot[]; sourceLabel: string | null }>();
+const MOVES_BY_ID = new Map<string, GeneratedMoveRecord>();
+const DOUBLES_BY_SPECIES = new Map<string, VgcDoublesMoveRow[]>();
+const META_BY_SPECIES = new Map<string, VgcDoublesMeta | null>();
+
+let loadPromise: Promise<void> | null = null;
+let loaded = false;
 
 function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
 function storageKey(speciesKey: string): string {
-  return `pkmn-moves-cache:v1:${todayKey()}:${speciesKey}`;
+  return `pkmn-moves-cache:v2:${todayKey()}:${speciesKey}`;
 }
 
-/** 離線 Doubles 常見招式示範 */
-const PLACEHOLDER: Record<string, MoveSlot[]> = {
-  incineroar: [
-    { name: '擊掌奇襲', type: '一般', usage: 92 },
-    { name: '閃焰衝鋒', type: '火', usage: 78 },
-    { name: '拍落', type: '惡', usage: 71 },
-    { name: '鳥嘴加農炮', type: '飛行', usage: 54 },
-    { name: '分手揮別', type: '惡', usage: 41 },
-    { name: '保護', type: '一般', usage: 38 },
-  ],
-  'roaring-moon': [
-    { name: '龍之舞', type: '龍', usage: 81 },
-    { name: '雙翼', type: '飛行', usage: 74 },
-    { name: '咬碎', type: '惡', usage: 66 },
-    { name: '地震', type: '地面', usage: 52 },
-    { name: '保護', type: '一般', usage: 47 },
-    { name: '鐵頭', type: '鋼', usage: 29 },
-  ],
-  default: [
-    { name: '保護', type: '一般', usage: 80 },
-    { name: '佯攻', type: '惡', usage: 55 },
-    { name: '急速折返', type: '蟲', usage: 48 },
-    { name: '大地神力', type: '地面', usage: 44 },
-    { name: '幫助', type: '一般', usage: 36 },
-    { name: '挑釁', type: '惡', usage: 31 },
-  ],
-};
+function enTypeToZh(t: string | null | undefined): PokemonType {
+  if (!t) return '一般';
+  const id = t.toLowerCase() as TypeIconId;
+  return TYPE_ID_TO_ZH[id] ?? '一般';
+}
+
+function resolveMoveSlot(row: VgcDoublesMoveRow): MoveSlot {
+  const rec = MOVES_BY_ID.get(row.id) ?? MOVES_BY_ID.get(row.id.replace(/-/g, ''));
+  const name =
+    rec?.names?.['zh-Hant'] ||
+    rec?.names?.en ||
+    row.nameEn ||
+    row.id;
+  const type = enTypeToZh(rec?.type);
+  const usage =
+    row.usage != null && String(row.usage).trim() !== ''
+      ? String(row.usage).trim()
+      : undefined;
+  return usage ? { name, type, usage } : { name, type };
+}
+
+function unloadedSlots(count: number): MoveSlot[] {
+  return Array.from({ length: count }, () => ({
+    name: '未載入',
+    type: '一般' as PokemonType,
+  }));
+}
+
+async function fetchJson<T>(url: string): Promise<T | null> {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Load PokéAPI move catalog + CBD Doubles usage rows from static JSON.
+ * Safe to call multiple times; failures leave maps empty → UI shows 未載入.
+ */
+export async function loadMovesData(
+  baseUrl = `${import.meta.env.BASE_URL}data`,
+): Promise<{ moves: number; speciesWithUsage: number }> {
+  if (loaded) {
+    return { moves: MOVES_BY_ID.size, speciesWithUsage: DOUBLES_BY_SPECIES.size };
+  }
+  if (!loadPromise) {
+    loadPromise = (async () => {
+      const [moves, pokemon] = await Promise.all([
+        fetchJson<GeneratedMoveRecord[]>(`${baseUrl}/moves.json`),
+        fetchJson<PokemonMovesRecord[]>(`${baseUrl}/pokemon.json`),
+      ]);
+      MOVES_BY_ID.clear();
+      DOUBLES_BY_SPECIES.clear();
+      META_BY_SPECIES.clear();
+      if (Array.isArray(moves)) {
+        for (const m of moves) {
+          if (!m?.id) continue;
+          MOVES_BY_ID.set(m.id, m);
+        }
+      }
+      if (Array.isArray(pokemon)) {
+        for (const p of pokemon) {
+          if (!p?.showdownId) continue;
+          const rows = Array.isArray(p.vgcDoublesMoves) ? p.vgcDoublesMoves : [];
+          if (rows.length) DOUBLES_BY_SPECIES.set(p.showdownId, rows);
+          META_BY_SPECIES.set(p.showdownId, p.vgcDoublesMeta ?? null);
+        }
+      }
+      loaded = true;
+    })().catch(() => {
+      loadPromise = null;
+      loaded = false;
+    });
+  }
+  await loadPromise;
+  return { moves: MOVES_BY_ID.size, speciesWithUsage: DOUBLES_BY_SPECIES.size };
+}
+
+function ensureLoaded(): Promise<void> {
+  return loadMovesData().then(() => undefined);
+}
 
 export function getCachedMoves(speciesKey: string): MoveSlot[] | null {
   const mem = MEMORY.get(speciesKey);
@@ -56,7 +156,7 @@ export function getCachedMoves(speciesKey: string): MoveSlot[] | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as { fetchedAt: string; moves: MoveSlot[] };
     if (parsed.fetchedAt !== todayKey()) return null;
-    MEMORY.set(speciesKey, parsed);
+    MEMORY.set(speciesKey, { ...parsed, sourceLabel: getMovesSourceLabel(speciesKey) });
     return parsed.moves;
   } catch {
     return null;
@@ -64,41 +164,60 @@ export function getCachedMoves(speciesKey: string): MoveSlot[] | null {
 }
 
 export function setCachedMoves(speciesKey: string, moves: MoveSlot[]): void {
-  const payload = { fetchedAt: todayKey(), moves };
+  const payload = { fetchedAt: todayKey(), moves, sourceLabel: getMovesSourceLabel(speciesKey) };
   MEMORY.set(speciesKey, payload);
   try {
-    localStorage.setItem(storageKey(speciesKey), JSON.stringify(payload));
+    localStorage.setItem(storageKey(speciesKey), JSON.stringify({ fetchedAt: payload.fetchedAt, moves }));
   } catch {
     /* ignore quota */
   }
 }
 
+export function getMovesSourceLabel(speciesKey?: string): string | null {
+  if (!speciesKey) return MOVES_SOURCE_LABEL;
+  const meta = META_BY_SPECIES.get(speciesKey);
+  if (meta?.label) return meta.label;
+  if (DOUBLES_BY_SPECIES.has(speciesKey)) return MOVES_SOURCE_LABEL;
+  return null;
+}
+
 /**
- * 取得 top-6（先快取，否則 placeholder）。
- * 未來可換成 fetch('https://championsbattledata.com/...') + 後端 proxy。
+ * Top Doubles moves for a species from baked CBD meta + PokéAPI names/types.
+ * Missing CBD usage → empty array (UI pads with 未載入 / —). Never returns fake stubs.
  */
 export async function fetchTopMoves(speciesKey: string): Promise<MoveSlot[]> {
+  await ensureLoaded();
   const cached = getCachedMoves(speciesKey);
   if (cached) return cached;
-  // stub：模擬網路延遲後寫入每日快取
-  await new Promise((r) => setTimeout(r, 50));
-  const moves = (PLACEHOLDER[speciesKey] ?? PLACEHOLDER.default).slice(0, 6);
+
+  const rows = DOUBLES_BY_SPECIES.get(speciesKey);
+  if (!rows?.length) {
+    // Do not cache empty forever across data rebuilds in the same day via localStorage —
+    // memory-only empty so a later loadMovesData refresh can recover.
+    MEMORY.set(speciesKey, { fetchedAt: todayKey(), moves: [], sourceLabel: null });
+    return [];
+  }
+
+  const moves = rows.slice(0, 6).map(resolveMoveSlot);
   setCachedMoves(speciesKey, moves);
   return moves;
 }
 
+/** Ally card: ≤4; empty CBD → 未載入 ×4 */
 export function top4ForCard(moves: MoveSlot[]): MoveSlot[] {
+  if (!moves.length) return unloadedSlots(4);
   const pad: MoveSlot[] = [...moves];
   while (pad.length < 4) pad.push({ name: '—', type: '一般' as PokemonType });
   return pad.slice(0, 4);
 }
 
-/** 文件用：建議的磁碟快取相對路徑 */
-export const MOVES_CACHE_PATH_DOC = '{userData}/.moves-cache/YYYY-MM-DD/{speciesKey}.json';
-
-/** 敵方卡顯示 Doubles top-6（不足則補 —） */
+/** Enemy card: top-6 slots; empty CBD → 未載入 ×6 */
 export function top6ForCard(moves: MoveSlot[]): MoveSlot[] {
+  if (!moves.length) return unloadedSlots(6);
   const pad: MoveSlot[] = [...moves];
-  while (pad.length < 6) pad.push({ name: "—", type: "一般" as PokemonType });
+  while (pad.length < 6) pad.push({ name: '—', type: '一般' as PokemonType });
   return pad.slice(0, 6);
 }
+
+/** 文件用：建議的磁碟快取相對路徑 */
+export const MOVES_CACHE_PATH_DOC = '{userData}/.moves-cache/YYYY-MM-DD/{speciesKey}.json';

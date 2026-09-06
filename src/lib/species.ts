@@ -90,6 +90,20 @@ export interface GeneratedPokemonRecord {
   baseStats: Stats;
   abilities: string[];
   championsLegal?: boolean;
+  /** CBD VGC Doubles top moves (usage %); absent → UI 未載入 */
+  vgcDoublesMoves?: {
+    id: string;
+    nameEn: string;
+    usage: string | null;
+    rank?: number | null;
+  }[];
+  vgcDoublesMeta?: {
+    source?: string;
+    format?: string;
+    season?: string | null;
+    battleSource?: string | null;
+    label?: string;
+  } | null;
 }
 
 function enTypeToZh(t: string): PokemonType {

@@ -21,6 +21,8 @@ interface Props {
   /** 我方卡片：是否為速度軸選中對象 */
   selected?: boolean;
   onSelect?: () => void;
+  /** Optional caption for move usage source (CBD Doubles) */
+  movesSourceLabel?: string | null;
 }
 
 /** 屬性圖示 only（不顯示文字標籤） */
@@ -49,7 +51,7 @@ function formatUsage(usage: string | number | undefined): string | null {
   return /%$/.test(s) ? s : `${s}%`;
 }
 
-export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange, speciesOptions, selected, onSelect }: Props) {
+export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange, speciesOptions, selected, onSelect, movesSourceLabel }: Props) {
   const stats = calcAllStats(pokemon.baseStats);
   const maxStat = Math.max(150, ...Object.values(pokemon.baseStats));
   const matchups = pokemon.types.length ? defensiveMatchups(pokemon.types) : null;
@@ -182,6 +184,7 @@ export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange
               type="button"
               className="move-btn"
               style={{ borderColor: TYPE_COLORS[mv.type as keyof typeof TYPE_COLORS] || '#666' }}
+              title={usageLabel && movesSourceLabel ? `${mv.name} · ${usageLabel} · ${movesSourceLabel}` : mv.name}
             >
               <span className="move-btn__main">
                 {moveIcon && (
@@ -194,6 +197,11 @@ export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange
           );
         })}
       </div>
+      {movesSourceLabel && pokemon.moves.some((m) => m.usage != null && m.usage !== '') ? (
+        <p className="move-source-caption" title={movesSourceLabel}>
+          使用率：{movesSourceLabel}
+        </p>
+      ) : null}
     </div>
   );
 

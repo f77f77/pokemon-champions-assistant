@@ -1,11 +1,14 @@
 {
-  "description": "Champions / Showdown IDs to include when generating data/pokemon.json. Expand this list, then run: node scripts/build-pokemon-data.mjs",
+  "description": "Champions / Showdown IDs to include when generating data/pokemon.json. Expand this list, then run: node scripts/build-pokemon-data.mjs. Usage % comes from CBD Doubles (2v2 / 6-pick-4), not invented learnsets.",
   "showdownIds": [
     "noivern",
     "lycanroc",
     "politoed",
     "rotom",
     "kangaskhan",
-    "hippowdon"
+    "hippowdon",
+    "incineroar",
+    "garchomp",
+    "pelipper"
   ]
 }

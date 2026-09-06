@@ -98,6 +98,20 @@
     "pp": 20
   },
   {
+    "id": "aquaring",
+    "pokeapiId": 392,
+    "names": {
+      "en": "Aqua Ring",
+      "zh-Hant": "水流環",
+      "ja": "アクアリング"
+    },
+    "type": "water",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 20
+  },
+  {
     "id": "assurance",
     "pokeapiId": 372,
     "names": {
@@ -140,6 +154,20 @@
     "pp": 10
   },
   {
+    "id": "batonpass",
+    "pokeapiId": 226,
+    "names": {
+      "en": "Baton Pass",
+      "zh-Hant": "接棒",
+      "ja": "バトンタッチ"
+    },
+    "type": "normal",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 40
+  },
+  {
     "id": "beatup",
     "pokeapiId": 251,
     "names": {
@@ -180,6 +208,34 @@
     "power": 60,
     "accuracy": 100,
     "pp": 25
+  },
+  {
+    "id": "blastburn",
+    "pokeapiId": 307,
+    "names": {
+      "en": "Blast Burn",
+      "zh-Hant": "爆炸烈焰",
+      "ja": "ブラストバーン"
+    },
+    "type": "fire",
+    "category": "special",
+    "power": 150,
+    "accuracy": 90,
+    "pp": 5
+  },
+  {
+    "id": "blazekick",
+    "pokeapiId": 299,
+    "names": {
+      "en": "Blaze Kick",
+      "zh-Hant": "火焰踢",
+      "ja": "ブレイズキック"
+    },
+    "type": "fire",
+    "category": "physical",
+    "power": 85,
+    "accuracy": 90,
+    "pp": 10
   },
   {
     "id": "blizzard",
@@ -252,6 +308,20 @@
     "pp": 5
   },
   {
+    "id": "bravebird",
+    "pokeapiId": 413,
+    "names": {
+      "en": "Brave Bird",
+      "zh-Hant": "勇鳥猛攻",
+      "ja": "ブレイブバード"
+    },
+    "type": "flying",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 15
+  },
+  {
     "id": "breakingswipe",
     "pokeapiId": 784,
     "names": {
@@ -280,6 +350,20 @@
     "pp": 15
   },
   {
+    "id": "brutalswing",
+    "pokeapiId": 693,
+    "names": {
+      "en": "Brutal Swing",
+      "zh-Hant": "狂舞揮打",
+      "ja": "ぶんまわす"
+    },
+    "type": "dark",
+    "category": "physical",
+    "power": 60,
+    "accuracy": 100,
+    "pp": 20
+  },
+  {
     "id": "bulkup",
     "pokeapiId": 339,
     "names": {
@@ -306,6 +390,20 @@
     "power": 60,
     "accuracy": 100,
     "pp": 20
+  },
+  {
+    "id": "burningjealousy",
+    "pokeapiId": 807,
+    "names": {
+      "en": "Burning Jealousy",
+      "zh-Hant": "妒火",
+      "ja": "しっとのほのお"
+    },
+    "type": "fire",
+    "category": "special",
+    "power": 70,
+    "accuracy": 100,
+    "pp": 5
   },
   {
     "id": "charge",
@@ -420,6 +518,20 @@
     "pp": 20
   },
   {
+    "id": "crosschop",
+    "pokeapiId": 238,
+    "names": {
+      "en": "Cross Chop",
+      "zh-Hant": "十字劈",
+      "ja": "クロスチョップ"
+    },
+    "type": "fighting",
+    "category": "physical",
+    "power": 100,
+    "accuracy": 80,
+    "pp": 5
+  },
+  {
     "id": "crunch",
     "pokeapiId": 242,
     "names": {
@@ -445,6 +557,20 @@
     "category": "status",
     "power": null,
     "accuracy": null,
+    "pp": 10
+  },
+  {
+    "id": "darkestlariat",
+    "pokeapiId": 663,
+    "names": {
+      "en": "Darkest Lariat",
+      "zh-Hant": "ＤＤ金勾臂",
+      "ja": "ＤＤラリアット"
+    },
+    "type": "dark",
+    "category": "physical",
+    "power": 85,
+    "accuracy": 100,
     "pp": 10
   },
   {
@@ -882,6 +1008,20 @@
     "pp": 10
   },
   {
+    "id": "featherdance",
+    "pokeapiId": 297,
+    "names": {
+      "en": "Feather Dance",
+      "zh-Hant": "羽毛舞",
+      "ja": "フェザーダンス"
+    },
+    "type": "flying",
+    "category": "status",
+    "power": null,
+    "accuracy": 100,
+    "pp": 15
+  },
+  {
     "id": "fireblast",
     "pokeapiId": 126,
     "names": {
@@ -924,6 +1064,20 @@
     "pp": 15
   },
   {
+    "id": "firespin",
+    "pokeapiId": 83,
+    "names": {
+      "en": "Fire Spin",
+      "zh-Hant": "火焰旋渦",
+      "ja": "ほのおのうず"
+    },
+    "type": "fire",
+    "category": "special",
+    "power": 35,
+    "accuracy": 85,
+    "pp": 15
+  },
+  {
     "id": "fissure",
     "pokeapiId": 90,
     "names": {
@@ -938,6 +1092,20 @@
     "pp": 5
   },
   {
+    "id": "flamecharge",
+    "pokeapiId": 488,
+    "names": {
+      "en": "Flame Charge",
+      "zh-Hant": "蓄能焰襲",
+      "ja": "ニトロチャージ"
+    },
+    "type": "fire",
+    "category": "physical",
+    "power": 50,
+    "accuracy": 100,
+    "pp": 20
+  },
+  {
     "id": "flamethrower",
     "pokeapiId": 53,
     "names": {
@@ -948,6 +1116,20 @@
     "type": "fire",
     "category": "special",
     "power": 90,
+    "accuracy": 100,
+    "pp": 15
+  },
+  {
+    "id": "flareblitz",
+    "pokeapiId": 394,
+    "names": {
+      "en": "Flare Blitz",
+      "zh-Hant": "閃焰衝鋒",
+      "ja": "フレアドライブ"
+    },
+    "type": "fire",
+    "category": "physical",
+    "power": 120,
     "accuracy": 100,
     "pp": 15
   },
@@ -1036,6 +1218,20 @@
     "pp": 15
   },
   {
+    "id": "furyswipes",
+    "pokeapiId": 154,
+    "names": {
+      "en": "Fury Swipes",
+      "zh-Hant": "亂抓",
+      "ja": "みだれひっかき"
+    },
+    "type": "normal",
+    "category": "physical",
+    "power": 18,
+    "accuracy": 80,
+    "pp": 15
+  },
+  {
     "id": "gigaimpact",
     "pokeapiId": 416,
     "names": {
@@ -1047,6 +1243,20 @@
     "category": "physical",
     "power": 150,
     "accuracy": 90,
+    "pp": 5
+  },
+  {
+    "id": "gunkshot",
+    "pokeapiId": 441,
+    "names": {
+      "en": "Gunk Shot",
+      "zh-Hant": "垃圾射擊",
+      "ja": "ダストシュート"
+    },
+    "type": "poison",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 80,
     "pp": 5
   },
   {
@@ -1090,6 +1300,20 @@
     "power": null,
     "accuracy": null,
     "pp": 30
+  },
+  {
+    "id": "heatcrash",
+    "pokeapiId": 535,
+    "names": {
+      "en": "Heat Crash",
+      "zh-Hant": "高溫重壓",
+      "ja": "ヒートスタンプ"
+    },
+    "type": "fire",
+    "category": "physical",
+    "power": null,
+    "accuracy": 100,
+    "pp": 10
   },
   {
     "id": "heatwave",
@@ -1344,6 +1568,34 @@
     "pp": 15
   },
   {
+    "id": "knockoff",
+    "pokeapiId": 282,
+    "names": {
+      "en": "Knock Off",
+      "zh-Hant": "拍落",
+      "ja": "はたきおとす"
+    },
+    "type": "dark",
+    "category": "physical",
+    "power": 65,
+    "accuracy": 100,
+    "pp": 20
+  },
+  {
+    "id": "lashout",
+    "pokeapiId": 808,
+    "names": {
+      "en": "Lash Out",
+      "zh-Hant": "洩憤",
+      "ja": "うっぷんばらし"
+    },
+    "type": "dark",
+    "category": "physical",
+    "power": 75,
+    "accuracy": 100,
+    "pp": 5
+  },
+  {
     "id": "lastresort",
     "pokeapiId": 387,
     "names": {
@@ -1370,6 +1622,20 @@
     "power": 80,
     "accuracy": 100,
     "pp": 10
+  },
+  {
+    "id": "lick",
+    "pokeapiId": 122,
+    "names": {
+      "en": "Lick",
+      "zh-Hant": "舌舔",
+      "ja": "したでなめる"
+    },
+    "type": "ghost",
+    "category": "physical",
+    "power": 30,
+    "accuracy": 100,
+    "pp": 30
   },
   {
     "id": "lightscreen",
@@ -1540,6 +1806,20 @@
     "pp": 10
   },
   {
+    "id": "overheat",
+    "pokeapiId": 315,
+    "names": {
+      "en": "Overheat",
+      "zh-Hant": "過熱",
+      "ja": "オーバーヒート"
+    },
+    "type": "fire",
+    "category": "special",
+    "power": 130,
+    "accuracy": 90,
+    "pp": 5
+  },
+  {
     "id": "painsplit",
     "pokeapiId": 220,
     "names": {
@@ -1551,6 +1831,20 @@
     "category": "status",
     "power": null,
     "accuracy": null,
+    "pp": 20
+  },
+  {
+    "id": "partingshot",
+    "pokeapiId": 575,
+    "names": {
+      "en": "Parting Shot",
+      "zh-Hant": "拋下狠話",
+      "ja": "すてゼリフ"
+    },
+    "type": "dark",
+    "category": "status",
+    "power": null,
+    "accuracy": 100,
     "pp": 20
   },
   {
@@ -1582,6 +1876,20 @@
     "pp": 10
   },
   {
+    "id": "poisonjab",
+    "pokeapiId": 398,
+    "names": {
+      "en": "Poison Jab",
+      "zh-Hant": "毒擊",
+      "ja": "どくづき"
+    },
+    "type": "poison",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 20
+  },
+  {
     "id": "poltergeist",
     "pokeapiId": 809,
     "names": {
@@ -1608,6 +1916,34 @@
     "power": 40,
     "accuracy": 100,
     "pp": 35
+  },
+  {
+    "id": "powergem",
+    "pokeapiId": 408,
+    "names": {
+      "en": "Power Gem",
+      "zh-Hant": "力量寶石",
+      "ja": "パワージェム"
+    },
+    "type": "rock",
+    "category": "special",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 20
+  },
+  {
+    "id": "powertrip",
+    "pokeapiId": 681,
+    "names": {
+      "en": "Power Trip",
+      "zh-Hant": "囂張",
+      "ja": "つけあがる"
+    },
+    "type": "dark",
+    "category": "physical",
+    "power": 20,
+    "accuracy": 100,
+    "pp": 10
   },
   {
     "id": "protect",
@@ -1904,6 +2240,20 @@
     "pp": 15
   },
   {
+    "id": "scaleshot",
+    "pokeapiId": 799,
+    "names": {
+      "en": "Scale Shot",
+      "zh-Hant": "鱗射",
+      "ja": "スケイルショット"
+    },
+    "type": "dragon",
+    "category": "physical",
+    "power": 25,
+    "accuracy": 90,
+    "pp": 20
+  },
+  {
     "id": "scaryface",
     "pokeapiId": 184,
     "names": {
@@ -1944,6 +2294,20 @@
     "power": null,
     "accuracy": 85,
     "pp": 40
+  },
+  {
+    "id": "seedbomb",
+    "pokeapiId": 402,
+    "names": {
+      "en": "Seed Bomb",
+      "zh-Hant": "種子炸彈",
+      "ja": "タネばくだん"
+    },
+    "type": "grass",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 15
   },
   {
     "id": "shadowball",
@@ -2044,6 +2408,34 @@
     "pp": 15
   },
   {
+    "id": "snowscape",
+    "pokeapiId": 883,
+    "names": {
+      "en": "Snowscape",
+      "zh-Hant": "雪景",
+      "ja": "ゆきげしき"
+    },
+    "type": "ice",
+    "category": "status",
+    "power": 0,
+    "accuracy": null,
+    "pp": 10
+  },
+  {
+    "id": "soak",
+    "pokeapiId": 487,
+    "names": {
+      "en": "Soak",
+      "zh-Hant": "浸水",
+      "ja": "みずびたし"
+    },
+    "type": "water",
+    "category": "status",
+    "power": null,
+    "accuracy": 100,
+    "pp": 20
+  },
+  {
     "id": "solarbeam",
     "pokeapiId": 76,
     "names": {
@@ -2056,6 +2448,20 @@
     "power": 120,
     "accuracy": 100,
     "pp": 10
+  },
+  {
+    "id": "spikes",
+    "pokeapiId": 191,
+    "names": {
+      "en": "Spikes",
+      "zh-Hant": "撒菱",
+      "ja": "まきびし"
+    },
+    "type": "ground",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 20
   },
   {
     "id": "spite",
@@ -2366,6 +2772,20 @@
     "pp": 20
   },
   {
+    "id": "temperflare",
+    "pokeapiId": 915,
+    "names": {
+      "en": "Temper Flare",
+      "zh-Hant": "豁出去",
+      "ja": "やけっぱち"
+    },
+    "type": "fire",
+    "category": "physical",
+    "power": 75,
+    "accuracy": 100,
+    "pp": 10
+  },
+  {
     "id": "terrainpulse",
     "pokeapiId": 805,
     "names": {
@@ -2406,6 +2826,20 @@
     "power": 120,
     "accuracy": 100,
     "pp": 10
+  },
+  {
+    "id": "throatchop",
+    "pokeapiId": 675,
+    "names": {
+      "en": "Throat Chop",
+      "zh-Hant": "地獄突刺",
+      "ja": "じごくづき"
+    },
+    "type": "dark",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 15
   },
   {
     "id": "thunder",
@@ -2630,6 +3064,20 @@
     "power": null,
     "accuracy": null,
     "pp": 20
+  },
+  {
+    "id": "wideguard",
+    "pokeapiId": 469,
+    "names": {
+      "en": "Wide Guard",
+      "zh-Hant": "廣域防守",
+      "ja": "ワイドガード"
+    },
+    "type": "rock",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 10
   },
   {
     "id": "wildcharge",

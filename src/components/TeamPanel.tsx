@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { PokemonSet } from '../types';
 import { PokemonCard } from './PokemonCard';
 import { DEMO_SHOWDOWN_PASTE, parseTeamImport } from '../lib/showdownPaste';
+import { getMovesSourceLabel } from '../lib/movesCache';
 
 interface Props {
   team: PokemonSet[];
@@ -57,6 +58,7 @@ export function TeamPanel({ team, onTeamChange, onSpeedChange, selectedIndex, on
             selected={selectedIndex === i}
             onSelect={() => onSelectAlly(i)}
             onSpeedChange={(spe) => onSpeedChange(i, spe)}
+            movesSourceLabel={p.speciesKey ? getMovesSourceLabel(p.speciesKey) : null}
           />
         ))}
       </div>

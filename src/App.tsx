@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { TeamPanel } from './components/TeamPanel';
 import { EnemyPanel } from './components/EnemyPanel';
 import { CapturePanel } from './components/CapturePanel';
@@ -17,17 +17,24 @@ import {
   ENEMY_PANEL_DEFAULT,
   type RoiFineTune,
 } from './lib/recognize';
-import { fetchTopMoves, top6ForCard } from './lib/movesCache';
+import { fetchTopMoves, top4ForCard, top6ForCard, MOVES_SOURCE_LABEL } from './lib/movesCache';
 
-function buildDemoMyTeam(): PokemonSet[] {
-  return SAMPLE_MY_TEAM_KEYS.map((key, i) => {
+async function buildDemoMyTeam(): Promise<PokemonSet[]> {
+  const out: PokemonSet[] = [];
+  for (let i = 0; i < SAMPLE_MY_TEAM_KEYS.length; i++) {
+    const key = SAMPLE_MY_TEAM_KEYS[i];
     const sp = findSpecies(key)!;
-    return speciesToSet(sp, `my-${i}`, {
-      speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
-      item: ['勿花果', '突擊背心', '氣勢披帶', '講究眼鏡', '生命寶珠', '岩石盔甲'][i],
-      ability: ['威嚇', '青草製造者', '無形拳', '古代活性', '威嚇', '再生力'][i],
-    });
-  });
+    const moves = top4ForCard(await fetchTopMoves(sp.key));
+    out.push(
+      speciesToSet(sp, `my-${i}`, {
+        speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
+        item: ['勿花果', '突擊背心', '氣勢披帶', '講究眼鏡', '生命寶珠', '岩石盔甲'][i],
+        ability: ['威嚇', '青草製造者', '無形拳', '古代活性', '威嚇', '再生力'][i],
+        moves,
+      }),
+    );
+  }
+  return out;
 }
 
 function buildEmptyEnemy(): PokemonSet[] {
@@ -39,7 +46,16 @@ function clampTune(v: number): number {
 }
 
 export default function App() {
-  const [myTeam, setMyTeam] = useState<PokemonSet[]>(() => buildDemoMyTeam());
+  const [myTeam, setMyTeam] = useState<PokemonSet[]>(() =>
+    SAMPLE_MY_TEAM_KEYS.map((key, i) => {
+      const sp = findSpecies(key)!;
+      return speciesToSet(sp, `my-${i}`, {
+        speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
+        item: ['勿花果', '突擊背心', '氣勢披帶', '講究眼鏡', '生命寶珠', '岩石盔甲'][i],
+        ability: ['威嚇', '青草製造者', '無形拳', '古代活性', '威嚇', '再生力'][i],
+      });
+    }),
+  );
   const [enemyTeam, setEnemyTeam] = useState<PokemonSet[]>(() => buildEmptyEnemy());
   const [status, setStatus] = useState('就緒 — 請連接 GC551／OBS、載入靜態選隊圖，或匯入我方隊伍');
   const [busy, setBusy] = useState(false);
@@ -47,6 +63,18 @@ export default function App() {
   const [debugOverlay, setDebugOverlay] = useState(() => loadDebugOverlay());
   /** 速度軸對照用：目前選中的我方隊員 index */
   const [selectedAllyIndex, setSelectedAllyIndex] = useState<number | null>(null);
+
+  // Prefer CBD Doubles top-4 for ally demo when baked usage exists; else 未載入 (no fake stubs).
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const next = await buildDemoMyTeam();
+      if (!cancelled) setMyTeam(next);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const panelPreview = useMemo(() => {
     const l = ENEMY_PANEL_DEFAULT.left + fineTune.dLeft;
@@ -204,7 +232,7 @@ export default function App() {
         );
       }
       setEnemyTeam(next);
-      setStatus('對方隊伍已生成（championsbattledata Doubles top-6 stub）');
+      setStatus(`對方隊伍已生成（${MOVES_SOURCE_LABEL}；無資料顯示未載入）`);
     } finally {
       setBusy(false);
     }
@@ -257,7 +285,7 @@ export default function App() {
               <hr />
               <p>鏡頭：優先 GC551／AVerMedia，其次 OBS</p>
               <p>Spe 於我方卡片手填</p>
-              <p>招式來源：championsbattledata Doubles stub</p>
+              <p>招式來源：{MOVES_SOURCE_LABEL}（無資料→未載入）</p>
               <p>模板：僅 Team Preview 小縮圖</p>
             </div>
           </details>

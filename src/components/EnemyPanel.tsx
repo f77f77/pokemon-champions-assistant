@@ -1,6 +1,7 @@
 import type { PokemonSet } from '../types';
 import { PokemonCard } from './PokemonCard';
 import { SPECIES_DB } from '../lib/species';
+import { getMovesSourceLabel } from '../lib/movesCache';
 
 interface Props {
   team: PokemonSet[];
@@ -24,6 +25,7 @@ export function EnemyPanel({ team, onSpeciesOverride }: Props) {
             variant="enemy"
             speciesOptions={options}
             onSpeciesOverride={(key) => onSpeciesOverride(i, key)}
+            movesSourceLabel={p.speciesKey ? getMovesSourceLabel(p.speciesKey) : null}
           />
         ))}
       </div>

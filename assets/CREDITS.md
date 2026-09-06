@@ -27,9 +27,12 @@
 - Rate-limited politely; do not hammer the public API
 - PokéAPI data © respective Pokémon trademark holders; PokéAPI itself is fan-made
 
-## Champions Battle Data (roster allowlist)
+## Champions Battle Data (roster allowlist + Doubles usage)
 
 - API: https://championsbattledata.com/api/pokemon/{showdownId}
-- Used only to confirm Champions roster presence (`championsLegal`) and collect learnable move *names* for the allowlisted showdownIds in `data/allowlist.json`
+  - Roster presence (`championsLegal`) + learnable move *names* for `data/allowlist.json`
+- Battle API: https://championsbattledata.com/api/battle/Doubles/{showdownId}
+  - **VGC Doubles (2v2 / 6-pick-4)** top moves + usage % → baked as `vgcDoublesMoves` on `data/pokemon.json`
+  - App resolves zh-Hant names / types via PokéAPI `data/moves.json`; never invents learnsets or fake %
 - **Do not** use CBD `summary.primary` / screen-scaled stats as classic base stats — those stay PokéAPI
 - No bulk image scrape in the data build path (sprites remain the separate optional `fetch-cbd-templates.mjs` allowlist tool)

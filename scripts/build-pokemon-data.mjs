@@ -6,11 +6,13 @@
  *   - Allowlist: data/allowlist.json (showdownIds; Champions roster subset)
  *   - CBD API:   https://championsbattledata.com/api/pokemon/{showdownId}
  *                (roster presence + learnable move names — NOT screen-scaled stats)
+ *   - CBD battle: https://championsbattledata.com/api/battle/Doubles/{showdownId}
+ *                (VGC Doubles / 2v2 / 6-pick-4 top moves + usage % — never invent)
  *   - PokéAPI:   classic base stats, types, abilities, localized names
  *                (en / zh-hant→zh-Hant / ja)
  *
  * Outputs (canonical under data/, mirrored to public/data/ for Vite):
- *   data/pokemon.json  — array, one record per form
+ *   data/pokemon.json  — array, one record per form (+ optional vgcDoublesMoves)
  *   data/moves.json    — array of move records referenced by allowlisted Pokémon
  *   data/meta.json     — schemaVersion, generatedAt, sources, counts
  *
@@ -145,6 +147,52 @@ async function fetchCbdPokemon(showdownId) {
   }
 }
 
+/**
+ * Current VGC Doubles (2v2 / 6-pick-4) top moves + ladder usage % from CBD battle API.
+ * Returns [] when the species has no Doubles meta — callers must NOT invent stubs.
+ */
+async function fetchCbdDoublesTopMoves(showdownId, limit = 6) {
+  try {
+    const data = await rateLimitedJson(
+      `${CBD_ORIGIN}/api/battle/Doubles/${encodeURIComponent(showdownId)}`,
+    );
+    const rows = Array.isArray(data?.rows) ? data.rows : [];
+    const moves = rows
+      .filter((r) => r && r.category === 'move' && r.name)
+      .sort((a, b) => Number(a.rank ?? 99) - Number(b.rank ?? 99))
+      .slice(0, limit)
+      .map((r) => {
+        const usageRaw = r.percentage ?? r.percentage_value;
+        let usage = null;
+        if (typeof usageRaw === 'number' && Number.isFinite(usageRaw)) {
+          usage = `${usageRaw}%`.replace(/\.0%$/, '%');
+        } else if (usageRaw != null && String(usageRaw).trim()) {
+          const s = String(usageRaw).trim();
+          usage = /%$/.test(s) ? s : `${s}%`;
+        }
+        return {
+          id: toShowdownMoveId(r.name),
+          nameEn: String(r.name),
+          usage,
+          rank: Number(r.rank) || null,
+        };
+      });
+    return {
+      moves,
+      meta: {
+        source: 'championsbattledata.com',
+        format: 'Doubles',
+        season: data?.season ?? null,
+        battleSource: data?.source ?? null,
+        label: 'VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com',
+      },
+    };
+  } catch (err) {
+    console.warn(`  CBD Doubles battle miss for ${showdownId}: ${err.message || err}`);
+    return { moves: [], meta: null };
+  }
+}
+
 async function buildPokemonRecord(showdownId) {
   const { species: speciesSlug, pokemon: pokemonSlug } = resolvePokeapiTargets(showdownId);
   console.log(`  PokéAPI species=${speciesSlug} pokemon=${pokemonSlug}`);
@@ -190,10 +238,19 @@ async function buildPokemonRecord(showdownId) {
   };
 
   const moveNames = Array.isArray(cbdData?.learnableMoveNames)
-    ? cbdData.learnableMoveNames
+    ? [...cbdData.learnableMoveNames]
     : (pokemonData.moves || []).map((m) => m.move.name);
 
-  return { record, moveNames, fromCbdMoves: Boolean(cbdData?.learnableMoveNames) };
+  const { moves: doublesMoves, meta: doublesMeta } = await fetchCbdDoublesTopMoves(showdownId, 6);
+  if (doublesMoves.length) {
+    record.vgcDoublesMoves = doublesMoves;
+    record.vgcDoublesMeta = doublesMeta;
+    for (const m of doublesMoves) {
+      if (m.nameEn && !moveNames.includes(m.nameEn)) moveNames.push(m.nameEn);
+    }
+  }
+
+  return { record, moveNames, fromCbdMoves: Boolean(cbdData?.learnableMoveNames), doublesCount: doublesMoves.length };
 }
 
 async function buildMoveRecord(displayOrSlug, cache) {
@@ -277,10 +334,10 @@ async function main() {
 
   for (const id of showdownIds) {
     console.log(`[pokemon] ${id}`);
-    const { record, moveNames, fromCbdMoves } = await buildPokemonRecord(id);
+    const { record, moveNames, fromCbdMoves, doublesCount } = await buildPokemonRecord(id);
     pokemon.push(record);
     console.log(
-      `  → ${record.names['zh-Hant'] || record.names.en} types=${record.types.join('/')} BST=${Object.values(record.baseStats).reduce((a, b) => a + b, 0)} movesSrc=${fromCbdMoves ? 'cbd' : 'pokeapi'} (${moveNames.length})`,
+      `  → ${record.names['zh-Hant'] || record.names.en} types=${record.types.join('/')} BST=${Object.values(record.baseStats).reduce((a, b) => a + b, 0)} movesSrc=${fromCbdMoves ? 'cbd' : 'pokeapi'} (${moveNames.length}) doublesTop=${doublesCount}`,
     );
     for (const mn of moveNames) {
       const key = toShowdownMoveId(mn);
@@ -308,9 +365,10 @@ async function main() {
     sources: {
       pokeapi: POKEAPI,
       cbd: `${CBD_ORIGIN}/api/pokemon/{showdownId}`,
+      cbdDoublesBattle: `${CBD_ORIGIN}/api/battle/Doubles/{showdownId}`,
       allowlist: path.relative(ROOT, allowlistPath).replace(/\\/g, '/'),
       notes:
-        'Classic PokéAPI base stats (not CBD screen-scaled). Locale keys: en / zh-Hant / ja. See assets/CREDITS.md.',
+        'Classic PokéAPI base stats (not CBD screen-scaled). Move names/types from PokéAPI; usage % only from CBD VGC Doubles (2v2 / 6-pick-4). Locale keys: en / zh-Hant / ja. See assets/CREDITS.md.',
     },
     pokemonCount: pokemon.length,
     movesCount: moves.length,
