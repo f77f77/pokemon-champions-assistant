@@ -17,6 +17,7 @@ import {
   slotCssPercent,
   thumbCssPercent,
   SLOT_COUNT,
+  fixtureTeamPreviewUrl,
   type RoiFineTune,
 } from '../lib/recognize';
 
@@ -107,6 +108,19 @@ export function CapturePanel({
     const url = URL.createObjectURL(file);
     stillUrlRef.current = url;
     setStillUrl(url);
+    setStillReady(false);
+    setError(null);
+  }
+
+  /** 載入內建 圖二 Team Preview fixture（public/fixtures/team-preview.png） */
+  function loadFixtureStill() {
+    stopStream(streamRef.current);
+    streamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+    setLive(false);
+    revokeStill();
+    // 非 blob URL，revokeStill 不會誤撤銷
+    setStillUrl(fixtureTeamPreviewUrl());
     setStillReady(false);
     setError(null);
   }
@@ -231,6 +245,15 @@ export function CapturePanel({
           onClick={() => fileInputRef.current?.click()}
         >
           載入靜態選隊圖
+        </button>
+        <button
+          type="button"
+          className="btn btn--ghost"
+          disabled={busy}
+          onClick={loadFixtureStill}
+          title="載入 public/fixtures/team-preview.png（圖二）"
+        >
+          載入測試圖
         </button>
       </div>
 

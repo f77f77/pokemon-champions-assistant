@@ -1,0 +1,104 @@
+{
+  "source": "圖二 Team Preview (official)",
+  "roiDoc": "v1.2",
+  "panel": {
+    "left": 0.811,
+    "top": 0.143,
+    "right": 0.965,
+    "bottom": 0.832
+  },
+  "thumbCrop": {
+    "left": 0.2,
+    "right": 0.55,
+    "topInset": 0.25,
+    "bottomInset": 0.05
+  },
+  "templateSize": 64,
+  "notes": "Forms/Mega/shiny separate later. Rotom appliances, Lycanroc day/night, Hippowdon gender color diffs need separate templates when expanded.",
+  "templates": [
+    {
+      "speciesId": "noivern",
+      "speciesNameZh": "音爆音波",
+      "speciesNameEn": "Noivern",
+      "file": "noivern.png",
+      "formNote": null,
+      "slotSource": 0,
+      "cropPx": {
+        "x": 1346,
+        "y": 153,
+        "w": 86,
+        "h": 72
+      }
+    },
+    {
+      "speciesId": "lycanroc",
+      "speciesNameZh": "鬃岩狼人",
+      "speciesNameEn": "Lycanroc-Midday",
+      "file": "lycanroc.png",
+      "formNote": "Midday / 白晝",
+      "slotSource": 1,
+      "cropPx": {
+        "x": 1346,
+        "y": 256,
+        "w": 86,
+        "h": 72
+      }
+    },
+    {
+      "speciesId": "politoed",
+      "speciesNameZh": "蚊香蛙皇",
+      "speciesNameEn": "Politoed",
+      "file": "politoed.png",
+      "formNote": null,
+      "slotSource": 2,
+      "cropPx": {
+        "x": 1346,
+        "y": 359,
+        "w": 86,
+        "h": 72
+      }
+    },
+    {
+      "speciesId": "rotom",
+      "speciesNameZh": "洛托姆",
+      "speciesNameEn": "Rotom",
+      "file": "rotom.png",
+      "formNote": "base form (not appliances)",
+      "slotSource": 3,
+      "cropPx": {
+        "x": 1346,
+        "y": 463,
+        "w": 86,
+        "h": 72
+      }
+    },
+    {
+      "speciesId": "kangaskhan",
+      "speciesNameZh": "袋獸",
+      "speciesNameEn": "Kangaskhan",
+      "file": "kangaskhan.png",
+      "formNote": null,
+      "slotSource": 4,
+      "cropPx": {
+        "x": 1346,
+        "y": 566,
+        "w": 86,
+        "h": 72
+      }
+    },
+    {
+      "speciesId": "hippowdon",
+      "speciesNameZh": "河馬獸",
+      "speciesNameEn": "Hippowdon",
+      "file": "hippowdon.png",
+      "formNote": null,
+      "slotSource": 5,
+      "cropPx": {
+        "x": 1346,
+        "y": 669,
+        "w": 86,
+        "h": 72
+      }
+    }
+  ]
+}

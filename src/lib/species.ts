@@ -26,6 +26,13 @@ export const SPECIES_DB: SpeciesData[] = [
   { key: 'ting-lu', nameZh: '古鼎鹿', nameEn: 'Ting-Lu', types: ['惡', '地面'], baseStats: { hp: 155, atk: 110, def: 125, spa: 55, spd: 80, spe: 45 } },
   { key: 'ogerpon-wellspring', nameZh: '厄詭椪-水井', nameEn: 'Ogerpon-Wellspring', types: ['草', '水'], baseStats: { hp: 80, atk: 120, def: 84, spa: 60, spd: 96, spe: 110 } },
   { key: 'pelipper', nameZh: '大嘴鷗', nameEn: 'Pelipper', types: ['水', '飛行'], baseStats: { hp: 60, atk: 50, def: 100, spa: 95, spd: 70, spe: 65 } },
+  // Team Preview 種子模板（showdownId = key）；形態／Mega／色違日後另檔
+  { key: 'noivern', nameZh: '音爆音波', nameEn: 'Noivern', types: ['飛行', '龍'], baseStats: { hp: 85, atk: 70, def: 80, spa: 97, spd: 80, spe: 123 } },
+  { key: 'lycanroc', nameZh: '鬃岩狼人', nameEn: 'Lycanroc', types: ['岩石'], baseStats: { hp: 75, atk: 115, def: 65, spa: 55, spd: 65, spe: 112 } }, // Midday / 白晝
+  { key: 'politoed', nameZh: '蚊香蛙皇', nameEn: 'Politoed', types: ['水'], baseStats: { hp: 90, atk: 75, def: 75, spa: 90, spd: 100, spe: 70 } },
+  { key: 'rotom', nameZh: '洛托姆', nameEn: 'Rotom', types: ['電', '幽靈'], baseStats: { hp: 50, atk: 50, def: 77, spa: 95, spd: 77, spe: 91 } }, // base form
+  { key: 'kangaskhan', nameZh: '袋獸', nameEn: 'Kangaskhan', types: ['一般'], baseStats: { hp: 105, atk: 95, def: 80, spa: 40, spd: 80, spe: 90 } },
+  { key: 'hippowdon', nameZh: '河馬獸', nameEn: 'Hippowdon', types: ['地面'], baseStats: { hp: 108, atk: 112, def: 118, spa: 68, spd: 72, spe: 47 } },
 ];
 
 const byKey = new Map(SPECIES_DB.map((s) => [s.key, s]));
