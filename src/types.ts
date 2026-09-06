@@ -18,6 +18,8 @@ export interface MoveSlot {
   name: string;
   type: PokemonType | string;
   pp?: string;
+  /** 使用率（可選；數字或已含 % 的字串） */
+  usage?: string | number;
 }
 
 export interface PokemonSet {
