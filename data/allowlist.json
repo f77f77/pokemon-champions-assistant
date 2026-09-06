@@ -1,0 +1,11 @@
+{
+  "description": "Champions / Showdown IDs to include when generating data/pokemon.json. Expand this list, then run: node scripts/build-pokemon-data.mjs",
+  "showdownIds": [
+    "noivern",
+    "lycanroc",
+    "politoed",
+    "rotom",
+    "kangaskhan",
+    "hippowdon"
+  ]
+}

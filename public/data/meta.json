@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-06T18:38:21.141Z",
+  "sources": {
+    "pokeapi": "https://pokeapi.co/api/v2",
+    "cbd": "https://championsbattledata.com/api/pokemon/{showdownId}",
+    "allowlist": "data/allowlist.json",
+    "notes": "Classic PokéAPI base stats (not CBD screen-scaled). Locale keys: en / zh-Hant / ja. See assets/CREDITS.md."
+  },
+  "pokemonCount": 6,
+  "movesCount": 193
+}

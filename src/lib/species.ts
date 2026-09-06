@@ -1,4 +1,5 @@
 import type { PokemonSet, PokemonType, Stats } from '../types';
+import { TYPE_ID_TO_ZH, type TypeIconId } from './typeIcons';
 
 export interface SpeciesData {
   key: string;
@@ -27,7 +28,7 @@ export const SPECIES_DB: SpeciesData[] = [
   { key: 'ogerpon-wellspring', nameZh: '厄詭椪-水井', nameEn: 'Ogerpon-Wellspring', types: ['草', '水'], baseStats: { hp: 80, atk: 120, def: 84, spa: 60, spd: 96, spe: 110 } },
   { key: 'pelipper', nameZh: '大嘴鷗', nameEn: 'Pelipper', types: ['水', '飛行'], baseStats: { hp: 60, atk: 50, def: 100, spa: 95, spd: 70, spe: 65 } },
   // Team Preview 種子模板（showdownId = key）；形態／Mega／色違日後另檔
-  { key: 'noivern', nameZh: '音爆音波', nameEn: 'Noivern', types: ['飛行', '龍'], baseStats: { hp: 85, atk: 70, def: 80, spa: 97, spd: 80, spe: 123 } },
+  { key: 'noivern', nameZh: '音波龍', nameEn: 'Noivern', types: ['飛行', '龍'], baseStats: { hp: 85, atk: 70, def: 80, spa: 97, spd: 80, spe: 123 } },
   { key: 'lycanroc', nameZh: '鬃岩狼人', nameEn: 'Lycanroc', types: ['岩石'], baseStats: { hp: 75, atk: 115, def: 65, spa: 55, spd: 65, spe: 112 } }, // Midday / 白晝
   { key: 'politoed', nameZh: '蚊香蛙皇', nameEn: 'Politoed', types: ['水'], baseStats: { hp: 90, atk: 75, def: 75, spa: 90, spd: 100, spe: 70 } },
   { key: 'rotom', nameZh: '洛托姆', nameEn: 'Rotom', types: ['電', '幽靈'], baseStats: { hp: 50, atk: 50, def: 77, spa: 95, spd: 77, spe: 91 } }, // base form
@@ -35,13 +36,20 @@ export const SPECIES_DB: SpeciesData[] = [
   { key: 'hippowdon', nameZh: '河馬獸', nameEn: 'Hippowdon', types: ['地面'], baseStats: { hp: 108, atk: 112, def: 118, spa: 68, spd: 72, spe: 47 } },
 ];
 
-const byKey = new Map(SPECIES_DB.map((s) => [s.key, s]));
+const byKey = new Map<string, SpeciesData>();
 const byName = new Map<string, SpeciesData>();
-for (const s of SPECIES_DB) {
-  byName.set(s.nameZh.toLowerCase(), s);
-  byName.set(s.nameEn.toLowerCase(), s);
-  byName.set(s.key.toLowerCase(), s);
+
+function reindexSpeciesMaps() {
+  byKey.clear();
+  byName.clear();
+  for (const s of SPECIES_DB) {
+    byKey.set(s.key, s);
+    byName.set(s.nameZh.toLowerCase(), s);
+    byName.set(s.nameEn.toLowerCase(), s);
+    byName.set(s.key.toLowerCase(), s);
+  }
 }
+reindexSpeciesMaps();
 
 export function findSpecies(query: string): SpeciesData | undefined {
   const q = query.trim().toLowerCase();
@@ -67,6 +75,68 @@ export function speciesToSet(s: SpeciesData, id: string, extras?: Partial<Pokemo
     confidence: 1,
     ...extras,
   };
+}
+
+
+/** Generated record shape from `public/data/pokemon.json` (VGC schema). */
+export interface GeneratedPokemonRecord {
+  showdownId: string;
+  pokeapiId: number;
+  speciesKey: string;
+  formKey: string;
+  names: { en: string | null; 'zh-Hant': string | null; ja: string | null };
+  formNames?: { en: string | null; 'zh-Hant': string | null; ja: string | null };
+  types: string[];
+  baseStats: Stats;
+  abilities: string[];
+  championsLegal?: boolean;
+}
+
+function enTypeToZh(t: string): PokemonType {
+  const id = t.toLowerCase() as TypeIconId;
+  return TYPE_ID_TO_ZH[id] ?? '一般';
+}
+
+function displayNameZh(rec: GeneratedPokemonRecord): string {
+  return rec.names['zh-Hant'] || rec.names.en || rec.showdownId;
+}
+
+function recordToSpecies(rec: GeneratedPokemonRecord): SpeciesData {
+  return {
+    key: rec.showdownId,
+    nameZh: displayNameZh(rec),
+    nameEn: rec.names.en || rec.showdownId,
+    types: rec.types.map(enTypeToZh),
+    baseStats: { ...rec.baseStats },
+  };
+}
+
+/**
+ * Load `public/data/pokemon.json` and overlay SPECIES_DB (繁中 display names + classic base stats).
+ * Failures leave offline stubs intact.
+ */
+export async function loadGeneratedSpeciesData(
+  url = `${import.meta.env.BASE_URL}data/pokemon.json`,
+): Promise<number> {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return 0;
+    const rows = (await res.json()) as GeneratedPokemonRecord[];
+    if (!Array.isArray(rows)) return 0;
+    let n = 0;
+    for (const rec of rows) {
+      if (!rec?.showdownId) continue;
+      const next = recordToSpecies(rec);
+      const idx = SPECIES_DB.findIndex((s) => s.key === next.key);
+      if (idx >= 0) SPECIES_DB[idx] = { ...SPECIES_DB[idx], ...next };
+      else SPECIES_DB.push(next);
+      n += 1;
+    }
+    reindexSpeciesMaps();
+    return n;
+  } catch {
+    return 0;
+  }
 }
 
 export const SAMPLE_MY_TEAM_KEYS = [

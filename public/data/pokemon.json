@@ -1,0 +1,199 @@
+[
+  {
+    "showdownId": "noivern",
+    "pokeapiId": 715,
+    "speciesKey": "noivern",
+    "formKey": "noivern",
+    "names": {
+      "en": "Noivern",
+      "zh-Hant": "音波龍",
+      "ja": "オンバーン"
+    },
+    "formNames": {
+      "en": null,
+      "zh-Hant": null,
+      "ja": null
+    },
+    "types": [
+      "flying",
+      "dragon"
+    ],
+    "baseStats": {
+      "hp": 85,
+      "atk": 70,
+      "def": 80,
+      "spa": 97,
+      "spd": 80,
+      "spe": 123
+    },
+    "abilities": [
+      "frisk",
+      "infiltrator",
+      "telepathy"
+    ],
+    "championsLegal": true
+  },
+  {
+    "showdownId": "lycanroc",
+    "pokeapiId": 745,
+    "speciesKey": "lycanroc",
+    "formKey": "lycanroc-midday",
+    "names": {
+      "en": "Lycanroc",
+      "zh-Hant": "鬃岩狼人",
+      "ja": "ルガルガン"
+    },
+    "formNames": {
+      "en": "Midday Form",
+      "zh-Hant": "白晝的樣子",
+      "ja": "まひるのすがた"
+    },
+    "types": [
+      "rock"
+    ],
+    "baseStats": {
+      "hp": 75,
+      "atk": 115,
+      "def": 65,
+      "spa": 55,
+      "spd": 65,
+      "spe": 112
+    },
+    "abilities": [
+      "keen-eye",
+      "sand-rush",
+      "steadfast"
+    ],
+    "championsLegal": true
+  },
+  {
+    "showdownId": "politoed",
+    "pokeapiId": 186,
+    "speciesKey": "politoed",
+    "formKey": "politoed",
+    "names": {
+      "en": "Politoed",
+      "zh-Hant": "蚊香蛙皇",
+      "ja": "ニョロトノ"
+    },
+    "formNames": {
+      "en": null,
+      "zh-Hant": null,
+      "ja": null
+    },
+    "types": [
+      "water"
+    ],
+    "baseStats": {
+      "hp": 90,
+      "atk": 75,
+      "def": 75,
+      "spa": 90,
+      "spd": 100,
+      "spe": 70
+    },
+    "abilities": [
+      "water-absorb",
+      "damp",
+      "drizzle"
+    ],
+    "championsLegal": true
+  },
+  {
+    "showdownId": "rotom",
+    "pokeapiId": 479,
+    "speciesKey": "rotom",
+    "formKey": "rotom",
+    "names": {
+      "en": "Rotom",
+      "zh-Hant": "洛托姆",
+      "ja": "ロトム"
+    },
+    "formNames": {
+      "en": "Rotom",
+      "zh-Hant": "洛托姆的樣子",
+      "ja": "ロトムのすがた"
+    },
+    "types": [
+      "electric",
+      "ghost"
+    ],
+    "baseStats": {
+      "hp": 50,
+      "atk": 50,
+      "def": 77,
+      "spa": 95,
+      "spd": 77,
+      "spe": 91
+    },
+    "abilities": [
+      "levitate"
+    ],
+    "championsLegal": true
+  },
+  {
+    "showdownId": "kangaskhan",
+    "pokeapiId": 115,
+    "speciesKey": "kangaskhan",
+    "formKey": "kangaskhan",
+    "names": {
+      "en": "Kangaskhan",
+      "zh-Hant": "袋獸",
+      "ja": "ガルーラ"
+    },
+    "formNames": {
+      "en": null,
+      "zh-Hant": null,
+      "ja": null
+    },
+    "types": [
+      "normal"
+    ],
+    "baseStats": {
+      "hp": 105,
+      "atk": 95,
+      "def": 80,
+      "spa": 40,
+      "spd": 80,
+      "spe": 90
+    },
+    "abilities": [
+      "early-bird",
+      "scrappy",
+      "inner-focus"
+    ],
+    "championsLegal": true
+  },
+  {
+    "showdownId": "hippowdon",
+    "pokeapiId": 450,
+    "speciesKey": "hippowdon",
+    "formKey": "hippowdon",
+    "names": {
+      "en": "Hippowdon",
+      "zh-Hant": "河馬獸",
+      "ja": "カバルドン"
+    },
+    "formNames": {
+      "en": null,
+      "zh-Hant": null,
+      "ja": null
+    },
+    "types": [
+      "ground"
+    ],
+    "baseStats": {
+      "hp": 108,
+      "atk": 112,
+      "def": 118,
+      "spa": 68,
+      "spd": 72,
+      "spe": 47
+    },
+    "abilities": [
+      "sand-stream",
+      "sand-force"
+    ],
+    "championsLegal": true
+  }
+]

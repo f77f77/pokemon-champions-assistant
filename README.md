@@ -139,3 +139,46 @@ python scripts/match-seed-templates.py
 
 Results: `docs/match-seed-results.md`
 
+## Pokémon data JSON (PokéAPI + CBD allowlist)
+
+Offline species / move tables live under `data/` (mirrored to `public/data/` for the web app):
+
+| File | Contents |
+|------|--------|
+| `data/allowlist.json` | Champions `showdownId` allowlist (start small; expand here) |
+| `data/pokemon.json` | One record per form: names `en` / `zh-Hant` / `ja`, classic base stats, types, abilities |
+| `data/moves.json` | Moves referenced by allowlisted Pokémon (localized names + combat fields) |
+| `data/meta.json` | `schemaVersion`, `generatedAt`, `sources`, `pokemonCount`, `movesCount` |
+
+Locale keys are exactly `en` / `zh-Hant` / `ja` (PokéAPI `zh-hant` ‒ `zh-Hant`). Base stats are **classic PokéAPI** values, not CBD screen-scaled numbers. See `assets/CREDITS.md`.
+
+### Expand the allowlist
+
+1. Edit `data/allowlist.json` ‒ add Showdown / CBD ids (e.g. `"landorus-therian"`).
+2. Regenerate locally or via Actions (below).
+3. Prefer small batches; the build script rate-limits PokéAPI / CBD.
+
+Form mapping notes (best-effort): `lycanroc` ‒ lycanroc-midday; `rotom` ‒ base form. Override map lives in `scripts/build-pokemon-data.mjs` (`SHIWDOWN_OVERRIDES`).
+
+### Run locally
+
+```bash
+npm run build:pokemon-data
+# or
+node scripts/build-pokemon-data.mjs
+node scripts/build-pokemon-data.mjs --allowlist=data/allowlist.json
+node scripts/build-pokemon-data.mjs --dry-run
+```
+
+Writes both `data/*` and `public/data/*`. The app loads `public/data/pokemon.json` on boot (`loadGeneratedSpeciesData`) to overlay Traditional Chinese display names / stats onto `SPECIES_DB` stubs.
+
+### GitHub Actions
+
+Workflow: `.github/workflows/build-pokemon-data.yml`
+
+- Triggers: `workflow_dispatch` + weekly cron
+- Runs `node scripts/build-pokemon-data.mjs`
+- Uploads a `pokemon-data` artifact
+- Commits updated JSON to `main` as `github-actions[bot]` when `contents: write` is allowed
+
+If the commit step fails (branch protection / missing permission), download the artifact and copy into `data/` + `public/data/` manually.
