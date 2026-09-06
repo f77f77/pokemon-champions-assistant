@@ -45,6 +45,8 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [fineTune, setFineTune] = useState<RoiFineTune>(() => loadFineTune());
   const [debugOverlay, setDebugOverlay] = useState(() => loadDebugOverlay());
+  /** 速度軸對照用：目前選中的我方隊員 index */
+  const [selectedAllyIndex, setSelectedAllyIndex] = useState<number | null>(null);
 
   const panelPreview = useMemo(() => {
     const l = ENEMY_PANEL_DEFAULT.left + fineTune.dLeft;
@@ -56,6 +58,17 @@ export default function App() {
 
   const onSpeedChange = useCallback((index: number, speed: number) => {
     setMyTeam((prev) => prev.map((p, i) => (i === index ? { ...p, speed } : p)));
+  }, []);
+
+  const onSelectAlly = useCallback((index: number) => {
+    setSelectedAllyIndex((prev) => (prev === index ? null : index));
+  }, []);
+
+  const onMyTeamChange = useCallback((team: PokemonSet[]) => {
+    setMyTeam(team);
+    setSelectedAllyIndex((prev) =>
+      prev != null && prev >= 0 && prev < team.length ? prev : null,
+    );
   }, []);
 
   const onSpeciesOverride = useCallback(async (index: number, speciesKey: string) => {
@@ -252,7 +265,13 @@ export default function App() {
       </header>
 
       <main className="layout">
-        <TeamPanel team={myTeam} onTeamChange={setMyTeam} onSpeedChange={onSpeedChange} />
+        <TeamPanel
+          team={myTeam}
+          onTeamChange={onMyTeamChange}
+          onSpeedChange={onSpeedChange}
+          selectedIndex={selectedAllyIndex}
+          onSelectAlly={onSelectAlly}
+        />
         <div className="layout__center">
           <CapturePanel
             busy={busy}
@@ -262,7 +281,7 @@ export default function App() {
             fineTune={fineTune}
             debugOverlay={debugOverlay}
           />
-          <SpeedAxis myTeam={myTeam} enemyTeam={enemyTeam} />
+          <SpeedAxis myTeam={myTeam} enemyTeam={enemyTeam} selectedAllyIndex={selectedAllyIndex} />
         </div>
         <EnemyPanel team={enemyTeam} onSpeciesOverride={onSpeciesOverride} />
       </main>

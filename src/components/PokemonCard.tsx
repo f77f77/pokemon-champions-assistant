@@ -18,6 +18,9 @@ interface Props {
   onSpeciesOverride?: (name: string) => void;
   onSpeedChange?: (speed: number) => void;
   speciesOptions?: { key: string; label: string }[];
+  /** 我方卡片：是否為速度軸選中對象 */
+  selected?: boolean;
+  onSelect?: () => void;
 }
 
 function TypeBadge({ type, size = 'md' }: { type: PokemonType | string; size?: 'sm' | 'md' }) {
@@ -38,13 +41,41 @@ function TypeBadge({ type, size = 'md' }: { type: PokemonType | string; size?: '
   );
 }
 
-export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange, speciesOptions }: Props) {
+export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange, speciesOptions, selected, onSelect }: Props) {
   const stats = calcAllStats(pokemon.baseStats);
   const maxStat = Math.max(150, ...Object.values(pokemon.baseStats));
   const matchups = variant === 'enemy' && pokemon.types.length ? defensiveMatchups(pokemon.types) : null;
 
+  const selectable = variant === 'my' && !!onSelect;
+  const cardClass = [
+    'pkmn-card',
+    `pkmn-card--${variant}`,
+    pokemon.identified ? '' : 'is-unidentified',
+    selected ? 'is-selected' : '',
+    selectable ? 'is-selectable' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <article className={`pkmn-card pkmn-card--${variant} ${pokemon.identified ? '' : 'is-unidentified'}`}>
+    <article
+      className={cardClass}
+      onClick={selectable ? onSelect : undefined}
+      onKeyDown={
+        selectable
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelect?.();
+              }
+            }
+          : undefined
+      }
+      role={selectable ? 'button' : undefined}
+      tabIndex={selectable ? 0 : undefined}
+      aria-pressed={selectable ? !!selected : undefined}
+      title={selectable ? (selected ? '取消選取（速度軸）' : '選取以對照速度軸') : undefined}
+    >
       <header className="pkmn-card__header">
         <div className="pkmn-card__sprite" aria-hidden>
           {pokemon.thumbnailDataUrl ? (
@@ -109,7 +140,7 @@ export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange
       </div>
 
       {variant === 'my' && onSpeedChange && (
-        <label className="pkmn-card__speed-input">
+        <label className="pkmn-card__speed-input" onClick={(e) => e.stopPropagation()}>
           Spe 實值
           <input
             type="number"
@@ -118,6 +149,7 @@ export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange
             value={pokemon.speed || ''}
             placeholder="手填"
             onChange={(e) => onSpeedChange(Number(e.target.value) || 0)}
+            onClick={(e) => e.stopPropagation()}
           />
         </label>
       )}

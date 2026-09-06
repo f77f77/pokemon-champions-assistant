@@ -7,9 +7,11 @@ interface Props {
   team: PokemonSet[];
   onTeamChange: (team: PokemonSet[]) => void;
   onSpeedChange: (index: number, speed: number) => void;
+  selectedIndex: number | null;
+  onSelectAlly: (index: number) => void;
 }
 
-export function TeamPanel({ team, onTeamChange, onSpeedChange }: Props) {
+export function TeamPanel({ team, onTeamChange, onSpeedChange, selectedIndex, onSelectAlly }: Props) {
   const [paste, setPaste] = useState(DEMO_SHOWDOWN_PASTE);
   const [open, setOpen] = useState(false);
 
@@ -45,12 +47,15 @@ export function TeamPanel({ team, onTeamChange, onSpeedChange }: Props) {
           </div>
         </div>
       )}
+      <p className="panel__hint panel__hint--inline">點選卡片以對照速度軸</p>
       <div className="panel__cards">
         {team.map((p, i) => (
           <PokemonCard
             key={p.id}
             pokemon={p}
             variant="my"
+            selected={selectedIndex === i}
+            onSelect={() => onSelectAlly(i)}
             onSpeedChange={(spe) => onSpeedChange(i, spe)}
           />
         ))}

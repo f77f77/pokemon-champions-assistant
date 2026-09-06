@@ -130,6 +130,12 @@ button, input, select, textarea {
 }
 .pkmn-card--enemy { background: var(--bg-card-enemy); }
 .pkmn-card.is-unidentified { opacity: 0.85; border-style: dashed; }
+.pkmn-card.is-selectable { cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+.pkmn-card.is-selectable:hover { border-color: #4a6b2a; }
+.pkmn-card.is-selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 12px rgba(182, 255, 74, 0.25);
+}
 .pkmn-card__header { display: flex; gap: 0.5rem; align-items: flex-start; }
 .pkmn-card__sprite {
   width: 42px; height: 42px; border-radius: 8px;
@@ -278,6 +284,42 @@ button, input, select, textarea {
 .speed-divider {
   margin: 0.55rem 0 0.35rem; font-size: 0.75rem; color: var(--accent); border-top: 1px dashed var(--border);
   padding-top: 0.35rem;
+}
+.speed-row--selected-ally {
+  margin: 0.45rem 0;
+  padding: 0.3rem 0.25rem;
+  border-radius: 8px;
+  background: rgba(182, 255, 74, 0.08);
+  border: 1px solid rgba(182, 255, 74, 0.35);
+  outline: 1px dashed rgba(182, 255, 74, 0.45);
+  outline-offset: 1px;
+}
+.speed-row--selected-ally .speed-row__label {
+  color: var(--accent);
+  font-weight: 600;
+}
+.speed-row--selected-ally .speed-row__track {
+  border-color: rgba(182, 255, 74, 0.45);
+  background: #12180e;
+}
+.speed-row--selected-ally .speed-row__value {
+  color: var(--accent);
+  font-weight: 600;
+}
+.speed-ally-prompt {
+  margin-top: 0.45rem;
+  padding: 0.45rem 0.6rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--accent);
+  border: 1px dashed rgba(182, 255, 74, 0.4);
+  border-radius: 8px;
+  background: rgba(182, 255, 74, 0.06);
+}
+.panel__hint--inline {
+  margin: 0 0 0.4rem;
+  font-size: 0.72rem;
+  color: var(--muted);
 }
 
 .app-footer {
