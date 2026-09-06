@@ -156,8 +156,34 @@ button, input, select, textarea {
 }
 
 .type-badge {
-  display: inline-block; min-width: 2.2rem; text-align: center;
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  min-width: 2.2rem; text-align: center;
   font-size: 0.65rem; border-radius: 4px; padding: 0.1rem 0.25rem; color: #111;
+}
+.type-badge--icon {
+  background: transparent;
+  color: var(--text);
+  padding: 0;
+  min-width: 0;
+}
+.type-badge__img {
+  width: 22px; height: 22px; object-fit: contain; display: block;
+  filter: drop-shadow(0 0 1px rgba(0,0,0,0.6));
+}
+.type-badge--sm .type-badge__img { width: 16px; height: 16px; }
+.type-badge__label {
+  font-size: 0.62rem; color: var(--muted); line-height: 1;
+}
+.type-dot__img {
+  width: 14px; height: 14px; object-fit: contain; display: block; margin: 0 auto;
+  opacity: 0.95;
+}
+.move-btn__main {
+  display: inline-flex; align-items: center; gap: 0.3rem; min-width: 0;
+}
+.move-btn__type-icon {
+  width: 16px; height: 16px; object-fit: contain; flex-shrink: 0;
+  filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
 }
 
 .stat-row { display: grid; grid-template-columns: 1.4rem 1fr auto; gap: 0.35rem; align-items: center; font-size: 0.72rem; }

@@ -1,5 +1,6 @@
-import type { PokemonSet, StatKey } from '../types';
+import type { PokemonSet, PokemonType, StatKey } from '../types';
 import { ALL_TYPES, TYPE_COLORS, defensiveMatchups, matchupClass } from '../lib/typeChart';
+import { typeIconUrl } from '../lib/typeIcons';
 import { calcAllStats } from '../lib/speedCalc';
 
 const STAT_LABELS: { key: StatKey; label: string }[] = [
@@ -17,6 +18,24 @@ interface Props {
   onSpeciesOverride?: (name: string) => void;
   onSpeedChange?: (speed: number) => void;
   speciesOptions?: { key: string; label: string }[];
+}
+
+function TypeBadge({ type, size = 'md' }: { type: PokemonType | string; size?: 'sm' | 'md' }) {
+  const url = typeIconUrl(type);
+  const color = TYPE_COLORS[type as PokemonType];
+  if (url) {
+    return (
+      <span className={`type-badge type-badge--icon type-badge--${size}`} title={String(type)}>
+        <img src={url} alt={String(type)} className="type-badge__img" />
+        <span className="type-badge__label">{type}</span>
+      </span>
+    );
+  }
+  return (
+    <span className="type-badge" style={{ background: color || '#666' }}>
+      {type}
+    </span>
+  );
 }
 
 export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange, speciesOptions }: Props) {
@@ -66,9 +85,7 @@ export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange
         </div>
         <div className="pkmn-card__types">
           {pokemon.types.map((t) => (
-            <span key={t} className="type-badge" style={{ background: TYPE_COLORS[t] }}>
-              {t}
-            </span>
+            <TypeBadge key={t} type={t} />
           ))}
         </div>
       </header>
@@ -109,9 +126,10 @@ export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange
         <div className="type-grid" title="屬性抗性（離線）">
           {ALL_TYPES.map((t) => {
             const m = matchups[t];
+            const icon = typeIconUrl(t);
             return (
               <span key={t} className={`type-dot type-dot--${matchupClass(m)}`} title={`${t}: ×${m}`}>
-                {t.slice(0, 1)}
+                {icon ? <img src={icon} alt={t} className="type-dot__img" /> : t.slice(0, 1)}
               </span>
             );
           })}
@@ -119,17 +137,25 @@ export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange
       )}
 
       <div className={`move-grid ${variant === "enemy" ? "move-grid--six" : ""}`}>
-        {pokemon.moves.slice(0, variant === "enemy" ? 6 : 4).map((mv, i) => (
-          <button
-            key={i}
-            type="button"
-            className="move-btn"
-            style={{ borderColor: TYPE_COLORS[(mv.type as keyof typeof TYPE_COLORS)] || '#666' }}
-          >
-            <span>{mv.name}</span>
-            {mv.pp && <small>{mv.pp}</small>}
-          </button>
-        ))}
+        {pokemon.moves.slice(0, variant === "enemy" ? 6 : 4).map((mv, i) => {
+          const moveIcon = typeIconUrl(mv.type);
+          return (
+            <button
+              key={i}
+              type="button"
+              className="move-btn"
+              style={{ borderColor: TYPE_COLORS[(mv.type as keyof typeof TYPE_COLORS)] || '#666' }}
+            >
+              <span className="move-btn__main">
+                {moveIcon && (
+                  <img src={moveIcon} alt={String(mv.type)} className="move-btn__type-icon" title={String(mv.type)} />
+                )}
+                <span>{mv.name}</span>
+              </span>
+              {mv.pp && <small>{mv.pp}</small>}
+            </button>
+          );
+        })}
       </div>
     </article>
   );

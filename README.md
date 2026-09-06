@@ -102,6 +102,10 @@ When VGC provides an authorized Team Preview source screenshot:
 
 Acceptance: load test fixture -> recognize enemy team -> 6 slots should hit seed templates on figure 2.
 
+## Type / Tera icons
+
+18 Traditional Chinese type icons live in `public/types/` with stable English filenames (`fire.png`, `water.png`, …). Mapping (繁中 ↔ id ↔ URL) is in `src/lib/typeIcons.ts` via `import.meta.env.BASE_URL + 'types/{id}.png'`. PokemonCard species badges and move buttons (TeamPanel / EnemyPanel) render these images alongside 繁中 labels. ROI / recognize are unchanged.
+
 ## Layout
 
 1. Left my team / 2. Capture preview / 3. Speed axis / 4. Enemy panel
