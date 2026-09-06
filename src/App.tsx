@@ -7,7 +7,7 @@ import { emptySlot, type PokemonSet } from './types';
 import { SAMPLE_MY_TEAM_KEYS, findSpecies, speciesToSet } from './lib/species';
 import { calcStat } from './lib/speedCalc';
 import {
-  recognizeEnemyTeam,
+  recognizeEnemyTeamFromCanvas,
   CONFIDENCE_THRESHOLD,
   loadFineTune,
   saveFineTune,
@@ -41,7 +41,7 @@ function clampTune(v: number): number {
 export default function App() {
   const [myTeam, setMyTeam] = useState<PokemonSet[]>(() => buildDemoMyTeam());
   const [enemyTeam, setEnemyTeam] = useState<PokemonSet[]>(() => buildEmptyEnemy());
-  const [status, setStatus] = useState('就緒 — 請連接 GC551／OBS 虛擬鏡頭或匯入我方隊伍');
+  const [status, setStatus] = useState('就緒 — 請連接 GC551／OBS、載入靜態選隊圖，或匯入我方隊伍');
   const [busy, setBusy] = useState(false);
   const [fineTune, setFineTune] = useState<RoiFineTune>(() => loadFineTune());
   const [debugOverlay, setDebugOverlay] = useState(() => loadDebugOverlay());
@@ -115,11 +115,11 @@ export default function App() {
   }, []);
 
   const onRecognize = useCallback(
-    async (video: HTMLVideoElement) => {
+    async (canvas: HTMLCanvasElement) => {
       setBusy(true);
       setStatus('辨認中… 擷取單幀並裁切右側 6 縮圖');
       try {
-        const results = await recognizeEnemyTeam(video, fineTune);
+        const results = await recognizeEnemyTeamFromCanvas(canvas, fineTune);
         const next: PokemonSet[] = [];
         for (let i = 0; i < 6; i++) {
           const r = results[i];

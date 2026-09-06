@@ -193,7 +193,21 @@ button, input, select, textarea {
   position: relative; flex: 1; min-height: 220px;
   background: #07090f; border-radius: 10px; overflow: hidden; border: 1px solid var(--border);
 }
-.capture-preview__video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
+.capture-preview__video,
+.capture-preview__still {
+  width: 100%; height: 100%; object-fit: contain; display: block; background: #000;
+}
+.capture-preview__still { position: absolute; inset: 0; z-index: 1; }
+.capture-preview.is-dragover {
+  outline: 2px dashed var(--accent);
+  outline-offset: -4px;
+}
+.capture-preview__drop-hint {
+  position: absolute; inset: 0; z-index: 5;
+  display: grid; place-content: center;
+  background: rgba(11, 13, 18, 0.72);
+  color: var(--accent); font-weight: 600; pointer-events: none;
+}
 .capture-preview__placeholder {
   position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 0.25rem;
 }

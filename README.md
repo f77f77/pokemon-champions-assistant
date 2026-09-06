@@ -13,6 +13,10 @@ npm run electron:dev
 npm run typecheck
 ```
 
+## Capture device / static Team Preview
+
+Without GC551: use 「載入靜態選隊圖」 (or drag-drop onto the 16:9 preview) to load an official select-screen screenshot. Same contentRect → ROI → thumb → recognize pipeline + green/yellow debug overlay. Still image overrides the preview until you re-open the camera.
+
 ## Capture device
 
 1. Plug in AverMedia GC551 (normal videoinput)
