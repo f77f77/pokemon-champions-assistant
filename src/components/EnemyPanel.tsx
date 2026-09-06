@@ -1,15 +1,18 @@
 import type { PokemonSet } from '../types';
 import { PokemonCard } from './PokemonCard';
-import { SPECIES_DB } from '../lib/species';
-import { getMovesSourceLabel } from '../lib/movesCache';
+import { SPECIES_DB, formatSpeciesLabel } from '../lib/species';
 
 interface Props {
   team: PokemonSet[];
   onSpeciesOverride: (index: number, speciesKey: string) => void;
+  onFormChange?: (index: number, formKey: string) => void;
 }
 
-export function EnemyPanel({ team, onSpeciesOverride }: Props) {
-  const options = SPECIES_DB.map((s) => ({ key: s.key, label: s.nameZh }));
+export function EnemyPanel({ team, onSpeciesOverride, onFormChange }: Props) {
+  const options = SPECIES_DB.map((s) => ({
+    key: s.key,
+    label: formatSpeciesLabel(s),
+  }));
 
   return (
     <section className="panel panel--enemy">
@@ -25,7 +28,7 @@ export function EnemyPanel({ team, onSpeciesOverride }: Props) {
             variant="enemy"
             speciesOptions={options}
             onSpeciesOverride={(key) => onSpeciesOverride(i, key)}
-            movesSourceLabel={p.speciesKey ? getMovesSourceLabel(p.speciesKey) : null}
+            onFormChange={onFormChange ? (fk) => onFormChange(i, fk) : undefined}
           />
         ))}
       </div>

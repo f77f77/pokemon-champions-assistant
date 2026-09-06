@@ -1,14 +1,310 @@
 {
-  "description": "Champions / Showdown IDs to include when generating data/pokemon.json. Expand this list, then run: node scripts/build-pokemon-data.mjs. Usage % comes from CBD Doubles (2v2 / 6-pick-4), not invented learnsets.",
+  "description": "Champions / Showdown IDs — top 50 by CBD Doubles (Current) usage position. Expand or refresh via: node scripts/build-pokemon-data.mjs --update-allowlist --top=50. Usage % from CBD Doubles (2v2 / 6-pick-4).",
+  "source": "https://championsbattledata.com/api/index → summary.battleSummary.Current.Doubles.position",
+  "format": "Doubles",
+  "topN": 50,
+  "ranked": [
+    {
+      "rank": 1,
+      "showdownId": "kingambit",
+      "name": "Kingambit"
+    },
+    {
+      "rank": 2,
+      "showdownId": "garchomp",
+      "name": "Garchomp"
+    },
+    {
+      "rank": 3,
+      "showdownId": "sneasler",
+      "name": "Sneasler"
+    },
+    {
+      "rank": 4,
+      "showdownId": "basculegion",
+      "name": "Basculegion Male"
+    },
+    {
+      "rank": 5,
+      "showdownId": "whimsicott",
+      "name": "Whimsicott"
+    },
+    {
+      "rank": 6,
+      "showdownId": "sinistcha",
+      "name": "Sinistcha"
+    },
+    {
+      "rank": 7,
+      "showdownId": "incineroar",
+      "name": "Incineroar"
+    },
+    {
+      "rank": 8,
+      "showdownId": "farigiraf",
+      "name": "Farigiraf"
+    },
+    {
+      "rank": 9,
+      "showdownId": "charizard",
+      "name": "Charizard"
+    },
+    {
+      "rank": 10,
+      "showdownId": "staraptor",
+      "name": "Staraptor"
+    },
+    {
+      "rank": 11,
+      "showdownId": "sylveon",
+      "name": "Sylveon"
+    },
+    {
+      "rank": 12,
+      "showdownId": "raichu",
+      "name": "Raichu"
+    },
+    {
+      "rank": 13,
+      "showdownId": "archaludon",
+      "name": "Archaludon"
+    },
+    {
+      "rank": 14,
+      "showdownId": "tyranitar",
+      "name": "Tyranitar"
+    },
+    {
+      "rank": 15,
+      "showdownId": "pelipper",
+      "name": "Pelipper"
+    },
+    {
+      "rank": 16,
+      "showdownId": "milotic",
+      "name": "Milotic"
+    },
+    {
+      "rank": 17,
+      "showdownId": "aerodactyl",
+      "name": "Aerodactyl"
+    },
+    {
+      "rank": 18,
+      "showdownId": "venusaur",
+      "name": "Venusaur"
+    },
+    {
+      "rank": 19,
+      "showdownId": "froslass",
+      "name": "Froslass"
+    },
+    {
+      "rank": 20,
+      "showdownId": "swampert",
+      "name": "Swampert"
+    },
+    {
+      "rank": 21,
+      "showdownId": "delphox",
+      "name": "Delphox"
+    },
+    {
+      "rank": 22,
+      "showdownId": "dragonite",
+      "name": "Dragonite"
+    },
+    {
+      "rank": 23,
+      "showdownId": "gholdengo",
+      "name": "Gholdengo"
+    },
+    {
+      "rank": 24,
+      "showdownId": "grimmsnarl",
+      "name": "Grimmsnarl"
+    },
+    {
+      "rank": 25,
+      "showdownId": "torkoal",
+      "name": "Torkoal"
+    },
+    {
+      "rank": 26,
+      "showdownId": "blastoise",
+      "name": "Blastoise"
+    },
+    {
+      "rank": 27,
+      "showdownId": "floette",
+      "name": "Floette"
+    },
+    {
+      "rank": 28,
+      "showdownId": "mausholdfour",
+      "name": "Maushold Family of Four"
+    },
+    {
+      "rank": 29,
+      "showdownId": "sableye",
+      "name": "Sableye"
+    },
+    {
+      "rank": 30,
+      "showdownId": "ninetalesalola",
+      "name": "Alolan Ninetales"
+    },
+    {
+      "rank": 31,
+      "showdownId": "excadrill",
+      "name": "Excadrill"
+    },
+    {
+      "rank": 32,
+      "showdownId": "glimmora",
+      "name": "Glimmora"
+    },
+    {
+      "rank": 33,
+      "showdownId": "metagross",
+      "name": "Metagross"
+    },
+    {
+      "rank": 34,
+      "showdownId": "arcaninehisui",
+      "name": "Hisuian Arcanine"
+    },
+    {
+      "rank": 35,
+      "showdownId": "talonflame",
+      "name": "Talonflame"
+    },
+    {
+      "rank": 36,
+      "showdownId": "gengar",
+      "name": "Gengar"
+    },
+    {
+      "rank": 37,
+      "showdownId": "mawile",
+      "name": "Mawile"
+    },
+    {
+      "rank": 38,
+      "showdownId": "scovillain",
+      "name": "Scovillain"
+    },
+    {
+      "rank": 39,
+      "showdownId": "scizor",
+      "name": "Scizor"
+    },
+    {
+      "rank": 40,
+      "showdownId": "politoed",
+      "name": "Politoed"
+    },
+    {
+      "rank": 41,
+      "showdownId": "annihilape",
+      "name": "Annihilape"
+    },
+    {
+      "rank": 42,
+      "showdownId": "rotomwash",
+      "name": "Rotom Wash"
+    },
+    {
+      "rank": 43,
+      "showdownId": "tsareena",
+      "name": "Tsareena"
+    },
+    {
+      "rank": 44,
+      "showdownId": "primarina",
+      "name": "Primarina"
+    },
+    {
+      "rank": 45,
+      "showdownId": "kangaskhan",
+      "name": "Kangaskhan"
+    },
+    {
+      "rank": 46,
+      "showdownId": "kommoo",
+      "name": "Kommo-o"
+    },
+    {
+      "rank": 47,
+      "showdownId": "corviknight",
+      "name": "Corviknight"
+    },
+    {
+      "rank": 48,
+      "showdownId": "gardevoir",
+      "name": "Gardevoir"
+    },
+    {
+      "rank": 49,
+      "showdownId": "meowscarada",
+      "name": "Meowscarada"
+    },
+    {
+      "rank": 50,
+      "showdownId": "blaziken",
+      "name": "Blaziken"
+    }
+  ],
   "showdownIds": [
-    "noivern",
-    "lycanroc",
-    "politoed",
-    "rotom",
-    "kangaskhan",
-    "hippowdon",
-    "incineroar",
+    "kingambit",
     "garchomp",
-    "pelipper"
+    "sneasler",
+    "basculegion",
+    "whimsicott",
+    "sinistcha",
+    "incineroar",
+    "farigiraf",
+    "charizard",
+    "staraptor",
+    "sylveon",
+    "raichu",
+    "archaludon",
+    "tyranitar",
+    "pelipper",
+    "milotic",
+    "aerodactyl",
+    "venusaur",
+    "froslass",
+    "swampert",
+    "delphox",
+    "dragonite",
+    "gholdengo",
+    "grimmsnarl",
+    "torkoal",
+    "blastoise",
+    "floette",
+    "mausholdfour",
+    "sableye",
+    "ninetalesalola",
+    "excadrill",
+    "glimmora",
+    "metagross",
+    "arcaninehisui",
+    "talonflame",
+    "gengar",
+    "mawile",
+    "scovillain",
+    "scizor",
+    "politoed",
+    "annihilape",
+    "rotomwash",
+    "tsareena",
+    "primarina",
+    "kangaskhan",
+    "kommoo",
+    "corviknight",
+    "gardevoir",
+    "meowscarada",
+    "blaziken"
   ]
 }

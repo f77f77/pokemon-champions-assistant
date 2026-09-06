@@ -1,5 +1,14 @@
-import type { PokemonSet, PokemonType, Stats } from '../types';
+import type { PokemonFormOption, PokemonSet, PokemonType, Stats } from '../types';
 import { TYPE_ID_TO_ZH, type TypeIconId } from './typeIcons';
+
+export interface SpeciesFormData {
+  showdownId: string;
+  formKey: string;
+  label: string;
+  types: PokemonType[];
+  baseStats: Stats;
+  isDefault?: boolean;
+}
 
 export interface SpeciesData {
   key: string;
@@ -7,33 +16,36 @@ export interface SpeciesData {
   nameEn: string;
   types: PokemonType[];
   baseStats: Stats;
+  nationalDex?: number | null;
+  formKey?: string;
+  formLabel?: string;
+  forms?: SpeciesFormData[];
 }
 
-/** 離線示範用種族資料（足夠 demo） */
+/** 離線示範用種族資料（足夠 demo；boot 時由 pokemon.json overlay） */
 export const SPECIES_DB: SpeciesData[] = [
-  { key: 'incineroar', nameZh: '熾焰咆哮虎', nameEn: 'Incineroar', types: ['火', '惡'], baseStats: { hp: 95, atk: 115, def: 90, spa: 80, spd: 90, spe: 60 } },
-  { key: 'rillaboom', nameZh: '轟擂金剛猩', nameEn: 'Rillaboom', types: ['草'], baseStats: { hp: 100, atk: 125, def: 90, spa: 60, spd: 70, spe: 85 } },
-  { key: 'urshifu-rapid-strike', nameZh: '武道熊師-連擊', nameEn: 'Urshifu-Rapid-Strike', types: ['格鬥', '水'], baseStats: { hp: 100, atk: 130, def: 100, spa: 63, spd: 60, spe: 97 } },
-  { key: 'flutter-mane', nameZh: '飄飄肥麵', nameEn: 'Flutter Mane', types: ['幽靈', '妖精'], baseStats: { hp: 55, atk: 55, def: 55, spa: 135, spd: 135, spe: 135 } },
-  { key: 'roaring-moon', nameZh: '轟鳴月', nameEn: 'Roaring Moon', types: ['龍', '惡'], baseStats: { hp: 105, atk: 139, def: 71, spa: 55, spd: 101, spe: 119 } },
-  { key: 'landorus-therian', nameZh: '土地雲-靈獸', nameEn: 'Landorus-Therian', types: ['地面', '飛行'], baseStats: { hp: 89, atk: 145, def: 90, spa: 105, spd: 80, spe: 91 } },
-  { key: 'miraidon', nameZh: '密勒頓', nameEn: 'Miraidon', types: ['電', '龍'], baseStats: { hp: 100, atk: 85, def: 100, spa: 135, spd: 115, spe: 135 } },
-  { key: 'koraidon', nameZh: '故勒頓', nameEn: 'Koraidon', types: ['格鬥', '龍'], baseStats: { hp: 100, atk: 135, def: 115, spa: 85, spd: 100, spe: 135 } },
-  { key: 'garchomp', nameZh: '烈咬陸鯊', nameEn: 'Garchomp', types: ['龍', '地面'], baseStats: { hp: 108, atk: 130, def: 95, spa: 80, spd: 85, spe: 102 } },
-  { key: 'amoonguss', nameZh: '敗露球菇', nameEn: 'Amoonguss', types: ['草', '毒'], baseStats: { hp: 114, atk: 85, def: 70, spa: 85, spd: 80, spe: 30 } },
-  { key: 'indeedee-f', nameZh: '愛管侍-雌', nameEn: 'Indeedee-F', types: ['超能力', '一般'], baseStats: { hp: 70, atk: 55, def: 65, spa: 95, spd: 105, spe: 85 } },
-  { key: 'tornadus', nameZh: '龍捲雲', nameEn: 'Tornadus', types: ['飛行'], baseStats: { hp: 79, atk: 115, def: 70, spa: 125, spd: 80, spe: 111 } },
-  { key: 'chien-pao', nameZh: '古劍豹', nameEn: 'Chien-Pao', types: ['惡', '冰'], baseStats: { hp: 80, atk: 120, def: 80, spa: 90, spd: 65, spe: 135 } },
-  { key: 'ting-lu', nameZh: '古鼎鹿', nameEn: 'Ting-Lu', types: ['惡', '地面'], baseStats: { hp: 155, atk: 110, def: 125, spa: 55, spd: 80, spe: 45 } },
-  { key: 'ogerpon-wellspring', nameZh: '厄詭椪-水井', nameEn: 'Ogerpon-Wellspring', types: ['草', '水'], baseStats: { hp: 80, atk: 120, def: 84, spa: 60, spd: 96, spe: 110 } },
-  { key: 'pelipper', nameZh: '大嘴鷗', nameEn: 'Pelipper', types: ['水', '飛行'], baseStats: { hp: 60, atk: 50, def: 100, spa: 95, spd: 70, spe: 65 } },
-  // Team Preview 種子模板（showdownId = key）；形態／Mega／色違日後另檔
-  { key: 'noivern', nameZh: '音波龍', nameEn: 'Noivern', types: ['飛行', '龍'], baseStats: { hp: 85, atk: 70, def: 80, spa: 97, spd: 80, spe: 123 } },
-  { key: 'lycanroc', nameZh: '鬃岩狼人', nameEn: 'Lycanroc', types: ['岩石'], baseStats: { hp: 75, atk: 115, def: 65, spa: 55, spd: 65, spe: 112 } }, // Midday / 白晝
-  { key: 'politoed', nameZh: '蚊香蛙皇', nameEn: 'Politoed', types: ['水'], baseStats: { hp: 90, atk: 75, def: 75, spa: 90, spd: 100, spe: 70 } },
-  { key: 'rotom', nameZh: '洛托姆', nameEn: 'Rotom', types: ['電', '幽靈'], baseStats: { hp: 50, atk: 50, def: 77, spa: 95, spd: 77, spe: 91 } }, // base form
-  { key: 'kangaskhan', nameZh: '袋獸', nameEn: 'Kangaskhan', types: ['一般'], baseStats: { hp: 105, atk: 95, def: 80, spa: 40, spd: 80, spe: 90 } },
-  { key: 'hippowdon', nameZh: '河馬獸', nameEn: 'Hippowdon', types: ['地面'], baseStats: { hp: 108, atk: 112, def: 118, spa: 68, spd: 72, spe: 47 } },
+  { key: 'incineroar', nameZh: '熾焰咆哮虎', nameEn: 'Incineroar', nationalDex: 727, types: ['火', '惡'], baseStats: { hp: 95, atk: 115, def: 90, spa: 80, spd: 90, spe: 60 } },
+  { key: 'rillaboom', nameZh: '轟擂金剛猩', nameEn: 'Rillaboom', nationalDex: 812, types: ['草'], baseStats: { hp: 100, atk: 125, def: 90, spa: 60, spd: 70, spe: 85 } },
+  { key: 'urshifu-rapid-strike', nameZh: '武道熊師-連擊', nameEn: 'Urshifu-Rapid-Strike', nationalDex: 892, types: ['格鬥', '水'], baseStats: { hp: 100, atk: 130, def: 100, spa: 63, spd: 60, spe: 97 } },
+  { key: 'flutter-mane', nameZh: '飄飄肥麵', nameEn: 'Flutter Mane', nationalDex: 1005, types: ['幽靈', '妖精'], baseStats: { hp: 55, atk: 55, def: 55, spa: 135, spd: 135, spe: 135 } },
+  { key: 'roaring-moon', nameZh: '轟鳴月', nameEn: 'Roaring Moon', nationalDex: 1005, types: ['龍', '惡'], baseStats: { hp: 105, atk: 139, def: 71, spa: 55, spd: 101, spe: 119 } },
+  { key: 'landorus-therian', nameZh: '土地雲-靈獸', nameEn: 'Landorus-Therian', nationalDex: 645, types: ['地面', '飛行'], baseStats: { hp: 89, atk: 145, def: 90, spa: 105, spd: 80, spe: 91 } },
+  { key: 'miraidon', nameZh: '密勒頓', nameEn: 'Miraidon', nationalDex: 1008, types: ['電', '龍'], baseStats: { hp: 100, atk: 85, def: 100, spa: 135, spd: 115, spe: 135 } },
+  { key: 'koraidon', nameZh: '故勒頓', nameEn: 'Koraidon', nationalDex: 1007, types: ['格鬥', '龍'], baseStats: { hp: 100, atk: 135, def: 115, spa: 85, spd: 100, spe: 135 } },
+  { key: 'garchomp', nameZh: '烈咬陸鯊', nameEn: 'Garchomp', nationalDex: 445, types: ['龍', '地面'], baseStats: { hp: 108, atk: 130, def: 95, spa: 80, spd: 85, spe: 102 } },
+  { key: 'amoonguss', nameZh: '敗露球菇', nameEn: 'Amoonguss', nationalDex: 591, types: ['草', '毒'], baseStats: { hp: 114, atk: 85, def: 70, spa: 85, spd: 80, spe: 30 } },
+  { key: 'indeedee-f', nameZh: '愛管侍-雌', nameEn: 'Indeedee-F', nationalDex: 876, types: ['超能力', '一般'], baseStats: { hp: 70, atk: 55, def: 65, spa: 95, spd: 105, spe: 85 } },
+  { key: 'tornadus', nameZh: '龍捲雲', nameEn: 'Tornadus', nationalDex: 641, types: ['飛行'], baseStats: { hp: 79, atk: 115, def: 70, spa: 125, spd: 80, spe: 111 } },
+  { key: 'chien-pao', nameZh: '古劍豹', nameEn: 'Chien-Pao', nationalDex: 1002, types: ['惡', '冰'], baseStats: { hp: 80, atk: 120, def: 80, spa: 90, spd: 65, spe: 135 } },
+  { key: 'ting-lu', nameZh: '古鼎鹿', nameEn: 'Ting-Lu', nationalDex: 1003, types: ['惡', '地面'], baseStats: { hp: 155, atk: 110, def: 125, spa: 55, spd: 80, spe: 45 } },
+  { key: 'ogerpon-wellspring', nameZh: '厄詭椪-水井', nameEn: 'Ogerpon-Wellspring', nationalDex: 1017, types: ['草', '水'], baseStats: { hp: 80, atk: 120, def: 84, spa: 60, spd: 96, spe: 110 } },
+  { key: 'pelipper', nameZh: '大嘴鷗', nameEn: 'Pelipper', nationalDex: 279, types: ['水', '飛行'], baseStats: { hp: 60, atk: 50, def: 100, spa: 95, spd: 70, spe: 65 } },
+  { key: 'noivern', nameZh: '音波龍', nameEn: 'Noivern', nationalDex: 715, types: ['飛行', '龍'], baseStats: { hp: 85, atk: 70, def: 80, spa: 97, spd: 80, spe: 123 } },
+  { key: 'lycanroc', nameZh: '鬃岩狼人', nameEn: 'Lycanroc', nationalDex: 745, formKey: 'lycanroc-midday', formLabel: '白晝的樣子', types: ['岩石'], baseStats: { hp: 75, atk: 115, def: 65, spa: 55, spd: 65, spe: 112 } },
+  { key: 'politoed', nameZh: '蚊香蛙皇', nameEn: 'Politoed', nationalDex: 186, types: ['水'], baseStats: { hp: 90, atk: 75, def: 75, spa: 90, spd: 100, spe: 70 } },
+  { key: 'rotom', nameZh: '洛托姆', nameEn: 'Rotom', nationalDex: 479, types: ['電', '幽靈'], baseStats: { hp: 50, atk: 50, def: 77, spa: 95, spd: 77, spe: 91 } },
+  { key: 'kangaskhan', nameZh: '袋獸', nameEn: 'Kangaskhan', nationalDex: 115, types: ['一般'], baseStats: { hp: 105, atk: 95, def: 80, spa: 40, spd: 80, spe: 90 } },
+  { key: 'hippowdon', nameZh: '河馬獸', nameEn: 'Hippowdon', nationalDex: 450, types: ['地面'], baseStats: { hp: 108, atk: 112, def: 118, spa: 68, spd: 72, spe: 47 } },
 ];
 
 const byKey = new Map<string, SpeciesData>();
@@ -57,14 +69,33 @@ export function findSpecies(query: string): SpeciesData | undefined {
   return byKey.get(q) ?? byName.get(q) ?? SPECIES_DB.find((s) => s.nameZh.includes(query) || s.nameEn.toLowerCase().includes(q));
 }
 
+export function formatSpeciesLabel(s: Pick<SpeciesData, 'nameZh' | 'nationalDex'> | Pick<PokemonSet, 'species' | 'nationalDex'>): string {
+  const name = 'nameZh' in s ? s.nameZh : s.species;
+  const dex = s.nationalDex;
+  if (dex != null && Number.isFinite(dex) && dex > 0) return `#${dex} ${name}`;
+  return name;
+}
+
 export function speciesToSet(s: SpeciesData, id: string, extras?: Partial<PokemonSet>): PokemonSet {
+  const forms: PokemonFormOption[] | undefined = s.forms?.map((f) => ({
+    showdownId: f.showdownId,
+    formKey: f.formKey,
+    label: f.label,
+    types: [...f.types],
+    baseStats: { ...f.baseStats },
+    isDefault: f.isDefault,
+  }));
   return {
     id,
     species: s.nameZh,
     speciesKey: s.key,
+    nationalDex: s.nationalDex ?? null,
     types: [...s.types],
     baseStats: { ...s.baseStats },
     speed: 0,
+    formKey: s.formKey,
+    formLabel: s.formLabel,
+    forms,
     moves: [
       { name: '—', type: s.types[0] ?? '一般' },
       { name: '—', type: s.types[1] ?? '一般' },
@@ -77,10 +108,34 @@ export function speciesToSet(s: SpeciesData, id: string, extras?: Partial<Pokemo
   };
 }
 
+/** Generated record shape from `public/data/pokemon.json` (VGC schema v2). */
+export interface GeneratedFormRecord {
+  showdownId: string;
+  pokeapiId?: number;
+  formKey: string;
+  formNames?: { en: string | null; 'zh-Hant': string | null; ja: string | null };
+  types: string[];
+  baseStats: Stats;
+  abilities?: string[];
+  isDefault?: boolean;
+  vgcDoublesMoves?: {
+    id: string;
+    nameEn: string;
+    usage: string | null;
+    rank?: number | null;
+  }[];
+  vgcDoublesMeta?: {
+    source?: string;
+    format?: string;
+    season?: string | null;
+    battleSource?: string | null;
+    label?: string;
+  } | null;
+}
 
-/** Generated record shape from `public/data/pokemon.json` (VGC schema). */
 export interface GeneratedPokemonRecord {
   showdownId: string;
+  nationalDex?: number | null;
   pokeapiId: number;
   speciesKey: string;
   formKey: string;
@@ -90,6 +145,7 @@ export interface GeneratedPokemonRecord {
   baseStats: Stats;
   abilities: string[];
   championsLegal?: boolean;
+  forms?: GeneratedFormRecord[];
   /** CBD VGC Doubles top moves (usage %); absent → UI 未載入 */
   vgcDoublesMoves?: {
     id: string;
@@ -115,13 +171,38 @@ function displayNameZh(rec: GeneratedPokemonRecord): string {
   return rec.names['zh-Hant'] || rec.names.en || rec.showdownId;
 }
 
+function formLabelOf(form: GeneratedFormRecord, fallbackSpecies: string): string {
+  return (
+    form.formNames?.['zh-Hant'] ||
+    form.formNames?.en ||
+    form.formKey ||
+    fallbackSpecies
+  );
+}
+
 function recordToSpecies(rec: GeneratedPokemonRecord): SpeciesData {
+  const forms: SpeciesFormData[] | undefined = Array.isArray(rec.forms)
+    ? rec.forms.map((f) => ({
+        showdownId: f.showdownId || rec.showdownId,
+        formKey: f.formKey,
+        label: formLabelOf(f, displayNameZh(rec)),
+        types: (f.types || []).map(enTypeToZh),
+        baseStats: { ...f.baseStats },
+        isDefault: f.isDefault,
+      }))
+    : undefined;
+  const formLabel =
+    rec.formNames?.['zh-Hant'] || rec.formNames?.en || undefined;
   return {
     key: rec.showdownId,
     nameZh: displayNameZh(rec),
     nameEn: rec.names.en || rec.showdownId,
+    nationalDex: rec.nationalDex ?? rec.pokeapiId ?? null,
+    formKey: rec.formKey,
+    formLabel: formLabel || undefined,
     types: rec.types.map(enTypeToZh),
     baseStats: { ...rec.baseStats },
+    forms,
   };
 }
 

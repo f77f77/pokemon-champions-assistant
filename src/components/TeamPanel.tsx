@@ -2,17 +2,24 @@ import { useState } from 'react';
 import type { PokemonSet } from '../types';
 import { PokemonCard } from './PokemonCard';
 import { DEMO_SHOWDOWN_PASTE, parseTeamImport } from '../lib/showdownPaste';
-import { getMovesSourceLabel } from '../lib/movesCache';
 
 interface Props {
   team: PokemonSet[];
   onTeamChange: (team: PokemonSet[]) => void;
   onSpeedChange: (index: number, speed: number) => void;
+  onFormChange?: (index: number, formKey: string) => void;
   selectedIndex: number | null;
   onSelectAlly: (index: number) => void;
 }
 
-export function TeamPanel({ team, onTeamChange, onSpeedChange, selectedIndex, onSelectAlly }: Props) {
+export function TeamPanel({
+  team,
+  onTeamChange,
+  onSpeedChange,
+  onFormChange,
+  selectedIndex,
+  onSelectAlly,
+}: Props) {
   const [paste, setPaste] = useState(DEMO_SHOWDOWN_PASTE);
   const [open, setOpen] = useState(false);
 
@@ -58,7 +65,7 @@ export function TeamPanel({ team, onTeamChange, onSpeedChange, selectedIndex, on
             selected={selectedIndex === i}
             onSelect={() => onSelectAlly(i)}
             onSpeedChange={(spe) => onSpeedChange(i, spe)}
-            movesSourceLabel={p.speciesKey ? getMovesSourceLabel(p.speciesKey) : null}
+            onFormChange={onFormChange ? (fk) => onFormChange(i, fk) : undefined}
           />
         ))}
       </div>

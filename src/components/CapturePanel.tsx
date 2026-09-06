@@ -18,6 +18,7 @@ import {
   thumbCssPercent,
   SLOT_COUNT,
   fixtureTeamPreviewUrl,
+  currentFixtureLabel,
   type RoiFineTune,
 } from '../lib/recognize';
 
@@ -112,7 +113,7 @@ export function CapturePanel({
     setError(null);
   }
 
-  /** 載入內建 圖二 Team Preview fixture（public/fixtures/team-preview.png） */
+  /** 載入內建 Team Preview fixtures（循環 test-1 → test-2 → team-preview） */
   function loadFixtureStill() {
     stopStream(streamRef.current);
     streamRef.current = null;
@@ -120,9 +121,11 @@ export function CapturePanel({
     setLive(false);
     revokeStill();
     // 非 blob URL，revokeStill 不會誤撤銷
-    setStillUrl(fixtureTeamPreviewUrl());
+    const label = currentFixtureLabel();
+    setStillUrl(fixtureTeamPreviewUrl(true));
     setStillReady(false);
     setError(null);
+    console.info('[fixtures] loaded', label);
   }
 
   async function connect() {
@@ -251,7 +254,7 @@ export function CapturePanel({
           className="btn btn--ghost"
           disabled={busy}
           onClick={loadFixtureStill}
-          title="載入 public/fixtures/team-preview.png（圖二）"
+          title="循環載入 public/fixtures/team-preview-test-1/2.png 與 team-preview.png"
         >
           載入測試圖
         </button>

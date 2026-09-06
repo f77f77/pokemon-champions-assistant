@@ -45,6 +45,29 @@ function clampTune(v: number): number {
   return Math.min(ROI_FINE_TUNE_MAX, Math.max(-ROI_FINE_TUNE_MAX, v));
 }
 
+async function applyFormToSet(prev: PokemonSet, formKey: string, moveCount: 4 | 6): Promise<PokemonSet> {
+  const form = prev.forms?.find((f) => f.formKey === formKey);
+  if (!form) return prev;
+  const movesRaw = await fetchTopMoves(form.showdownId);
+  // Fall back to species key / previous if form has no dedicated CBD row
+  const moves =
+    movesRaw.length > 0
+      ? movesRaw
+      : prev.speciesKey
+        ? await fetchTopMoves(prev.speciesKey)
+        : [];
+  const padded = moveCount === 4 ? top4ForCard(moves) : top6ForCard(moves);
+  return {
+    ...prev,
+    formKey: form.formKey,
+    formLabel: form.label,
+    types: [...form.types],
+    baseStats: { ...form.baseStats },
+    speed: calcStat(form.baseStats.spe, 31, 0, 50, 1),
+    moves: padded,
+  };
+}
+
 export default function App() {
   const [myTeam, setMyTeam] = useState<PokemonSet[]>(() =>
     SAMPLE_MY_TEAM_KEYS.map((key, i) => {
@@ -97,6 +120,34 @@ export default function App() {
     setSelectedAllyIndex((prev) =>
       prev != null && prev >= 0 && prev < team.length ? prev : null,
     );
+  }, []);
+
+  const onAllyFormChange = useCallback((index: number, formKey: string) => {
+    void (async () => {
+      let snapshot: PokemonSet | undefined;
+      setMyTeam((prev) => {
+        snapshot = prev[index];
+        return prev;
+      });
+      if (!snapshot) return;
+      const next = await applyFormToSet(snapshot, formKey, 4);
+      setMyTeam((prev) => prev.map((p, i) => (i === index ? next : p)));
+      setStatus(`已切換形態：${next.formLabel || formKey}（種族值／屬性／招式已更新）`);
+    })();
+  }, []);
+
+  const onEnemyFormChange = useCallback((index: number, formKey: string) => {
+    void (async () => {
+      let snapshot: PokemonSet | undefined;
+      setEnemyTeam((prev) => {
+        snapshot = prev[index];
+        return prev;
+      });
+      if (!snapshot) return;
+      const next = await applyFormToSet(snapshot, formKey, 6);
+      setEnemyTeam((prev) => prev.map((p, i) => (i === index ? next : p)));
+      setStatus(`敵方形態：${next.formLabel || formKey}`);
+    })();
   }, []);
 
   const onSpeciesOverride = useCallback(async (index: number, speciesKey: string) => {
@@ -217,10 +268,11 @@ export default function App() {
     setBusy(true);
     setStatus('正在生成對方隊伍（示範資料 + moves cache）…');
     try {
-      const keys = ['roaring-moon', 'chien-pao', 'miraidon', 'ting-lu', 'ogerpon-wellspring', 'pelipper'];
+      // Prefer allowlisted top Doubles species when present in SPECIES_DB
+      const keys = ['kingambit', 'garchomp', 'sneasler', 'basculegion', 'whimsicott', 'incineroar'];
       const next: PokemonSet[] = [];
       for (let i = 0; i < 6; i++) {
-        const sp = findSpecies(keys[i])!;
+        const sp = findSpecies(keys[i]) ?? findSpecies('pelipper')!;
         const moves = top6ForCard(await fetchTopMoves(sp.key));
         next.push(
           speciesToSet(sp, `enemy-${i}`, {
@@ -297,6 +349,7 @@ export default function App() {
           team={myTeam}
           onTeamChange={onMyTeamChange}
           onSpeedChange={onSpeedChange}
+          onFormChange={onAllyFormChange}
           selectedIndex={selectedAllyIndex}
           onSelectAlly={onSelectAlly}
         />
@@ -310,8 +363,15 @@ export default function App() {
             debugOverlay={debugOverlay}
           />
           <SpeedAxis myTeam={myTeam} enemyTeam={enemyTeam} selectedAllyIndex={selectedAllyIndex} />
+          <p className="usage-source-global" title={MOVES_SOURCE_LABEL}>
+            使用率來源：{MOVES_SOURCE_LABEL}
+          </p>
         </div>
-        <EnemyPanel team={enemyTeam} onSpeciesOverride={onSpeciesOverride} />
+        <EnemyPanel
+          team={enemyTeam}
+          onSpeciesOverride={onSpeciesOverride}
+          onFormChange={onEnemyFormChange}
+        />
       </main>
 
       <footer className="app-footer">{busy ? '辨認中…' : status}</footer>

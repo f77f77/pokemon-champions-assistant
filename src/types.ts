@@ -22,10 +22,22 @@ export interface MoveSlot {
   usage?: string | number;
 }
 
+/** Alternate form / Mega selectable on a card */
+export interface PokemonFormOption {
+  showdownId: string;
+  formKey: string;
+  label: string;
+  types: PokemonType[];
+  baseStats: Stats;
+  isDefault?: boolean;
+}
+
 export interface PokemonSet {
   id: string;
   species: string;
   speciesKey?: string;
+  /** PokéAPI national dex number */
+  nationalDex?: number | null;
   item?: string;
   ability?: string;
   types: PokemonType[];
@@ -36,6 +48,10 @@ export interface PokemonSet {
   identified: boolean;
   confidence?: number;
   formLabel?: string;
+  /** Current form key (PokéAPI pokemon name), e.g. lycanroc-dusk */
+  formKey?: string;
+  /** Available forms for dropdown */
+  forms?: PokemonFormOption[];
   /** 辨認裁切預覽（data URL）；不猜道具 */
   thumbnailDataUrl?: string;
 }

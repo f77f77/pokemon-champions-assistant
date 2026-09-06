@@ -146,7 +146,7 @@ Offline species / move tables live under `data/` (mirrored to `public/data/` for
 | File | Contents |
 |------|--------|
 | `data/allowlist.json` | Champions `showdownId` allowlist (start small; expand here) |
-| `data/pokemon.json` | One record per form: names `en` / `zh-Hant` / `ja`, classic base stats, types, abilities; optional `vgcDoublesMoves` (CBD VGC Doubles usage %) |
+| `data/pokemon.json` | One record per allowlisted id: `nationalDex`, names `en` / `zh-Hant` / `ja`, classic base stats, types, abilities, `forms[]` (Mega / regional); optional `vgcDoublesMoves` (CBD VGC Doubles usage %) |
 | `data/moves.json` | Moves referenced by allowlisted Pokémon (localized names + combat fields) |
 | `data/meta.json` | `schemaVersion`, `generatedAt`, `sources`, `pokemonCount`, `movesCount` |
 
@@ -154,7 +154,13 @@ Locale keys are exactly `en` / `zh-Hant` / `ja` (PokéAPI `zh-hant` ‒ `zh-Hant
 
 ### Expand the allowlist
 
-1. Edit `data/allowlist.json` ‒ add Showdown / CBD ids (e.g. `"landorus-therian"`).
+1. Prefer refreshing from CBD Doubles rankings (top 50+):
+
+```bash
+node scripts/build-pokemon-data.mjs --update-allowlist --top=50
+```
+
+   Or edit `data/allowlist.json` manually ‒ add Showdown / CBD ids (e.g. `"landorus-therian"`).
 2. Regenerate locally or via Actions (below).
 3. Prefer small batches; the build script rate-limits PokéAPI / CBD.
 

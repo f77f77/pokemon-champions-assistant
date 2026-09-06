@@ -399,10 +399,30 @@ export async function recognizeEnemyTeam(
   }
 }
 
-/** 測試圖路徑（相對 Vite BASE_URL） */
-export function fixtureTeamPreviewUrl(): string {
+/** Built-in Team Preview fixtures under public/fixtures/ (cycles on each load). */
+export const TEAM_PREVIEW_FIXTURES = [
+  'fixtures/team-preview-test-1.png',
+  'fixtures/team-preview-test-2.png',
+  'fixtures/team-preview.png',
+] as const;
+
+let fixtureCursor = 0;
+
+function withBase(rel: string): string {
   const base = import.meta.env.BASE_URL || '/';
-  return base.endsWith('/')
-    ? `${base}fixtures/team-preview.png`
-    : `${base}/fixtures/team-preview.png`;
+  const path = rel.replace(/^\//, '');
+  return base.endsWith('/') ? `${base}${path}` : `${base}/${path}`;
+}
+
+/** 測試圖路徑（相對 Vite BASE_URL）；每次呼叫前進下一張 */
+export function fixtureTeamPreviewUrl(advance = true): string {
+  const rel = TEAM_PREVIEW_FIXTURES[fixtureCursor % TEAM_PREVIEW_FIXTURES.length];
+  if (advance) fixtureCursor = (fixtureCursor + 1) % TEAM_PREVIEW_FIXTURES.length;
+  return withBase(rel);
+}
+
+/** Peek current fixture label without advancing */
+export function currentFixtureLabel(): string {
+  const rel = TEAM_PREVIEW_FIXTURES[fixtureCursor % TEAM_PREVIEW_FIXTURES.length];
+  return rel.split('/').pop() || rel;
 }

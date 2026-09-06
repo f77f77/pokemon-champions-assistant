@@ -1,13 +1,15 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-09-06T19:07:25.024Z",
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-06T19:45:02.159Z",
   "sources": {
     "pokeapi": "https://pokeapi.co/api/v2",
     "cbd": "https://championsbattledata.com/api/pokemon/{showdownId}",
     "cbdDoublesBattle": "https://championsbattledata.com/api/battle/Doubles/{showdownId}",
+    "cbdIndex": "https://championsbattledata.com/api/index",
     "allowlist": "data/allowlist.json",
-    "notes": "Classic PokéAPI base stats (not CBD screen-scaled). Move names/types from PokéAPI; usage % only from CBD VGC Doubles (2v2 / 6-pick-4). Locale keys: en / zh-Hant / ja. See assets/CREDITS.md."
+    "notes": "Classic PokéAPI base stats + nationalDex + forms[] (not CBD screen-scaled). Move names/types from PokéAPI; usage % only from CBD VGC Doubles (2v2 / 6-pick-4). Locale keys: en / zh-Hant / ja. See assets/CREDITS.md."
   },
-  "pokemonCount": 9,
-  "movesCount": 225
+  "pokemonCount": 50,
+  "movesCount": 415,
+  "allowlistCount": 50
 }

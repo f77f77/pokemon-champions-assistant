@@ -45,6 +45,11 @@ interface PokemonMovesRecord {
   showdownId: string;
   vgcDoublesMoves?: VgcDoublesMoveRow[];
   vgcDoublesMeta?: VgcDoublesMeta | null;
+  forms?: {
+    showdownId?: string;
+    vgcDoublesMoves?: VgcDoublesMoveRow[];
+    vgcDoublesMeta?: VgcDoublesMeta | null;
+  }[];
 }
 
 const MEMORY = new Map<string, { fetchedAt: string; moves: MoveSlot[]; sourceLabel: string | null }>();
@@ -132,6 +137,19 @@ export async function loadMovesData(
           const rows = Array.isArray(p.vgcDoublesMoves) ? p.vgcDoublesMoves : [];
           if (rows.length) DOUBLES_BY_SPECIES.set(p.showdownId, rows);
           META_BY_SPECIES.set(p.showdownId, p.vgcDoublesMeta ?? null);
+          // Nested forms may carry their own CBD Doubles rows (e.g. rotomwash vs rotomheat)
+          if (Array.isArray(p.forms)) {
+            for (const f of p.forms) {
+              if (!f?.showdownId) continue;
+              const fRows = Array.isArray(f.vgcDoublesMoves) ? f.vgcDoublesMoves : [];
+              if (fRows.length && !DOUBLES_BY_SPECIES.has(f.showdownId)) {
+                DOUBLES_BY_SPECIES.set(f.showdownId, fRows);
+              }
+              if (f.vgcDoublesMeta && !META_BY_SPECIES.has(f.showdownId)) {
+                META_BY_SPECIES.set(f.showdownId, f.vgcDoublesMeta);
+              }
+            }
+          }
         }
       }
       loaded = true;

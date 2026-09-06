@@ -1,7 +1,9 @@
-import type { PokemonSet, PokemonType, StatKey } from '../types';
+import type { PokemonFormOption, PokemonSet, PokemonType, StatKey } from '../types';
 import { ALL_TYPES, TYPE_COLORS, defensiveMatchups, matchupClass } from '../lib/typeChart';
 import { typeIconUrl } from '../lib/typeIcons';
 import { calcAllStats } from '../lib/speedCalc';
+import { formatSpeciesLabel } from '../lib/species';
+import { MOVES_SOURCE_LABEL } from '../lib/movesCache';
 
 const STAT_LABELS: { key: StatKey; label: string }[] = [
   { key: 'hp', label: 'HP' },
@@ -17,12 +19,11 @@ interface Props {
   variant: 'my' | 'enemy';
   onSpeciesOverride?: (name: string) => void;
   onSpeedChange?: (speed: number) => void;
+  onFormChange?: (formKey: string) => void;
   speciesOptions?: { key: string; label: string }[];
   /** 我方卡片：是否為速度軸選中對象 */
   selected?: boolean;
   onSelect?: () => void;
-  /** Optional caption for move usage source (CBD Doubles) */
-  movesSourceLabel?: string | null;
 }
 
 /** 屬性圖示 only（不顯示文字標籤） */
@@ -51,11 +52,27 @@ function formatUsage(usage: string | number | undefined): string | null {
   return /%$/.test(s) ? s : `${s}%`;
 }
 
-export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange, speciesOptions, selected, onSelect, movesSourceLabel }: Props) {
+function formOptionsOf(pokemon: PokemonSet): PokemonFormOption[] {
+  return Array.isArray(pokemon.forms) ? pokemon.forms : [];
+}
+
+export function PokemonCard({
+  pokemon,
+  variant,
+  onSpeciesOverride,
+  onSpeedChange,
+  onFormChange,
+  speciesOptions,
+  selected,
+  onSelect,
+}: Props) {
   const stats = calcAllStats(pokemon.baseStats);
   const maxStat = Math.max(150, ...Object.values(pokemon.baseStats));
   const matchups = pokemon.types.length ? defensiveMatchups(pokemon.types) : null;
   const moveLimit = variant === 'enemy' ? 6 : 4;
+  const forms = formOptionsOf(pokemon);
+  const showFormSelect = forms.length > 1 && !!onFormChange;
+  const speciesTitle = formatSpeciesLabel(pokemon);
 
   const selectable = variant === 'my' && !!onSelect;
   const cardClass = [
@@ -97,9 +114,27 @@ export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange
               ))}
             </select>
           ) : (
-            <h3>{pokemon.species}</h3>
+            <h3 title={speciesTitle}>{speciesTitle}</h3>
           )}
-          {pokemon.formLabel && <span className="pkmn-card__form">{pokemon.formLabel}</span>}
+          {showFormSelect ? (
+            <label className="pkmn-card__form-select-wrap" onClick={(e) => e.stopPropagation()}>
+              <span className="muted">形態</span>
+              <select
+                className="pkmn-card__form-select"
+                value={pokemon.formKey || forms.find((f) => f.isDefault)?.formKey || forms[0]?.formKey || ''}
+                onChange={(e) => onFormChange?.(e.target.value)}
+                aria-label="切換形態／Mega"
+              >
+                {forms.map((f) => (
+                  <option key={f.formKey} value={f.formKey}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            pokemon.formLabel && <span className="pkmn-card__form">{pokemon.formLabel}</span>
+          )}
           <div className="pkmn-card__meta">
             {variant === 'enemy' ? (
               <span className="muted" title="do not guess held items">
@@ -178,13 +213,16 @@ export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange
         {pokemon.moves.slice(0, moveLimit).map((mv, i) => {
           const moveIcon = typeIconUrl(mv.type);
           const usageLabel = formatUsage(mv.usage);
+          const tip = usageLabel
+            ? `${mv.name} · ${usageLabel} · ${MOVES_SOURCE_LABEL}`
+            : mv.name;
           return (
             <button
               key={i}
               type="button"
               className="move-btn"
               style={{ borderColor: TYPE_COLORS[mv.type as keyof typeof TYPE_COLORS] || '#666' }}
-              title={usageLabel && movesSourceLabel ? `${mv.name} · ${usageLabel} · ${movesSourceLabel}` : mv.name}
+              title={tip}
             >
               <span className="move-btn__main">
                 {moveIcon && (
@@ -197,11 +235,6 @@ export function PokemonCard({ pokemon, variant, onSpeciesOverride, onSpeedChange
           );
         })}
       </div>
-      {movesSourceLabel && pokemon.moves.some((m) => m.usage != null && m.usage !== '') ? (
-        <p className="move-source-caption" title={movesSourceLabel}>
-          使用率：{movesSourceLabel}
-        </p>
-      ) : null}
     </div>
   );
 
