@@ -8,8 +8,23 @@ interface Props {
   onFormChange?: (index: number, formKey: string) => void;
 }
 
+function compareSpeciesOptions(
+  a: (typeof SPECIES_DB)[number],
+  b: (typeof SPECIES_DB)[number],
+): number {
+  const da = a.nationalDex ?? Number.POSITIVE_INFINITY;
+  const db = b.nationalDex ?? Number.POSITIVE_INFINITY;
+  if (da !== db) return da - db;
+  // Same dex (e.g. Paradox / Mega): stable secondary by formKey then key
+  const fa = a.formKey || a.key;
+  const fb = b.formKey || b.key;
+  const byForm = fa.localeCompare(fb);
+  if (byForm !== 0) return byForm;
+  return a.key.localeCompare(b.key);
+}
+
 export function EnemyPanel({ team, onSpeciesOverride, onFormChange }: Props) {
-  const options = SPECIES_DB.map((s) => ({
+  const options = [...SPECIES_DB].sort(compareSpeciesOptions).map((s) => ({
     key: s.key,
     label: formatSpeciesLabel(s),
   }));

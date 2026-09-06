@@ -72,6 +72,9 @@ export function PokemonCard({
   const moveLimit = variant === 'enemy' ? 6 : 4;
   const forms = formOptionsOf(pokemon);
   const showFormSelect = forms.length > 1 && !!onFormChange;
+  const formSelectValue = forms.some((f) => f.formKey === pokemon.formKey)
+    ? (pokemon.formKey as string)
+    : forms.find((f) => f.isDefault)?.formKey || forms[0]?.formKey || '';
   const speciesTitle = formatSpeciesLabel(pokemon);
 
   const selectable = variant === 'my' && !!onSelect;
@@ -121,7 +124,7 @@ export function PokemonCard({
               <span className="muted">形態</span>
               <select
                 className="pkmn-card__form-select"
-                value={pokemon.formKey || forms.find((f) => f.isDefault)?.formKey || forms[0]?.formKey || ''}
+                value={formSelectValue}
                 onChange={(e) => onFormChange?.(e.target.value)}
                 aria-label="切換形態／Mega"
               >

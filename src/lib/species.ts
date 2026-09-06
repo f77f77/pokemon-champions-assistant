@@ -85,20 +85,25 @@ export function speciesToSet(s: SpeciesData, id: string, extras?: Partial<Pokemo
     baseStats: { ...f.baseStats },
     isDefault: f.isDefault,
   }));
+  const resolvedFormKey =
+    s.formKey ||
+    forms?.find((f) => f.isDefault)?.formKey ||
+    forms?.[0]?.formKey;
+  const resolvedForm = forms?.find((f) => f.formKey === resolvedFormKey);
   return {
     id,
     species: s.nameZh,
     speciesKey: s.key,
     nationalDex: s.nationalDex ?? null,
-    types: [...s.types],
-    baseStats: { ...s.baseStats },
+    types: [...(resolvedForm?.types ?? s.types)],
+    baseStats: { ...(resolvedForm?.baseStats ?? s.baseStats) },
     speed: 0,
-    formKey: s.formKey,
-    formLabel: s.formLabel,
+    formKey: resolvedFormKey,
+    formLabel: resolvedForm?.label ?? s.formLabel,
     forms,
     moves: [
-      { name: '—', type: s.types[0] ?? '一般' },
-      { name: '—', type: s.types[1] ?? '一般' },
+      { name: '—', type: (resolvedForm?.types ?? s.types)[0] ?? '一般' },
+      { name: '—', type: (resolvedForm?.types ?? s.types)[1] ?? '一般' },
       { name: '—', type: '一般' },
       { name: '—', type: '一般' },
     ],

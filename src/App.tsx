@@ -4,7 +4,7 @@ import { EnemyPanel } from './components/EnemyPanel';
 import { CapturePanel } from './components/CapturePanel';
 import { SpeedAxis } from './components/SpeedAxis';
 import { emptySlot, type PokemonSet } from './types';
-import { SAMPLE_MY_TEAM_KEYS, findSpecies, speciesToSet } from './lib/species';
+import { SAMPLE_MY_TEAM_KEYS, SPECIES_DB, findSpecies, speciesToSet } from './lib/species';
 import { calcStat } from './lib/speedCalc';
 import {
   recognizeEnemyTeamFromCanvas,
@@ -45,18 +45,10 @@ function clampTune(v: number): number {
   return Math.min(ROI_FINE_TUNE_MAX, Math.max(-ROI_FINE_TUNE_MAX, v));
 }
 
-async function applyFormToSet(prev: PokemonSet, formKey: string, moveCount: 4 | 6): Promise<PokemonSet> {
+/** Sync form switch so controlled <select> commits on the first change event. */
+function applyFormSync(prev: PokemonSet, formKey: string): PokemonSet | null {
   const form = prev.forms?.find((f) => f.formKey === formKey);
-  if (!form) return prev;
-  const movesRaw = await fetchTopMoves(form.showdownId);
-  // Fall back to species key / previous if form has no dedicated CBD row
-  const moves =
-    movesRaw.length > 0
-      ? movesRaw
-      : prev.speciesKey
-        ? await fetchTopMoves(prev.speciesKey)
-        : [];
-  const padded = moveCount === 4 ? top4ForCard(moves) : top6ForCard(moves);
+  if (!form) return null;
   return {
     ...prev,
     formKey: form.formKey,
@@ -64,8 +56,34 @@ async function applyFormToSet(prev: PokemonSet, formKey: string, moveCount: 4 | 
     types: [...form.types],
     baseStats: { ...form.baseStats },
     speed: calcStat(form.baseStats.spe, 31, 0, 50, 1),
-    moves: padded,
   };
+}
+
+/** Resolve CBD showdown id for a formKey without reading React state. */
+function resolveFormMoveIds(formKey: string): { primaryId: string; fallbackId?: string; label: string } | null {
+  for (const s of SPECIES_DB) {
+    const form = s.forms?.find((f) => f.formKey === formKey);
+    if (form) {
+      return {
+        primaryId: form.showdownId || s.key,
+        fallbackId: s.key,
+        label: form.label,
+      };
+    }
+  }
+  const sp = findSpecies(formKey);
+  if (sp) return { primaryId: sp.key, fallbackId: sp.key, label: sp.formLabel || sp.nameZh };
+  return null;
+}
+
+async function fetchMovesForForm(formKey: string, moveCount: 4 | 6) {
+  const ids = resolveFormMoveIds(formKey);
+  if (!ids) return moveCount === 4 ? top4ForCard([]) : top6ForCard([]);
+  let movesRaw = await fetchTopMoves(ids.primaryId);
+  if (!movesRaw.length && ids.fallbackId && ids.fallbackId !== ids.primaryId) {
+    movesRaw = await fetchTopMoves(ids.fallbackId);
+  }
+  return moveCount === 4 ? top4ForCard(movesRaw) : top6ForCard(movesRaw);
 }
 
 export default function App() {
@@ -123,34 +141,44 @@ export default function App() {
   }, []);
 
   const onAllyFormChange = useCallback((index: number, formKey: string) => {
+    setMyTeam((prev) => {
+      const cur = prev[index];
+      if (!cur) return prev;
+      const next = applyFormSync(cur, formKey);
+      if (!next) return prev;
+      return prev.map((p, i) => (i === index ? next : p));
+    });
+    const meta = resolveFormMoveIds(formKey);
+    const label = meta?.label || formKey;
+    setStatus(`已切換形態：${label}（種族值／屬性已更新）`);
     void (async () => {
-      let snapshot: PokemonSet | undefined;
-      setMyTeam((prev) => {
-        snapshot = prev[index];
-        return prev;
-      });
-      if (!snapshot) return;
-      const next = await applyFormToSet(snapshot, formKey, 4);
-      setMyTeam((prev) => prev.map((p, i) => (i === index ? next : p)));
-      setStatus(`已切換形態：${next.formLabel || formKey}（種族值／屬性／招式已更新）`);
+      const moves = await fetchMovesForForm(formKey, 4);
+      setMyTeam((prev) =>
+        prev.map((p, i) => (i === index && p.formKey === formKey ? { ...p, moves } : p)),
+      );
+      setStatus(`已切換形態：${label}（種族值／屬性／招式已更新）`);
     })();
   }, []);
 
   const onEnemyFormChange = useCallback((index: number, formKey: string) => {
+    setEnemyTeam((prev) => {
+      const cur = prev[index];
+      if (!cur) return prev;
+      const next = applyFormSync(cur, formKey);
+      if (!next) return prev;
+      return prev.map((p, i) => (i === index ? next : p));
+    });
+    const meta = resolveFormMoveIds(formKey);
+    setStatus(`敵方形態：${meta?.label || formKey}`);
     void (async () => {
-      let snapshot: PokemonSet | undefined;
-      setEnemyTeam((prev) => {
-        snapshot = prev[index];
-        return prev;
-      });
-      if (!snapshot) return;
-      const next = await applyFormToSet(snapshot, formKey, 6);
-      setEnemyTeam((prev) => prev.map((p, i) => (i === index ? next : p)));
-      setStatus(`敵方形態：${next.formLabel || formKey}`);
+      const moves = await fetchMovesForForm(formKey, 6);
+      setEnemyTeam((prev) =>
+        prev.map((p, i) => (i === index && p.formKey === formKey ? { ...p, moves } : p)),
+      );
     })();
   }, []);
 
-  const onSpeciesOverride = useCallback(async (index: number, speciesKey: string) => {
+  const onSpeciesOverride = useCallback((index: number, speciesKey: string) => {
     if (!speciesKey) {
       setEnemyTeam((prev) =>
         prev.map((p, i) => (i === index ? { ...emptySlot(index, 'enemy'), thumbnailDataUrl: p.thumbnailDataUrl } : p)),
@@ -160,13 +188,14 @@ export default function App() {
     }
     const sp = findSpecies(speciesKey);
     if (!sp) return;
-    const moves = top6ForCard(await fetchTopMoves(sp.key));
+    // Apply species + stats + types immediately so override works even when
+    // template match failed / moves fetch is slow (controlled select must update on first change).
     setEnemyTeam((prev) =>
       prev.map((p, i) =>
         i === index
           ? speciesToSet(sp, `enemy-${index}`, {
               speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
-              moves,
+              moves: top6ForCard([]),
               confidence: 1,
               // 手動覆寫不猜道具
               item: undefined,
@@ -177,6 +206,12 @@ export default function App() {
       ),
     );
     setStatus(`已手動覆寫：${sp.nameZh}（弱點／速度軸已更新）`);
+    void (async () => {
+      const moves = top6ForCard(await fetchTopMoves(sp.key));
+      setEnemyTeam((prev) =>
+        prev.map((p, i) => (i === index && p.speciesKey === sp.key ? { ...p, moves } : p)),
+      );
+    })();
   }, []);
 
   const updateTune = useCallback((patch: Partial<RoiFineTune>) => {
