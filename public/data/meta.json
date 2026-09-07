@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-06T19:45:02.159Z",
+  "generatedAt": "2026-09-07T19:54:31.969Z",
   "sources": {
     "pokeapi": "https://pokeapi.co/api/v2",
     "cbd": "https://championsbattledata.com/api/pokemon/{showdownId}",

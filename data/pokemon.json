@@ -43,31 +43,31 @@
       {
         "id": "kowtowcleave",
         "nameEn": "Kowtow Cleave",
-        "usage": "97.4%",
+        "usage": "97.3%",
         "rank": 2
       },
       {
         "id": "ironhead",
         "nameEn": "Iron Head",
-        "usage": "70.4%",
+        "usage": "70.9%",
         "rank": 3
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "64.5%",
+        "usage": "63.5%",
         "rank": 4
       },
       {
         "id": "lowkick",
         "nameEn": "Low Kick",
-        "usage": "38.1%",
+        "usage": "38.8%",
         "rank": 5
       },
       {
         "id": "swordsdance",
         "nameEn": "Swords Dance",
-        "usage": "24.9%",
+        "usage": "24.7%",
         "rank": 6
       }
     ],
@@ -116,31 +116,31 @@
           {
             "id": "kowtowcleave",
             "nameEn": "Kowtow Cleave",
-            "usage": "97.4%",
+            "usage": "97.3%",
             "rank": 2
           },
           {
             "id": "ironhead",
             "nameEn": "Iron Head",
-            "usage": "70.4%",
+            "usage": "70.9%",
             "rank": 3
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "64.5%",
+            "usage": "63.5%",
             "rank": 4
           },
           {
             "id": "lowkick",
             "nameEn": "Low Kick",
-            "usage": "38.1%",
+            "usage": "38.8%",
             "rank": 5
           },
           {
             "id": "swordsdance",
             "nameEn": "Swords Dance",
-            "usage": "24.9%",
+            "usage": "24.7%",
             "rank": 6
           }
         ],
@@ -191,37 +191,37 @@
       {
         "id": "rockslide",
         "nameEn": "Rock Slide",
-        "usage": "82.4%",
+        "usage": "82.9%",
         "rank": 1
       },
       {
         "id": "earthquake",
         "nameEn": "Earthquake",
-        "usage": "81.7%",
+        "usage": "82.3%",
         "rank": 2
       },
       {
         "id": "dragonclaw",
         "nameEn": "Dragon Claw",
-        "usage": "80.2%",
+        "usage": "80.6%",
         "rank": 3
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "71.3%",
+        "usage": "70.2%",
         "rank": 4
       },
       {
         "id": "stompingtantrum",
         "nameEn": "Stomping Tantrum",
-        "usage": "32.4%",
+        "usage": "32.9%",
         "rank": 5
       },
       {
         "id": "poisonjab",
         "nameEn": "Poison Jab",
-        "usage": "14.2%",
+        "usage": "13.7%",
         "rank": 6
       }
     ],
@@ -263,37 +263,37 @@
           {
             "id": "rockslide",
             "nameEn": "Rock Slide",
-            "usage": "82.4%",
+            "usage": "82.9%",
             "rank": 1
           },
           {
             "id": "earthquake",
             "nameEn": "Earthquake",
-            "usage": "81.7%",
+            "usage": "82.3%",
             "rank": 2
           },
           {
             "id": "dragonclaw",
             "nameEn": "Dragon Claw",
-            "usage": "80.2%",
+            "usage": "80.6%",
             "rank": 3
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "71.3%",
+            "usage": "70.2%",
             "rank": 4
           },
           {
             "id": "stompingtantrum",
             "nameEn": "Stomping Tantrum",
-            "usage": "32.4%",
+            "usage": "32.9%",
             "rank": 5
           },
           {
             "id": "poisonjab",
             "nameEn": "Poison Jab",
-            "usage": "14.2%",
+            "usage": "13.7%",
             "rank": 6
           }
         ],
@@ -402,31 +402,31 @@
       {
         "id": "fakeout",
         "nameEn": "Fake Out",
-        "usage": "91.2%",
+        "usage": "91.3%",
         "rank": 2
       },
       {
         "id": "direclaw",
         "nameEn": "Dire Claw",
-        "usage": "79.1%",
+        "usage": "79.9%",
         "rank": 3
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "45.1%",
+        "usage": "44.7%",
         "rank": 4
+      },
+      {
+        "id": "feint",
+        "nameEn": "Feint",
+        "usage": "15.5%",
+        "rank": 5
       },
       {
         "id": "rockslide",
         "nameEn": "Rock Slide",
-        "usage": "15.2%",
-        "rank": 5
-      },
-      {
-        "id": "poisonjab",
-        "nameEn": "Poison Jab",
-        "usage": "15.0%",
+        "usage": "14.8%",
         "rank": 6
       }
     ],
@@ -475,31 +475,31 @@
           {
             "id": "fakeout",
             "nameEn": "Fake Out",
-            "usage": "91.2%",
+            "usage": "91.3%",
             "rank": 2
           },
           {
             "id": "direclaw",
             "nameEn": "Dire Claw",
-            "usage": "79.1%",
+            "usage": "79.9%",
             "rank": 3
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "45.1%",
+            "usage": "44.7%",
             "rank": 4
+          },
+          {
+            "id": "feint",
+            "nameEn": "Feint",
+            "usage": "15.5%",
+            "rank": 5
           },
           {
             "id": "rockslide",
             "nameEn": "Rock Slide",
-            "usage": "15.2%",
-            "rank": 5
-          },
-          {
-            "id": "poisonjab",
-            "nameEn": "Poison Jab",
-            "usage": "15.0%",
+            "usage": "14.8%",
             "rank": 6
           }
         ],
@@ -549,34 +549,40 @@
     "championsLegal": true,
     "vgcDoublesMoves": [
       {
+        "id": "lastrespects",
+        "nameEn": "Last Respects",
+        "usage": "99.9%",
+        "rank": 1
+      },
+      {
+        "id": "aquajet",
+        "nameEn": "Aqua Jet",
+        "usage": "92.0%",
+        "rank": 2
+      },
+      {
+        "id": "wavecrash",
+        "nameEn": "Wave Crash",
+        "usage": "90.3%",
+        "rank": 3
+      },
+      {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "59.5%",
+        "rank": 4
+      },
+      {
+        "id": "flipturn",
+        "nameEn": "Flip Turn",
+        "usage": "37.5%",
+        "rank": 5
+      },
+      {
         "id": "liquidation",
         "nameEn": "Liquidation",
-        "usage": "8.5%",
+        "usage": "8.1%",
         "rank": 6
-      },
-      {
-        "id": "psychicfangs",
-        "nameEn": "Psychic Fangs",
-        "usage": "3.8%",
-        "rank": 7
-      },
-      {
-        "id": "icefang",
-        "nameEn": "Ice Fang",
-        "usage": "2.1%",
-        "rank": 8
-      },
-      {
-        "id": "headsmash",
-        "nameEn": "Head Smash",
-        "usage": "1.1%",
-        "rank": 9
-      },
-      {
-        "id": "phantomforce",
-        "nameEn": "Phantom Force",
-        "usage": "0.9%",
-        "rank": 10
       }
     ],
     "vgcDoublesMeta": {
@@ -616,34 +622,40 @@
         "isDefault": true,
         "vgcDoublesMoves": [
           {
+            "id": "lastrespects",
+            "nameEn": "Last Respects",
+            "usage": "99.9%",
+            "rank": 1
+          },
+          {
+            "id": "aquajet",
+            "nameEn": "Aqua Jet",
+            "usage": "92.0%",
+            "rank": 2
+          },
+          {
+            "id": "wavecrash",
+            "nameEn": "Wave Crash",
+            "usage": "90.3%",
+            "rank": 3
+          },
+          {
+            "id": "protect",
+            "nameEn": "Protect",
+            "usage": "59.5%",
+            "rank": 4
+          },
+          {
+            "id": "flipturn",
+            "nameEn": "Flip Turn",
+            "usage": "37.5%",
+            "rank": 5
+          },
+          {
             "id": "liquidation",
             "nameEn": "Liquidation",
-            "usage": "8.5%",
+            "usage": "8.1%",
             "rank": 6
-          },
-          {
-            "id": "psychicfangs",
-            "nameEn": "Psychic Fangs",
-            "usage": "3.8%",
-            "rank": 7
-          },
-          {
-            "id": "icefang",
-            "nameEn": "Ice Fang",
-            "usage": "2.1%",
-            "rank": 8
-          },
-          {
-            "id": "headsmash",
-            "nameEn": "Head Smash",
-            "usage": "1.1%",
-            "rank": 9
-          },
-          {
-            "id": "phantomforce",
-            "nameEn": "Phantom Force",
-            "usage": "0.9%",
-            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -685,37 +697,37 @@
           {
             "id": "lastrespects",
             "nameEn": "Last Respects",
-            "usage": "61.5%",
+            "usage": "63.1%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "57.5%",
+            "usage": "58.0%",
             "rank": 2
           },
           {
             "id": "aquajet",
             "nameEn": "Aqua Jet",
-            "usage": "52.4%",
+            "usage": "53.4%",
             "rank": 3
           },
           {
             "id": "wavecrash",
             "nameEn": "Wave Crash",
-            "usage": "45.7%",
+            "usage": "47.4%",
             "rank": 4
           },
           {
             "id": "shadowball",
             "nameEn": "Shadow Ball",
-            "usage": "37.8%",
+            "usage": "36.5%",
             "rank": 5
           },
           {
             "id": "muddywater",
             "nameEn": "Muddy Water",
-            "usage": "36.3%",
+            "usage": "34.6%",
             "rank": 6
           }
         ],
@@ -773,31 +785,31 @@
       {
         "id": "moonblast",
         "nameEn": "Moonblast",
-        "usage": "86.9%",
+        "usage": "87.0%",
         "rank": 2
       },
       {
         "id": "encore",
         "nameEn": "Encore",
-        "usage": "69.3%",
+        "usage": "70.0%",
         "rank": 3
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "45.9%",
+        "usage": "46.4%",
         "rank": 4
       },
       {
         "id": "charm",
         "nameEn": "Charm",
-        "usage": "25.3%",
+        "usage": "24.8%",
         "rank": 5
       },
       {
         "id": "sunnyday",
         "nameEn": "Sunny Day",
-        "usage": "10.3%",
+        "usage": "10.0%",
         "rank": 6
       }
     ],
@@ -846,31 +858,31 @@
           {
             "id": "moonblast",
             "nameEn": "Moonblast",
-            "usage": "86.9%",
+            "usage": "87.0%",
             "rank": 2
           },
           {
             "id": "encore",
             "nameEn": "Encore",
-            "usage": "69.3%",
+            "usage": "70.0%",
             "rank": 3
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "45.9%",
+            "usage": "46.4%",
             "rank": 4
           },
           {
             "id": "charm",
             "nameEn": "Charm",
-            "usage": "25.3%",
+            "usage": "24.8%",
             "rank": 5
           },
           {
             "id": "sunnyday",
             "nameEn": "Sunny Day",
-            "usage": "10.3%",
+            "usage": "10.0%",
             "rank": 6
           }
         ],
@@ -921,37 +933,37 @@
       {
         "id": "matchagotcha",
         "nameEn": "Matcha Gotcha",
-        "usage": "98.3%",
+        "usage": "98.2%",
         "rank": 1
       },
       {
         "id": "ragepowder",
         "nameEn": "Rage Powder",
-        "usage": "94.6%",
+        "usage": "94.3%",
         "rank": 2
       },
       {
         "id": "trickroom",
         "nameEn": "Trick Room",
-        "usage": "61.6%",
+        "usage": "61.3%",
         "rank": 3
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "59.8%",
+        "usage": "59.4%",
         "rank": 4
       },
       {
         "id": "lifedew",
         "nameEn": "Life Dew",
-        "usage": "42.1%",
+        "usage": "42.4%",
         "rank": 5
       },
       {
         "id": "shadowball",
         "nameEn": "Shadow Ball",
-        "usage": "21.8%",
+        "usage": "21.9%",
         "rank": 6
       }
     ],
@@ -993,37 +1005,37 @@
           {
             "id": "matchagotcha",
             "nameEn": "Matcha Gotcha",
-            "usage": "98.3%",
+            "usage": "98.2%",
             "rank": 1
           },
           {
             "id": "ragepowder",
             "nameEn": "Rage Powder",
-            "usage": "94.6%",
+            "usage": "94.3%",
             "rank": 2
           },
           {
             "id": "trickroom",
             "nameEn": "Trick Room",
-            "usage": "61.6%",
+            "usage": "61.3%",
             "rank": 3
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "59.8%",
+            "usage": "59.4%",
             "rank": 4
           },
           {
             "id": "lifedew",
             "nameEn": "Life Dew",
-            "usage": "42.1%",
+            "usage": "42.4%",
             "rank": 5
           },
           {
             "id": "shadowball",
             "nameEn": "Shadow Ball",
-            "usage": "21.8%",
+            "usage": "21.9%",
             "rank": 6
           }
         ],
@@ -1074,37 +1086,37 @@
       {
         "id": "fakeout",
         "nameEn": "Fake Out",
-        "usage": "98.8%",
+        "usage": "98.7%",
         "rank": 1
       },
       {
         "id": "partingshot",
         "nameEn": "Parting Shot",
-        "usage": "89.5%",
+        "usage": "89.4%",
         "rank": 2
       },
       {
         "id": "flareblitz",
         "nameEn": "Flare Blitz",
-        "usage": "88.0%",
+        "usage": "87.9%",
         "rank": 3
       },
       {
         "id": "darkestlariat",
         "nameEn": "Darkest Lariat",
-        "usage": "48.0%",
+        "usage": "48.2%",
         "rank": 4
       },
       {
         "id": "throatchop",
         "nameEn": "Throat Chop",
-        "usage": "28.6%",
+        "usage": "28.5%",
         "rank": 5
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "14.8%",
+        "usage": "15.0%",
         "rank": 6
       }
     ],
@@ -1146,37 +1158,37 @@
           {
             "id": "fakeout",
             "nameEn": "Fake Out",
-            "usage": "98.8%",
+            "usage": "98.7%",
             "rank": 1
           },
           {
             "id": "partingshot",
             "nameEn": "Parting Shot",
-            "usage": "89.5%",
+            "usage": "89.4%",
             "rank": 2
           },
           {
             "id": "flareblitz",
             "nameEn": "Flare Blitz",
-            "usage": "88.0%",
+            "usage": "87.9%",
             "rank": 3
           },
           {
             "id": "darkestlariat",
             "nameEn": "Darkest Lariat",
-            "usage": "48.0%",
+            "usage": "48.2%",
             "rank": 4
           },
           {
             "id": "throatchop",
             "nameEn": "Throat Chop",
-            "usage": "28.6%",
+            "usage": "28.5%",
             "rank": 5
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "14.8%",
+            "usage": "15.0%",
             "rank": 6
           }
         ],
@@ -1228,37 +1240,37 @@
       {
         "id": "trickroom",
         "nameEn": "Trick Room",
-        "usage": "95.0%",
+        "usage": "94.9%",
         "rank": 1
       },
       {
         "id": "psychic",
         "nameEn": "Psychic",
-        "usage": "64.7%",
+        "usage": "64.5%",
         "rank": 2
       },
       {
         "id": "helpinghand",
         "nameEn": "Helping Hand",
-        "usage": "56.9%",
+        "usage": "55.8%",
         "rank": 3
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "49.6%",
+        "usage": "49.5%",
         "rank": 4
       },
       {
         "id": "thunderbolt",
         "nameEn": "Thunderbolt",
-        "usage": "42.0%",
+        "usage": "42.7%",
         "rank": 5
       },
       {
         "id": "twinbeam",
         "nameEn": "Twin Beam",
-        "usage": "17.9%",
+        "usage": "18.1%",
         "rank": 6
       }
     ],
@@ -1301,37 +1313,37 @@
           {
             "id": "trickroom",
             "nameEn": "Trick Room",
-            "usage": "95.0%",
+            "usage": "94.9%",
             "rank": 1
           },
           {
             "id": "psychic",
             "nameEn": "Psychic",
-            "usage": "64.7%",
+            "usage": "64.5%",
             "rank": 2
           },
           {
             "id": "helpinghand",
             "nameEn": "Helping Hand",
-            "usage": "56.9%",
+            "usage": "55.8%",
             "rank": 3
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "49.6%",
+            "usage": "49.5%",
             "rank": 4
           },
           {
             "id": "thunderbolt",
             "nameEn": "Thunderbolt",
-            "usage": "42.0%",
+            "usage": "42.7%",
             "rank": 5
           },
           {
             "id": "twinbeam",
             "nameEn": "Twin Beam",
-            "usage": "17.9%",
+            "usage": "18.1%",
             "rank": 6
           }
         ],
@@ -1382,7 +1394,7 @@
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "93.4%",
+        "usage": "93.2%",
         "rank": 1
       },
       {
@@ -1394,19 +1406,19 @@
       {
         "id": "solarbeam",
         "nameEn": "Solar Beam",
-        "usage": "18.1%",
+        "usage": "16.5%",
         "rank": 3
       },
       {
         "id": "weatherball",
         "nameEn": "Weather Ball",
-        "usage": "11.2%",
+        "usage": "10.8%",
         "rank": 4
       },
       {
         "id": "ancientpower",
         "nameEn": "Ancient Power",
-        "usage": "13.1%",
+        "usage": "14.8%",
         "rank": 5
       },
       {
@@ -1454,7 +1466,7 @@
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "93.4%",
+            "usage": "93.2%",
             "rank": 1
           },
           {
@@ -1466,19 +1478,19 @@
           {
             "id": "solarbeam",
             "nameEn": "Solar Beam",
-            "usage": "18.1%",
+            "usage": "16.5%",
             "rank": 3
           },
           {
             "id": "weatherball",
             "nameEn": "Weather Ball",
-            "usage": "11.2%",
+            "usage": "10.8%",
             "rank": 4
           },
           {
             "id": "ancientpower",
             "nameEn": "Ancient Power",
-            "usage": "13.1%",
+            "usage": "14.8%",
             "rank": 5
           },
           {
@@ -1525,7 +1537,7 @@
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "93.4%",
+            "usage": "93.2%",
             "rank": 1
           },
           {
@@ -1537,19 +1549,19 @@
           {
             "id": "solarbeam",
             "nameEn": "Solar Beam",
-            "usage": "18.1%",
+            "usage": "16.5%",
             "rank": 3
           },
           {
             "id": "weatherball",
             "nameEn": "Weather Ball",
-            "usage": "11.2%",
+            "usage": "10.8%",
             "rank": 4
           },
           {
             "id": "ancientpower",
             "nameEn": "Ancient Power",
-            "usage": "13.1%",
+            "usage": "14.8%",
             "rank": 5
           },
           {
@@ -1596,7 +1608,7 @@
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "93.4%",
+            "usage": "93.2%",
             "rank": 1
           },
           {
@@ -1608,19 +1620,19 @@
           {
             "id": "solarbeam",
             "nameEn": "Solar Beam",
-            "usage": "18.1%",
+            "usage": "16.5%",
             "rank": 3
           },
           {
             "id": "weatherball",
             "nameEn": "Weather Ball",
-            "usage": "11.2%",
+            "usage": "10.8%",
             "rank": 4
           },
           {
             "id": "ancientpower",
             "nameEn": "Ancient Power",
-            "usage": "13.1%",
+            "usage": "14.8%",
             "rank": 5
           },
           {
@@ -1675,40 +1687,34 @@
     "championsLegal": true,
     "vgcDoublesMoves": [
       {
-        "id": "closecombat",
-        "nameEn": "Close Combat",
-        "usage": "98.7%",
-        "rank": 1
-      },
-      {
-        "id": "protect",
-        "nameEn": "Protect",
-        "usage": "87.8%",
-        "rank": 2
-      },
-      {
-        "id": "bravebird",
-        "nameEn": "Brave Bird",
-        "usage": "71.5%",
-        "rank": 3
-      },
-      {
-        "id": "roost",
-        "nameEn": "Roost",
-        "usage": "56.5%",
-        "rank": 4
-      },
-      {
-        "id": "tailwind",
-        "nameEn": "Tailwind",
-        "usage": "34.8%",
-        "rank": 5
-      },
-      {
         "id": "dualwingbeat",
         "nameEn": "Dual Wingbeat",
-        "usage": "27.9%",
+        "usage": "27.5%",
         "rank": 6
+      },
+      {
+        "id": "finalgambit",
+        "nameEn": "Final Gambit",
+        "usage": "6.5%",
+        "rank": 7
+      },
+      {
+        "id": "uturn",
+        "nameEn": "U-turn",
+        "usage": "6.2%",
+        "rank": 8
+      },
+      {
+        "id": "blazekick",
+        "nameEn": "Blaze Kick",
+        "usage": "3.4%",
+        "rank": 9
+      },
+      {
+        "id": "quickattack",
+        "nameEn": "Quick Attack",
+        "usage": "1.5%",
+        "rank": 10
       }
     ],
     "vgcDoublesMeta": {
@@ -1747,40 +1753,34 @@
         "isDefault": true,
         "vgcDoublesMoves": [
           {
-            "id": "closecombat",
-            "nameEn": "Close Combat",
-            "usage": "98.7%",
-            "rank": 1
-          },
-          {
-            "id": "protect",
-            "nameEn": "Protect",
-            "usage": "87.8%",
-            "rank": 2
-          },
-          {
-            "id": "bravebird",
-            "nameEn": "Brave Bird",
-            "usage": "71.5%",
-            "rank": 3
-          },
-          {
-            "id": "roost",
-            "nameEn": "Roost",
-            "usage": "56.5%",
-            "rank": 4
-          },
-          {
-            "id": "tailwind",
-            "nameEn": "Tailwind",
-            "usage": "34.8%",
-            "rank": 5
-          },
-          {
             "id": "dualwingbeat",
             "nameEn": "Dual Wingbeat",
-            "usage": "27.9%",
+            "usage": "27.5%",
             "rank": 6
+          },
+          {
+            "id": "finalgambit",
+            "nameEn": "Final Gambit",
+            "usage": "6.5%",
+            "rank": 7
+          },
+          {
+            "id": "uturn",
+            "nameEn": "U-turn",
+            "usage": "6.2%",
+            "rank": 8
+          },
+          {
+            "id": "blazekick",
+            "nameEn": "Blaze Kick",
+            "usage": "3.4%",
+            "rank": 9
+          },
+          {
+            "id": "quickattack",
+            "nameEn": "Quick Attack",
+            "usage": "1.5%",
+            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -1855,37 +1855,37 @@
       {
         "id": "hypervoice",
         "nameEn": "Hyper Voice",
-        "usage": "99.6%",
+        "usage": "99.5%",
         "rank": 1
       },
       {
         "id": "quickattack",
         "nameEn": "Quick Attack",
-        "usage": "77.4%",
+        "usage": "76.8%",
         "rank": 2
       },
       {
         "id": "hyperbeam",
         "nameEn": "Hyper Beam",
-        "usage": "71.2%",
+        "usage": "70.9%",
         "rank": 3
       },
       {
         "id": "detect",
         "nameEn": "Detect",
-        "usage": "66.6%",
+        "usage": "65.8%",
         "rank": 4
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "28.3%",
+        "usage": "28.9%",
         "rank": 5
       },
       {
         "id": "yawn",
         "nameEn": "Yawn",
-        "usage": "14.2%",
+        "usage": "8.0%",
         "rank": 6
       }
     ],
@@ -1926,37 +1926,37 @@
           {
             "id": "hypervoice",
             "nameEn": "Hyper Voice",
-            "usage": "99.6%",
+            "usage": "99.5%",
             "rank": 1
           },
           {
             "id": "quickattack",
             "nameEn": "Quick Attack",
-            "usage": "77.4%",
+            "usage": "76.8%",
             "rank": 2
           },
           {
             "id": "hyperbeam",
             "nameEn": "Hyper Beam",
-            "usage": "71.2%",
+            "usage": "70.9%",
             "rank": 3
           },
           {
             "id": "detect",
             "nameEn": "Detect",
-            "usage": "66.6%",
+            "usage": "65.8%",
             "rank": 4
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "28.3%",
+            "usage": "28.9%",
             "rank": 5
           },
           {
             "id": "yawn",
             "nameEn": "Yawn",
-            "usage": "14.2%",
+            "usage": "8.0%",
             "rank": 6
           }
         ],
@@ -2006,31 +2006,31 @@
       {
         "id": "zapcannon",
         "nameEn": "Zap Cannon",
-        "usage": "85.5%",
+        "usage": "85.3%",
         "rank": 1
       },
       {
         "id": "focusblast",
         "nameEn": "Focus Blast",
-        "usage": "84.1%",
+        "usage": "83.8%",
         "rank": 2
       },
       {
         "id": "fakeout",
         "nameEn": "Fake Out",
-        "usage": "82.4%",
+        "usage": "82.0%",
         "rank": 3
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "80.3%",
+        "usage": "80.0%",
         "rank": 4
       },
       {
         "id": "grassknot",
         "nameEn": "Grass Knot",
-        "usage": "10.0%",
+        "usage": "10.1%",
         "rank": 5
       },
       {
@@ -2077,31 +2077,31 @@
           {
             "id": "zapcannon",
             "nameEn": "Zap Cannon",
-            "usage": "85.5%",
+            "usage": "85.3%",
             "rank": 1
           },
           {
             "id": "focusblast",
             "nameEn": "Focus Blast",
-            "usage": "84.1%",
+            "usage": "83.8%",
             "rank": 2
           },
           {
             "id": "fakeout",
             "nameEn": "Fake Out",
-            "usage": "82.4%",
+            "usage": "82.0%",
             "rank": 3
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "80.3%",
+            "usage": "80.0%",
             "rank": 4
           },
           {
             "id": "grassknot",
             "nameEn": "Grass Knot",
-            "usage": "10.0%",
+            "usage": "10.1%",
             "rank": 5
           },
           {
@@ -2146,40 +2146,34 @@
         "isDefault": false,
         "vgcDoublesMoves": [
           {
-            "id": "psychic",
-            "nameEn": "Psychic",
-            "usage": "54.1%",
-            "rank": 1
-          },
-          {
-            "id": "fakeout",
-            "nameEn": "Fake Out",
-            "usage": "48.2%",
-            "rank": 2
-          },
-          {
-            "id": "thunderbolt",
-            "nameEn": "Thunderbolt",
-            "usage": "37.8%",
-            "rank": 3
-          },
-          {
-            "id": "protect",
-            "nameEn": "Protect",
-            "usage": "29.3%",
-            "rank": 4
-          },
-          {
-            "id": "risingvoltage",
-            "nameEn": "Rising Voltage",
-            "usage": "25.5%",
-            "rank": 5
-          },
-          {
             "id": "expandingforce",
             "nameEn": "Expanding Force",
-            "usage": "20.7%",
+            "usage": "20.4%",
             "rank": 6
+          },
+          {
+            "id": "electricterrain",
+            "nameEn": "Electric Terrain",
+            "usage": "16.4%",
+            "rank": 7
+          },
+          {
+            "id": "dazzlinggleam",
+            "nameEn": "Dazzling Gleam",
+            "usage": "13.8%",
+            "rank": 8
+          },
+          {
+            "id": "voltswitch",
+            "nameEn": "Volt Switch",
+            "usage": "13.7%",
+            "rank": 9
+          },
+          {
+            "id": "surf",
+            "nameEn": "Surf",
+            "usage": "13.5%",
+            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -2278,34 +2272,40 @@
     "championsLegal": true,
     "vgcDoublesMoves": [
       {
+        "id": "electroshot",
+        "nameEn": "Electro Shot",
+        "usage": "92.9%",
+        "rank": 1
+      },
+      {
+        "id": "flashcannon",
+        "nameEn": "Flash Cannon",
+        "usage": "91.4%",
+        "rank": 2
+      },
+      {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "87.4%",
+        "rank": 3
+      },
+      {
+        "id": "dragonpulse",
+        "nameEn": "Dragon Pulse",
+        "usage": "69.1%",
+        "rank": 4
+      },
+      {
+        "id": "dracometeor",
+        "nameEn": "Draco Meteor",
+        "usage": "20.3%",
+        "rank": 5
+      },
+      {
         "id": "aurasphere",
         "nameEn": "Aura Sphere",
-        "usage": "16.8%",
+        "usage": "16.7%",
         "rank": 6
-      },
-      {
-        "id": "thunderbolt",
-        "nameEn": "Thunderbolt",
-        "usage": "4.8%",
-        "rank": 7
-      },
-      {
-        "id": "snarl",
-        "nameEn": "Snarl",
-        "usage": "4.6%",
-        "rank": 8
-      },
-      {
-        "id": "darkpulse",
-        "nameEn": "Dark Pulse",
-        "usage": "1.9%",
-        "rank": 9
-      },
-      {
-        "id": "steelbeam",
-        "nameEn": "Steel Beam",
-        "usage": "1.3%",
-        "rank": 10
       }
     ],
     "vgcDoublesMeta": {
@@ -2345,34 +2345,40 @@
         "isDefault": true,
         "vgcDoublesMoves": [
           {
+            "id": "electroshot",
+            "nameEn": "Electro Shot",
+            "usage": "92.9%",
+            "rank": 1
+          },
+          {
+            "id": "flashcannon",
+            "nameEn": "Flash Cannon",
+            "usage": "91.4%",
+            "rank": 2
+          },
+          {
+            "id": "protect",
+            "nameEn": "Protect",
+            "usage": "87.4%",
+            "rank": 3
+          },
+          {
+            "id": "dragonpulse",
+            "nameEn": "Dragon Pulse",
+            "usage": "69.1%",
+            "rank": 4
+          },
+          {
+            "id": "dracometeor",
+            "nameEn": "Draco Meteor",
+            "usage": "20.3%",
+            "rank": 5
+          },
+          {
             "id": "aurasphere",
             "nameEn": "Aura Sphere",
-            "usage": "16.8%",
+            "usage": "16.7%",
             "rank": 6
-          },
-          {
-            "id": "thunderbolt",
-            "nameEn": "Thunderbolt",
-            "usage": "4.8%",
-            "rank": 7
-          },
-          {
-            "id": "snarl",
-            "nameEn": "Snarl",
-            "usage": "4.6%",
-            "rank": 8
-          },
-          {
-            "id": "darkpulse",
-            "nameEn": "Dark Pulse",
-            "usage": "1.9%",
-            "rank": 9
-          },
-          {
-            "id": "steelbeam",
-            "nameEn": "Steel Beam",
-            "usage": "1.3%",
-            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -2420,40 +2426,34 @@
     "championsLegal": true,
     "vgcDoublesMoves": [
       {
-        "id": "rockslide",
-        "nameEn": "Rock Slide",
-        "usage": "95.1%",
-        "rank": 1
-      },
-      {
-        "id": "knockoff",
-        "nameEn": "Knock Off",
-        "usage": "92.7%",
-        "rank": 2
-      },
-      {
-        "id": "protect",
-        "nameEn": "Protect",
-        "usage": "71.9%",
-        "rank": 3
-      },
-      {
-        "id": "lowkick",
-        "nameEn": "Low Kick",
-        "usage": "35.4%",
-        "rank": 4
-      },
-      {
-        "id": "icepunch",
-        "nameEn": "Ice Punch",
-        "usage": "33.6%",
-        "rank": 5
-      },
-      {
         "id": "dragondance",
         "nameEn": "Dragon Dance",
-        "usage": "15.5%",
+        "usage": "16.0%",
         "rank": 6
+      },
+      {
+        "id": "superpower",
+        "nameEn": "Superpower",
+        "usage": "12.1%",
+        "rank": 7
+      },
+      {
+        "id": "highhorsepower",
+        "nameEn": "High Horsepower",
+        "usage": "10.8%",
+        "rank": 8
+      },
+      {
+        "id": "earthquake",
+        "nameEn": "Earthquake",
+        "usage": "6.6%",
+        "rank": 9
+      },
+      {
+        "id": "brickbreak",
+        "nameEn": "Brick Break",
+        "usage": "3.9%",
+        "rank": 10
       }
     ],
     "vgcDoublesMeta": {
@@ -2492,40 +2492,34 @@
         "isDefault": true,
         "vgcDoublesMoves": [
           {
-            "id": "rockslide",
-            "nameEn": "Rock Slide",
-            "usage": "95.1%",
-            "rank": 1
-          },
-          {
-            "id": "knockoff",
-            "nameEn": "Knock Off",
-            "usage": "92.7%",
-            "rank": 2
-          },
-          {
-            "id": "protect",
-            "nameEn": "Protect",
-            "usage": "71.9%",
-            "rank": 3
-          },
-          {
-            "id": "lowkick",
-            "nameEn": "Low Kick",
-            "usage": "35.4%",
-            "rank": 4
-          },
-          {
-            "id": "icepunch",
-            "nameEn": "Ice Punch",
-            "usage": "33.6%",
-            "rank": 5
-          },
-          {
             "id": "dragondance",
             "nameEn": "Dragon Dance",
-            "usage": "15.5%",
+            "usage": "16.0%",
             "rank": 6
+          },
+          {
+            "id": "superpower",
+            "nameEn": "Superpower",
+            "usage": "12.1%",
+            "rank": 7
+          },
+          {
+            "id": "highhorsepower",
+            "nameEn": "High Horsepower",
+            "usage": "10.8%",
+            "rank": 8
+          },
+          {
+            "id": "earthquake",
+            "nameEn": "Earthquake",
+            "usage": "6.6%",
+            "rank": 9
+          },
+          {
+            "id": "brickbreak",
+            "nameEn": "Brick Break",
+            "usage": "3.9%",
+            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -2563,40 +2557,34 @@
         "isDefault": false,
         "vgcDoublesMoves": [
           {
-            "id": "rockslide",
-            "nameEn": "Rock Slide",
-            "usage": "95.1%",
-            "rank": 1
-          },
-          {
-            "id": "knockoff",
-            "nameEn": "Knock Off",
-            "usage": "92.7%",
-            "rank": 2
-          },
-          {
-            "id": "protect",
-            "nameEn": "Protect",
-            "usage": "71.9%",
-            "rank": 3
-          },
-          {
-            "id": "lowkick",
-            "nameEn": "Low Kick",
-            "usage": "35.4%",
-            "rank": 4
-          },
-          {
-            "id": "icepunch",
-            "nameEn": "Ice Punch",
-            "usage": "33.6%",
-            "rank": 5
-          },
-          {
             "id": "dragondance",
             "nameEn": "Dragon Dance",
-            "usage": "15.5%",
+            "usage": "16.0%",
             "rank": 6
+          },
+          {
+            "id": "superpower",
+            "nameEn": "Superpower",
+            "usage": "12.1%",
+            "rank": 7
+          },
+          {
+            "id": "highhorsepower",
+            "nameEn": "High Horsepower",
+            "usage": "10.8%",
+            "rank": 8
+          },
+          {
+            "id": "earthquake",
+            "nameEn": "Earthquake",
+            "usage": "6.6%",
+            "rank": 9
+          },
+          {
+            "id": "brickbreak",
+            "nameEn": "Brick Break",
+            "usage": "3.9%",
+            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -2647,7 +2635,7 @@
       {
         "id": "hurricane",
         "nameEn": "Hurricane",
-        "usage": "97.4%",
+        "usage": "97.3%",
         "rank": 1
       },
       {
@@ -2659,25 +2647,25 @@
       {
         "id": "weatherball",
         "nameEn": "Weather Ball",
-        "usage": "79.8%",
+        "usage": "79.5%",
         "rank": 3
       },
       {
         "id": "wideguard",
         "nameEn": "Wide Guard",
-        "usage": "62.3%",
+        "usage": "62.2%",
         "rank": 4
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "29.9%",
+        "usage": "29.7%",
         "rank": 5
       },
       {
         "id": "muddywater",
         "nameEn": "Muddy Water",
-        "usage": "10.0%",
+        "usage": "10.1%",
         "rank": 6
       }
     ],
@@ -2720,7 +2708,7 @@
           {
             "id": "hurricane",
             "nameEn": "Hurricane",
-            "usage": "97.4%",
+            "usage": "97.3%",
             "rank": 1
           },
           {
@@ -2732,25 +2720,25 @@
           {
             "id": "weatherball",
             "nameEn": "Weather Ball",
-            "usage": "79.8%",
+            "usage": "79.5%",
             "rank": 3
           },
           {
             "id": "wideguard",
             "nameEn": "Wide Guard",
-            "usage": "62.3%",
+            "usage": "62.2%",
             "rank": 4
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "29.9%",
+            "usage": "29.7%",
             "rank": 5
           },
           {
             "id": "muddywater",
             "nameEn": "Muddy Water",
-            "usage": "10.0%",
+            "usage": "10.1%",
             "rank": 6
           }
         ],
@@ -2799,34 +2787,40 @@
     "championsLegal": true,
     "vgcDoublesMoves": [
       {
+        "id": "scald",
+        "nameEn": "Scald",
+        "usage": "70.3%",
+        "rank": 1
+      },
+      {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "68.4%",
+        "rank": 2
+      },
+      {
+        "id": "icebeam",
+        "nameEn": "Ice Beam",
+        "usage": "50.2%",
+        "rank": 3
+      },
+      {
+        "id": "icywind",
+        "nameEn": "Icy Wind",
+        "usage": "38.2%",
+        "rank": 4
+      },
+      {
+        "id": "recover",
+        "nameEn": "Recover",
+        "usage": "34.3%",
+        "rank": 5
+      },
+      {
         "id": "muddywater",
         "nameEn": "Muddy Water",
         "usage": "29.7%",
         "rank": 6
-      },
-      {
-        "id": "hypnosis",
-        "nameEn": "Hypnosis",
-        "usage": "23.8%",
-        "rank": 7
-      },
-      {
-        "id": "coil",
-        "nameEn": "Coil",
-        "usage": "23.2%",
-        "rank": 8
-      },
-      {
-        "id": "lifedew",
-        "nameEn": "Life Dew",
-        "usage": "17.2%",
-        "rank": 9
-      },
-      {
-        "id": "haze",
-        "nameEn": "Haze",
-        "usage": "14.9%",
-        "rank": 10
       }
     ],
     "vgcDoublesMeta": {
@@ -2865,34 +2859,40 @@
         "isDefault": true,
         "vgcDoublesMoves": [
           {
+            "id": "scald",
+            "nameEn": "Scald",
+            "usage": "70.3%",
+            "rank": 1
+          },
+          {
+            "id": "protect",
+            "nameEn": "Protect",
+            "usage": "68.4%",
+            "rank": 2
+          },
+          {
+            "id": "icebeam",
+            "nameEn": "Ice Beam",
+            "usage": "50.2%",
+            "rank": 3
+          },
+          {
+            "id": "icywind",
+            "nameEn": "Icy Wind",
+            "usage": "38.2%",
+            "rank": 4
+          },
+          {
+            "id": "recover",
+            "nameEn": "Recover",
+            "usage": "34.3%",
+            "rank": 5
+          },
+          {
             "id": "muddywater",
             "nameEn": "Muddy Water",
             "usage": "29.7%",
             "rank": 6
-          },
-          {
-            "id": "hypnosis",
-            "nameEn": "Hypnosis",
-            "usage": "23.8%",
-            "rank": 7
-          },
-          {
-            "id": "coil",
-            "nameEn": "Coil",
-            "usage": "23.2%",
-            "rank": 8
-          },
-          {
-            "id": "lifedew",
-            "nameEn": "Life Dew",
-            "usage": "17.2%",
-            "rank": 9
-          },
-          {
-            "id": "haze",
-            "nameEn": "Haze",
-            "usage": "14.9%",
-            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -2949,31 +2949,31 @@
       {
         "id": "tailwind",
         "nameEn": "Tailwind",
-        "usage": "89.2%",
+        "usage": "89.1%",
         "rank": 2
       },
       {
         "id": "dualwingbeat",
         "nameEn": "Dual Wingbeat",
-        "usage": "76.3%",
+        "usage": "76.4%",
         "rank": 3
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "41.5%",
+        "usage": "41.8%",
         "rank": 4
       },
       {
         "id": "wideguard",
         "nameEn": "Wide Guard",
-        "usage": "36.0%",
+        "usage": "35.5%",
         "rank": 5
       },
       {
         "id": "icefang",
         "nameEn": "Ice Fang",
-        "usage": "32.6%",
+        "usage": "32.2%",
         "rank": 6
       }
     ],
@@ -3022,31 +3022,31 @@
           {
             "id": "tailwind",
             "nameEn": "Tailwind",
-            "usage": "89.2%",
+            "usage": "89.1%",
             "rank": 2
           },
           {
             "id": "dualwingbeat",
             "nameEn": "Dual Wingbeat",
-            "usage": "76.3%",
+            "usage": "76.4%",
             "rank": 3
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "41.5%",
+            "usage": "41.8%",
             "rank": 4
           },
           {
             "id": "wideguard",
             "nameEn": "Wide Guard",
-            "usage": "36.0%",
+            "usage": "35.5%",
             "rank": 5
           },
           {
             "id": "icefang",
             "nameEn": "Ice Fang",
-            "usage": "32.6%",
+            "usage": "32.2%",
             "rank": 6
           }
         ],
@@ -3093,31 +3093,31 @@
           {
             "id": "tailwind",
             "nameEn": "Tailwind",
-            "usage": "89.2%",
+            "usage": "89.1%",
             "rank": 2
           },
           {
             "id": "dualwingbeat",
             "nameEn": "Dual Wingbeat",
-            "usage": "76.3%",
+            "usage": "76.4%",
             "rank": 3
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "41.5%",
+            "usage": "41.8%",
             "rank": 4
           },
           {
             "id": "wideguard",
             "nameEn": "Wide Guard",
-            "usage": "36.0%",
+            "usage": "35.5%",
             "rank": 5
           },
           {
             "id": "icefang",
             "nameEn": "Ice Fang",
-            "usage": "32.6%",
+            "usage": "32.2%",
             "rank": 6
           }
         ],
@@ -3168,37 +3168,37 @@
       {
         "id": "sludgebomb",
         "nameEn": "Sludge Bomb",
-        "usage": "92.3%",
+        "usage": "92.0%",
         "rank": 1
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "81.7%",
+        "usage": "81.4%",
         "rank": 2
       },
       {
         "id": "earthpower",
         "nameEn": "Earth Power",
-        "usage": "72.6%",
+        "usage": "70.1%",
         "rank": 3
-      },
-      {
-        "id": "gigadrain",
-        "nameEn": "Giga Drain",
-        "usage": "47.3%",
-        "rank": 4
       },
       {
         "id": "sleeppowder",
         "nameEn": "Sleep Powder",
-        "usage": "45.7%",
+        "usage": "48.0%",
+        "rank": 4
+      },
+      {
+        "id": "gigadrain",
+        "nameEn": "Giga Drain",
+        "usage": "46.2%",
         "rank": 5
       },
       {
         "id": "leafstorm",
         "nameEn": "Leaf Storm",
-        "usage": "18.0%",
+        "usage": "20.0%",
         "rank": 6
       }
     ],
@@ -3240,37 +3240,37 @@
           {
             "id": "sludgebomb",
             "nameEn": "Sludge Bomb",
-            "usage": "92.3%",
+            "usage": "92.0%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "81.7%",
+            "usage": "81.4%",
             "rank": 2
           },
           {
             "id": "earthpower",
             "nameEn": "Earth Power",
-            "usage": "72.6%",
+            "usage": "70.1%",
             "rank": 3
-          },
-          {
-            "id": "gigadrain",
-            "nameEn": "Giga Drain",
-            "usage": "47.3%",
-            "rank": 4
           },
           {
             "id": "sleeppowder",
             "nameEn": "Sleep Powder",
-            "usage": "45.7%",
+            "usage": "48.0%",
+            "rank": 4
+          },
+          {
+            "id": "gigadrain",
+            "nameEn": "Giga Drain",
+            "usage": "46.2%",
             "rank": 5
           },
           {
             "id": "leafstorm",
             "nameEn": "Leaf Storm",
-            "usage": "18.0%",
+            "usage": "20.0%",
             "rank": 6
           }
         ],
@@ -3311,37 +3311,37 @@
           {
             "id": "sludgebomb",
             "nameEn": "Sludge Bomb",
-            "usage": "92.3%",
+            "usage": "92.0%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "81.7%",
+            "usage": "81.4%",
             "rank": 2
           },
           {
             "id": "earthpower",
             "nameEn": "Earth Power",
-            "usage": "72.6%",
+            "usage": "70.1%",
             "rank": 3
-          },
-          {
-            "id": "gigadrain",
-            "nameEn": "Giga Drain",
-            "usage": "47.3%",
-            "rank": 4
           },
           {
             "id": "sleeppowder",
             "nameEn": "Sleep Powder",
-            "usage": "45.7%",
+            "usage": "48.0%",
+            "rank": 4
+          },
+          {
+            "id": "gigadrain",
+            "nameEn": "Giga Drain",
+            "usage": "46.2%",
             "rank": 5
           },
           {
             "id": "leafstorm",
             "nameEn": "Leaf Storm",
-            "usage": "18.0%",
+            "usage": "20.0%",
             "rank": 6
           }
         ],
@@ -3398,31 +3398,31 @@
       {
         "id": "shadowball",
         "nameEn": "Shadow Ball",
-        "usage": "92.7%",
+        "usage": "92.5%",
         "rank": 2
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "92.1%",
+        "usage": "91.9%",
         "rank": 3
       },
       {
         "id": "auroraveil",
         "nameEn": "Aurora Veil",
-        "usage": "68.7%",
+        "usage": "69.0%",
         "rank": 4
       },
       {
         "id": "taunt",
         "nameEn": "Taunt",
-        "usage": "12.8%",
+        "usage": "12.5%",
         "rank": 5
       },
       {
         "id": "thunderbolt",
         "nameEn": "Thunderbolt",
-        "usage": "8.8%",
+        "usage": "8.9%",
         "rank": 6
       }
     ],
@@ -3470,31 +3470,31 @@
           {
             "id": "shadowball",
             "nameEn": "Shadow Ball",
-            "usage": "92.7%",
+            "usage": "92.5%",
             "rank": 2
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "92.1%",
+            "usage": "91.9%",
             "rank": 3
           },
           {
             "id": "auroraveil",
             "nameEn": "Aurora Veil",
-            "usage": "68.7%",
+            "usage": "69.0%",
             "rank": 4
           },
           {
             "id": "taunt",
             "nameEn": "Taunt",
-            "usage": "12.8%",
+            "usage": "12.5%",
             "rank": 5
           },
           {
             "id": "thunderbolt",
             "nameEn": "Thunderbolt",
-            "usage": "8.8%",
+            "usage": "8.9%",
             "rank": 6
           }
         ],
@@ -3569,40 +3569,34 @@
     "championsLegal": true,
     "vgcDoublesMoves": [
       {
-        "id": "protect",
-        "nameEn": "Protect",
-        "usage": "87.8%",
-        "rank": 1
-      },
-      {
-        "id": "wavecrash",
-        "nameEn": "Wave Crash",
-        "usage": "80.3%",
-        "rank": 2
-      },
-      {
-        "id": "icepunch",
-        "nameEn": "Ice Punch",
-        "usage": "73.1%",
-        "rank": 3
-      },
-      {
-        "id": "earthquake",
-        "nameEn": "Earthquake",
-        "usage": "71.8%",
-        "rank": 4
-      },
-      {
-        "id": "highhorsepower",
-        "nameEn": "High Horsepower",
-        "usage": "26.8%",
-        "rank": 5
-      },
-      {
         "id": "flipturn",
         "nameEn": "Flip Turn",
-        "usage": "12.0%",
+        "usage": "11.4%",
         "rank": 6
+      },
+      {
+        "id": "liquidation",
+        "nameEn": "Liquidation",
+        "usage": "7.8%",
+        "rank": 7
+      },
+      {
+        "id": "yawn",
+        "nameEn": "Yawn",
+        "usage": "6.9%",
+        "rank": 8
+      },
+      {
+        "id": "rockslide",
+        "nameEn": "Rock Slide",
+        "usage": "6.5%",
+        "rank": 9
+      },
+      {
+        "id": "knockoff",
+        "nameEn": "Knock Off",
+        "usage": "3.8%",
+        "rank": 10
       }
     ],
     "vgcDoublesMeta": {
@@ -3641,40 +3635,34 @@
         "isDefault": true,
         "vgcDoublesMoves": [
           {
-            "id": "protect",
-            "nameEn": "Protect",
-            "usage": "87.8%",
-            "rank": 1
-          },
-          {
-            "id": "wavecrash",
-            "nameEn": "Wave Crash",
-            "usage": "80.3%",
-            "rank": 2
-          },
-          {
-            "id": "icepunch",
-            "nameEn": "Ice Punch",
-            "usage": "73.1%",
-            "rank": 3
-          },
-          {
-            "id": "earthquake",
-            "nameEn": "Earthquake",
-            "usage": "71.8%",
-            "rank": 4
-          },
-          {
-            "id": "highhorsepower",
-            "nameEn": "High Horsepower",
-            "usage": "26.8%",
-            "rank": 5
-          },
-          {
             "id": "flipturn",
             "nameEn": "Flip Turn",
-            "usage": "12.0%",
+            "usage": "11.4%",
             "rank": 6
+          },
+          {
+            "id": "liquidation",
+            "nameEn": "Liquidation",
+            "usage": "7.8%",
+            "rank": 7
+          },
+          {
+            "id": "yawn",
+            "nameEn": "Yawn",
+            "usage": "6.9%",
+            "rank": 8
+          },
+          {
+            "id": "rockslide",
+            "nameEn": "Rock Slide",
+            "usage": "6.5%",
+            "rank": 9
+          },
+          {
+            "id": "knockoff",
+            "nameEn": "Knock Off",
+            "usage": "3.8%",
+            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -3712,40 +3700,34 @@
         "isDefault": false,
         "vgcDoublesMoves": [
           {
-            "id": "protect",
-            "nameEn": "Protect",
-            "usage": "87.8%",
-            "rank": 1
-          },
-          {
-            "id": "wavecrash",
-            "nameEn": "Wave Crash",
-            "usage": "80.3%",
-            "rank": 2
-          },
-          {
-            "id": "icepunch",
-            "nameEn": "Ice Punch",
-            "usage": "73.1%",
-            "rank": 3
-          },
-          {
-            "id": "earthquake",
-            "nameEn": "Earthquake",
-            "usage": "71.8%",
-            "rank": 4
-          },
-          {
-            "id": "highhorsepower",
-            "nameEn": "High Horsepower",
-            "usage": "26.8%",
-            "rank": 5
-          },
-          {
             "id": "flipturn",
             "nameEn": "Flip Turn",
-            "usage": "12.0%",
+            "usage": "11.4%",
             "rank": 6
+          },
+          {
+            "id": "liquidation",
+            "nameEn": "Liquidation",
+            "usage": "7.8%",
+            "rank": 7
+          },
+          {
+            "id": "yawn",
+            "nameEn": "Yawn",
+            "usage": "6.9%",
+            "rank": 8
+          },
+          {
+            "id": "rockslide",
+            "nameEn": "Rock Slide",
+            "usage": "6.5%",
+            "rank": 9
+          },
+          {
+            "id": "knockoff",
+            "nameEn": "Knock Off",
+            "usage": "3.8%",
+            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -3795,37 +3777,37 @@
       {
         "id": "heatwave",
         "nameEn": "Heat Wave",
-        "usage": "95.1%",
+        "usage": "94.8%",
         "rank": 1
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "92.9%",
+        "usage": "92.4%",
         "rank": 2
       },
       {
         "id": "psychic",
         "nameEn": "Psychic",
-        "usage": "72.0%",
+        "usage": "72.2%",
         "rank": 3
       },
       {
         "id": "nastyplot",
         "nameEn": "Nasty Plot",
-        "usage": "53.5%",
+        "usage": "54.1%",
         "rank": 4
       },
       {
         "id": "psyshock",
         "nameEn": "Psyshock",
-        "usage": "22.6%",
+        "usage": "22.1%",
         "rank": 5
       },
       {
         "id": "substitute",
         "nameEn": "Substitute",
-        "usage": "15.2%",
+        "usage": "14.4%",
         "rank": 6
       }
     ],
@@ -3867,37 +3849,37 @@
           {
             "id": "heatwave",
             "nameEn": "Heat Wave",
-            "usage": "95.1%",
+            "usage": "94.8%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "92.9%",
+            "usage": "92.4%",
             "rank": 2
           },
           {
             "id": "psychic",
             "nameEn": "Psychic",
-            "usage": "72.0%",
+            "usage": "72.2%",
             "rank": 3
           },
           {
             "id": "nastyplot",
             "nameEn": "Nasty Plot",
-            "usage": "53.5%",
+            "usage": "54.1%",
             "rank": 4
           },
           {
             "id": "psyshock",
             "nameEn": "Psyshock",
-            "usage": "22.6%",
+            "usage": "22.1%",
             "rank": 5
           },
           {
             "id": "substitute",
             "nameEn": "Substitute",
-            "usage": "15.2%",
+            "usage": "14.4%",
             "rank": 6
           }
         ],
@@ -3974,37 +3956,37 @@
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "70.2%",
+        "usage": "70.8%",
         "rank": 1
       },
       {
         "id": "dragonpulse",
         "nameEn": "Dragon Pulse",
-        "usage": "47.0%",
+        "usage": "50.4%",
         "rank": 2
       },
       {
         "id": "extremespeed",
         "nameEn": "Extreme Speed",
-        "usage": "44.7%",
+        "usage": "48.1%",
         "rank": 3
       },
       {
         "id": "heatwave",
         "nameEn": "Heat Wave",
-        "usage": "38.6%",
+        "usage": "42.4%",
         "rank": 4
       },
       {
         "id": "tailwind",
         "nameEn": "Tailwind",
-        "usage": "37.2%",
+        "usage": "33.5%",
         "rank": 5
       },
       {
         "id": "dragonclaw",
         "nameEn": "Dragon Claw",
-        "usage": "22.0%",
+        "usage": "19.7%",
         "rank": 6
       }
     ],
@@ -4046,37 +4028,37 @@
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "70.2%",
+            "usage": "70.8%",
             "rank": 1
           },
           {
             "id": "dragonpulse",
             "nameEn": "Dragon Pulse",
-            "usage": "47.0%",
+            "usage": "50.4%",
             "rank": 2
           },
           {
             "id": "extremespeed",
             "nameEn": "Extreme Speed",
-            "usage": "44.7%",
+            "usage": "48.1%",
             "rank": 3
           },
           {
             "id": "heatwave",
             "nameEn": "Heat Wave",
-            "usage": "38.6%",
+            "usage": "42.4%",
             "rank": 4
           },
           {
             "id": "tailwind",
             "nameEn": "Tailwind",
-            "usage": "37.2%",
+            "usage": "33.5%",
             "rank": 5
           },
           {
             "id": "dragonclaw",
             "nameEn": "Dragon Claw",
-            "usage": "22.0%",
+            "usage": "19.7%",
             "rank": 6
           }
         ],
@@ -4152,37 +4134,37 @@
       {
         "id": "shadowball",
         "nameEn": "Shadow Ball",
-        "usage": "97.1%",
+        "usage": "96.9%",
         "rank": 1
       },
       {
         "id": "makeitrain",
         "nameEn": "Make It Rain",
-        "usage": "96.3%",
+        "usage": "96.5%",
         "rank": 2
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "81.2%",
+        "usage": "81.0%",
         "rank": 3
       },
       {
         "id": "nastyplot",
         "nameEn": "Nasty Plot",
-        "usage": "58.1%",
+        "usage": "57.2%",
         "rank": 4
       },
       {
         "id": "powergem",
         "nameEn": "Power Gem",
-        "usage": "23.8%",
+        "usage": "24.2%",
         "rank": 5
       },
       {
         "id": "thunderbolt",
         "nameEn": "Thunderbolt",
-        "usage": "15.4%",
+        "usage": "15.9%",
         "rank": 6
       }
     ],
@@ -4223,37 +4205,37 @@
           {
             "id": "shadowball",
             "nameEn": "Shadow Ball",
-            "usage": "97.1%",
+            "usage": "96.9%",
             "rank": 1
           },
           {
             "id": "makeitrain",
             "nameEn": "Make It Rain",
-            "usage": "96.3%",
+            "usage": "96.5%",
             "rank": 2
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "81.2%",
+            "usage": "81.0%",
             "rank": 3
           },
           {
             "id": "nastyplot",
             "nameEn": "Nasty Plot",
-            "usage": "58.1%",
+            "usage": "57.2%",
             "rank": 4
           },
           {
             "id": "powergem",
             "nameEn": "Power Gem",
-            "usage": "23.8%",
+            "usage": "24.2%",
             "rank": 5
           },
           {
             "id": "thunderbolt",
             "nameEn": "Thunderbolt",
-            "usage": "15.4%",
+            "usage": "15.9%",
             "rank": 6
           }
         ],
@@ -4303,40 +4285,34 @@
     "championsLegal": true,
     "vgcDoublesMoves": [
       {
-        "id": "partingshot",
-        "nameEn": "Parting Shot",
-        "usage": "85.8%",
-        "rank": 1
-      },
-      {
-        "id": "lightscreen",
-        "nameEn": "Light Screen",
-        "usage": "81.9%",
-        "rank": 2
-      },
-      {
-        "id": "reflect",
-        "nameEn": "Reflect",
-        "usage": "80.5%",
-        "rank": 3
-      },
-      {
-        "id": "spiritbreak",
-        "nameEn": "Spirit Break",
-        "usage": "63.7%",
-        "rank": 4
-      },
-      {
-        "id": "fakeout",
-        "nameEn": "Fake Out",
-        "usage": "31.5%",
-        "rank": 5
-      },
-      {
         "id": "suckerpunch",
         "nameEn": "Sucker Punch",
-        "usage": "11.7%",
+        "usage": "11.5%",
         "rank": 6
+      },
+      {
+        "id": "foulplay",
+        "nameEn": "Foul Play",
+        "usage": "10.0%",
+        "rank": 7
+      },
+      {
+        "id": "scaryface",
+        "nameEn": "Scary Face",
+        "usage": "7.2%",
+        "rank": 8
+      },
+      {
+        "id": "faketears",
+        "nameEn": "Fake Tears",
+        "usage": "4.5%",
+        "rank": 9
+      },
+      {
+        "id": "taunt",
+        "nameEn": "Taunt",
+        "usage": "3.8%",
+        "rank": 10
       }
     ],
     "vgcDoublesMeta": {
@@ -4376,40 +4352,34 @@
         "isDefault": true,
         "vgcDoublesMoves": [
           {
-            "id": "partingshot",
-            "nameEn": "Parting Shot",
-            "usage": "85.8%",
-            "rank": 1
-          },
-          {
-            "id": "lightscreen",
-            "nameEn": "Light Screen",
-            "usage": "81.9%",
-            "rank": 2
-          },
-          {
-            "id": "reflect",
-            "nameEn": "Reflect",
-            "usage": "80.5%",
-            "rank": 3
-          },
-          {
-            "id": "spiritbreak",
-            "nameEn": "Spirit Break",
-            "usage": "63.7%",
-            "rank": 4
-          },
-          {
-            "id": "fakeout",
-            "nameEn": "Fake Out",
-            "usage": "31.5%",
-            "rank": 5
-          },
-          {
             "id": "suckerpunch",
             "nameEn": "Sucker Punch",
-            "usage": "11.7%",
+            "usage": "11.5%",
             "rank": 6
+          },
+          {
+            "id": "foulplay",
+            "nameEn": "Foul Play",
+            "usage": "10.0%",
+            "rank": 7
+          },
+          {
+            "id": "scaryface",
+            "nameEn": "Scary Face",
+            "usage": "7.2%",
+            "rank": 8
+          },
+          {
+            "id": "faketears",
+            "nameEn": "Fake Tears",
+            "usage": "4.5%",
+            "rank": 9
+          },
+          {
+            "id": "taunt",
+            "nameEn": "Taunt",
+            "usage": "3.8%",
+            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -4459,31 +4429,31 @@
       {
         "id": "eruption",
         "nameEn": "Eruption",
-        "usage": "91.5%",
+        "usage": "91.4%",
         "rank": 1
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "86.6%",
+        "usage": "86.5%",
         "rank": 2
       },
       {
         "id": "weatherball",
         "nameEn": "Weather Ball",
-        "usage": "54.3%",
+        "usage": "54.1%",
         "rank": 3
       },
       {
         "id": "heatwave",
         "nameEn": "Heat Wave",
-        "usage": "50.0%",
+        "usage": "49.1%",
         "rank": 4
       },
       {
         "id": "earthpower",
         "nameEn": "Earth Power",
-        "usage": "33.3%",
+        "usage": "32.8%",
         "rank": 5
       },
       {
@@ -4531,31 +4501,31 @@
           {
             "id": "eruption",
             "nameEn": "Eruption",
-            "usage": "91.5%",
+            "usage": "91.4%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "86.6%",
+            "usage": "86.5%",
             "rank": 2
           },
           {
             "id": "weatherball",
             "nameEn": "Weather Ball",
-            "usage": "54.3%",
+            "usage": "54.1%",
             "rank": 3
           },
           {
             "id": "heatwave",
             "nameEn": "Heat Wave",
-            "usage": "50.0%",
+            "usage": "49.1%",
             "rank": 4
           },
           {
             "id": "earthpower",
             "nameEn": "Earth Power",
-            "usage": "33.3%",
+            "usage": "32.8%",
             "rank": 5
           },
           {
@@ -4611,37 +4581,37 @@
       {
         "id": "waterspout",
         "nameEn": "Water Spout",
-        "usage": "85.2%",
+        "usage": "84.9%",
         "rank": 1
       },
       {
         "id": "darkpulse",
         "nameEn": "Dark Pulse",
-        "usage": "83.9%",
+        "usage": "83.4%",
         "rank": 2
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "56.8%",
+        "usage": "57.1%",
         "rank": 3
       },
       {
         "id": "shellsmash",
         "nameEn": "Shell Smash",
-        "usage": "52.6%",
+        "usage": "53.1%",
         "rank": 4
       },
       {
         "id": "aurasphere",
         "nameEn": "Aura Sphere",
-        "usage": "44.6%",
+        "usage": "44.0%",
         "rank": 5
       },
       {
         "id": "fakeout",
         "nameEn": "Fake Out",
-        "usage": "37.0%",
+        "usage": "36.3%",
         "rank": 6
       }
     ],
@@ -4682,37 +4652,37 @@
           {
             "id": "waterspout",
             "nameEn": "Water Spout",
-            "usage": "85.2%",
+            "usage": "84.9%",
             "rank": 1
           },
           {
             "id": "darkpulse",
             "nameEn": "Dark Pulse",
-            "usage": "83.9%",
+            "usage": "83.4%",
             "rank": 2
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "56.8%",
+            "usage": "57.1%",
             "rank": 3
           },
           {
             "id": "shellsmash",
             "nameEn": "Shell Smash",
-            "usage": "52.6%",
+            "usage": "53.1%",
             "rank": 4
           },
           {
             "id": "aurasphere",
             "nameEn": "Aura Sphere",
-            "usage": "44.6%",
+            "usage": "44.0%",
             "rank": 5
           },
           {
             "id": "fakeout",
             "nameEn": "Fake Out",
-            "usage": "37.0%",
+            "usage": "36.3%",
             "rank": 6
           }
         ],
@@ -4752,37 +4722,37 @@
           {
             "id": "waterspout",
             "nameEn": "Water Spout",
-            "usage": "85.2%",
+            "usage": "84.9%",
             "rank": 1
           },
           {
             "id": "darkpulse",
             "nameEn": "Dark Pulse",
-            "usage": "83.9%",
+            "usage": "83.4%",
             "rank": 2
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "56.8%",
+            "usage": "57.1%",
             "rank": 3
           },
           {
             "id": "shellsmash",
             "nameEn": "Shell Smash",
-            "usage": "52.6%",
+            "usage": "53.1%",
             "rank": 4
           },
           {
             "id": "aurasphere",
             "nameEn": "Aura Sphere",
-            "usage": "44.6%",
+            "usage": "44.0%",
             "rank": 5
           },
           {
             "id": "fakeout",
             "nameEn": "Fake Out",
-            "usage": "37.0%",
+            "usage": "36.3%",
             "rank": 6
           }
         ],
@@ -4832,37 +4802,37 @@
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "97.4%",
+        "usage": "97.5%",
         "rank": 1
       },
       {
         "id": "dazzlinggleam",
         "nameEn": "Dazzling Gleam",
-        "usage": "95.6%",
+        "usage": "95.9%",
         "rank": 2
       },
       {
         "id": "moonblast",
         "nameEn": "Moonblast",
-        "usage": "68.5%",
+        "usage": "71.0%",
         "rank": 3
       },
       {
         "id": "lightofruin",
         "nameEn": "Light of Ruin",
-        "usage": "54.0%",
+        "usage": "58.5%",
         "rank": 4
       },
       {
         "id": "calmmind",
         "nameEn": "Calm Mind",
-        "usage": "43.8%",
+        "usage": "39.7%",
         "rank": 5
       },
       {
         "id": "drainingkiss",
         "nameEn": "Draining Kiss",
-        "usage": "27.3%",
+        "usage": "24.6%",
         "rank": 6
       }
     ],
@@ -4903,37 +4873,37 @@
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "97.4%",
+            "usage": "97.5%",
             "rank": 1
           },
           {
             "id": "dazzlinggleam",
             "nameEn": "Dazzling Gleam",
-            "usage": "95.6%",
+            "usage": "95.9%",
             "rank": 2
           },
           {
             "id": "moonblast",
             "nameEn": "Moonblast",
-            "usage": "68.5%",
+            "usage": "71.0%",
             "rank": 3
           },
           {
             "id": "lightofruin",
             "nameEn": "Light of Ruin",
-            "usage": "54.0%",
+            "usage": "58.5%",
             "rank": 4
           },
           {
             "id": "calmmind",
             "nameEn": "Calm Mind",
-            "usage": "43.8%",
+            "usage": "39.7%",
             "rank": 5
           },
           {
             "id": "drainingkiss",
             "nameEn": "Draining Kiss",
-            "usage": "27.3%",
+            "usage": "24.6%",
             "rank": 6
           }
         ],
@@ -4974,37 +4944,37 @@
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "97.4%",
+            "usage": "97.5%",
             "rank": 1
           },
           {
             "id": "dazzlinggleam",
             "nameEn": "Dazzling Gleam",
-            "usage": "95.6%",
+            "usage": "95.9%",
             "rank": 2
           },
           {
             "id": "moonblast",
             "nameEn": "Moonblast",
-            "usage": "68.5%",
+            "usage": "71.0%",
             "rank": 3
           },
           {
             "id": "lightofruin",
             "nameEn": "Light of Ruin",
-            "usage": "54.0%",
+            "usage": "58.5%",
             "rank": 4
           },
           {
             "id": "calmmind",
             "nameEn": "Calm Mind",
-            "usage": "43.8%",
+            "usage": "39.7%",
             "rank": 5
           },
           {
             "id": "drainingkiss",
             "nameEn": "Draining Kiss",
-            "usage": "27.3%",
+            "usage": "24.6%",
             "rank": 6
           }
         ],
@@ -5044,37 +5014,37 @@
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "97.4%",
+            "usage": "97.5%",
             "rank": 1
           },
           {
             "id": "dazzlinggleam",
             "nameEn": "Dazzling Gleam",
-            "usage": "95.6%",
+            "usage": "95.9%",
             "rank": 2
           },
           {
             "id": "moonblast",
             "nameEn": "Moonblast",
-            "usage": "68.5%",
+            "usage": "71.0%",
             "rank": 3
           },
           {
             "id": "lightofruin",
             "nameEn": "Light of Ruin",
-            "usage": "54.0%",
+            "usage": "58.5%",
             "rank": 4
           },
           {
             "id": "calmmind",
             "nameEn": "Calm Mind",
-            "usage": "43.8%",
+            "usage": "39.7%",
             "rank": 5
           },
           {
             "id": "drainingkiss",
             "nameEn": "Draining Kiss",
-            "usage": "27.3%",
+            "usage": "24.6%",
             "rank": 6
           }
         ],
@@ -5125,37 +5095,37 @@
       {
         "id": "followme",
         "nameEn": "Follow Me",
-        "usage": "84.5%",
+        "usage": "83.8%",
         "rank": 1
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "77.7%",
+        "usage": "77.1%",
         "rank": 2
       },
       {
         "id": "populationbomb",
         "nameEn": "Population Bomb",
-        "usage": "36.0%",
+        "usage": "36.5%",
         "rank": 3
       },
       {
         "id": "superfang",
         "nameEn": "Super Fang",
-        "usage": "33.1%",
+        "usage": "32.4%",
         "rank": 4
       },
       {
         "id": "feint",
         "nameEn": "Feint",
-        "usage": "30.5%",
+        "usage": "29.8%",
         "rank": 5
       },
       {
         "id": "taunt",
         "nameEn": "Taunt",
-        "usage": "25.2%",
+        "usage": "24.7%",
         "rank": 6
       }
     ],
@@ -5197,37 +5167,37 @@
           {
             "id": "followme",
             "nameEn": "Follow Me",
-            "usage": "84.5%",
+            "usage": "83.8%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "77.7%",
+            "usage": "77.1%",
             "rank": 2
           },
           {
             "id": "populationbomb",
             "nameEn": "Population Bomb",
-            "usage": "36.0%",
+            "usage": "36.5%",
             "rank": 3
           },
           {
             "id": "superfang",
             "nameEn": "Super Fang",
-            "usage": "33.1%",
+            "usage": "32.4%",
             "rank": 4
           },
           {
             "id": "feint",
             "nameEn": "Feint",
-            "usage": "30.5%",
+            "usage": "29.8%",
             "rank": 5
           },
           {
             "id": "taunt",
             "nameEn": "Taunt",
-            "usage": "25.2%",
+            "usage": "24.7%",
             "rank": 6
           }
         ],
@@ -5269,37 +5239,37 @@
           {
             "id": "followme",
             "nameEn": "Follow Me",
-            "usage": "84.5%",
+            "usage": "83.8%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "77.7%",
+            "usage": "77.1%",
             "rank": 2
           },
           {
             "id": "populationbomb",
             "nameEn": "Population Bomb",
-            "usage": "36.0%",
+            "usage": "36.5%",
             "rank": 3
           },
           {
             "id": "superfang",
             "nameEn": "Super Fang",
-            "usage": "33.1%",
+            "usage": "32.4%",
             "rank": 4
           },
           {
             "id": "feint",
             "nameEn": "Feint",
-            "usage": "30.5%",
+            "usage": "29.8%",
             "rank": 5
           },
           {
             "id": "taunt",
             "nameEn": "Taunt",
-            "usage": "25.2%",
+            "usage": "24.7%",
             "rank": 6
           }
         ],
@@ -5351,37 +5321,37 @@
       {
         "id": "encore",
         "nameEn": "Encore",
-        "usage": "58.6%",
+        "usage": "58.3%",
         "rank": 1
       },
       {
         "id": "raindance",
         "nameEn": "Rain Dance",
-        "usage": "42.4%",
+        "usage": "42.1%",
         "rank": 2
       },
       {
         "id": "lightscreen",
         "nameEn": "Light Screen",
-        "usage": "41.1%",
+        "usage": "40.8%",
         "rank": 3
       },
       {
         "id": "willowisp",
         "nameEn": "Will-O-Wisp",
-        "usage": "40.0%",
+        "usage": "40.2%",
         "rank": 4
       },
       {
         "id": "fakeout",
         "nameEn": "Fake Out",
-        "usage": "32.4%",
+        "usage": "32.5%",
         "rank": 5
       },
       {
         "id": "reflect",
         "nameEn": "Reflect",
-        "usage": "31.2%",
+        "usage": "31.1%",
         "rank": 6
       }
     ],
@@ -5424,37 +5394,37 @@
           {
             "id": "encore",
             "nameEn": "Encore",
-            "usage": "58.6%",
+            "usage": "58.3%",
             "rank": 1
           },
           {
             "id": "raindance",
             "nameEn": "Rain Dance",
-            "usage": "42.4%",
+            "usage": "42.1%",
             "rank": 2
           },
           {
             "id": "lightscreen",
             "nameEn": "Light Screen",
-            "usage": "41.1%",
+            "usage": "40.8%",
             "rank": 3
           },
           {
             "id": "willowisp",
             "nameEn": "Will-O-Wisp",
-            "usage": "40.0%",
+            "usage": "40.2%",
             "rank": 4
           },
           {
             "id": "fakeout",
             "nameEn": "Fake Out",
-            "usage": "32.4%",
+            "usage": "32.5%",
             "rank": 5
           },
           {
             "id": "reflect",
             "nameEn": "Reflect",
-            "usage": "31.2%",
+            "usage": "31.1%",
             "rank": 6
           }
         ],
@@ -5531,37 +5501,37 @@
       {
         "id": "blizzard",
         "nameEn": "Blizzard",
-        "usage": "95.5%",
+        "usage": "95.3%",
         "rank": 1
       },
       {
         "id": "freezedry",
         "nameEn": "Freeze-Dry",
-        "usage": "72.2%",
+        "usage": "71.3%",
         "rank": 2
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "60.6%",
+        "usage": "60.2%",
         "rank": 3
       },
       {
         "id": "auroraveil",
         "nameEn": "Aurora Veil",
-        "usage": "52.2%",
+        "usage": "53.4%",
         "rank": 4
       },
       {
         "id": "encore",
         "nameEn": "Encore",
-        "usage": "32.8%",
+        "usage": "31.7%",
         "rank": 5
       },
       {
         "id": "moonblast",
         "nameEn": "Moonblast",
-        "usage": "29.6%",
+        "usage": "30.5%",
         "rank": 6
       }
     ],
@@ -5602,37 +5572,37 @@
           {
             "id": "heatwave",
             "nameEn": "Heat Wave",
-            "usage": "73.2%",
+            "usage": "74.5%",
             "rank": 1
           },
           {
             "id": "solarbeam",
             "nameEn": "Solar Beam",
-            "usage": "59.3%",
+            "usage": "59.2%",
             "rank": 2
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "49.6%",
+            "usage": "50.0%",
             "rank": 3
           },
           {
             "id": "helpinghand",
             "nameEn": "Helping Hand",
-            "usage": "18.0%",
+            "usage": "17.6%",
             "rank": 4
           },
           {
             "id": "willowisp",
             "nameEn": "Will-O-Wisp",
-            "usage": "16.3%",
+            "usage": "16.7%",
             "rank": 5
           },
           {
             "id": "encore",
             "nameEn": "Encore",
-            "usage": "16.0%",
+            "usage": "15.8%",
             "rank": 6
           }
         ],
@@ -5674,37 +5644,37 @@
           {
             "id": "blizzard",
             "nameEn": "Blizzard",
-            "usage": "95.5%",
+            "usage": "95.3%",
             "rank": 1
           },
           {
             "id": "freezedry",
             "nameEn": "Freeze-Dry",
-            "usage": "72.2%",
+            "usage": "71.3%",
             "rank": 2
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "60.6%",
+            "usage": "60.2%",
             "rank": 3
           },
           {
             "id": "auroraveil",
             "nameEn": "Aurora Veil",
-            "usage": "52.2%",
+            "usage": "53.4%",
             "rank": 4
           },
           {
             "id": "encore",
             "nameEn": "Encore",
-            "usage": "32.8%",
+            "usage": "31.7%",
             "rank": 5
           },
           {
             "id": "moonblast",
             "nameEn": "Moonblast",
-            "usage": "29.6%",
+            "usage": "30.5%",
             "rank": 6
           }
         ],
@@ -5756,37 +5726,37 @@
       {
         "id": "ironhead",
         "nameEn": "Iron Head",
-        "usage": "97.0%",
+        "usage": "96.8%",
         "rank": 1
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "93.2%",
+        "usage": "92.7%",
         "rank": 2
       },
       {
         "id": "rockslide",
         "nameEn": "Rock Slide",
-        "usage": "88.2%",
+        "usage": "86.9%",
         "rank": 3
       },
       {
         "id": "highhorsepower",
         "nameEn": "High Horsepower",
-        "usage": "64.6%",
+        "usage": "64.3%",
         "rank": 4
       },
       {
         "id": "earthquake",
         "nameEn": "Earthquake",
-        "usage": "38.1%",
+        "usage": "39.2%",
         "rank": 5
       },
       {
         "id": "swordsdance",
         "nameEn": "Swords Dance",
-        "usage": "2.6%",
+        "usage": "2.8%",
         "rank": 6
       }
     ],
@@ -5829,37 +5799,37 @@
           {
             "id": "ironhead",
             "nameEn": "Iron Head",
-            "usage": "97.0%",
+            "usage": "96.8%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "93.2%",
+            "usage": "92.7%",
             "rank": 2
           },
           {
             "id": "rockslide",
             "nameEn": "Rock Slide",
-            "usage": "88.2%",
+            "usage": "86.9%",
             "rank": 3
           },
           {
             "id": "highhorsepower",
             "nameEn": "High Horsepower",
-            "usage": "64.6%",
+            "usage": "64.3%",
             "rank": 4
           },
           {
             "id": "earthquake",
             "nameEn": "Earthquake",
-            "usage": "38.1%",
+            "usage": "39.2%",
             "rank": 5
           },
           {
             "id": "swordsdance",
             "nameEn": "Swords Dance",
-            "usage": "2.6%",
+            "usage": "2.8%",
             "rank": 6
           }
         ],
@@ -5936,37 +5906,37 @@
       {
         "id": "powergem",
         "nameEn": "Power Gem",
-        "usage": "95.8%",
+        "usage": "95.4%",
         "rank": 1
       },
       {
         "id": "spikyshield",
         "nameEn": "Spiky Shield",
-        "usage": "92.5%",
+        "usage": "91.9%",
         "rank": 2
       },
       {
         "id": "earthpower",
         "nameEn": "Earth Power",
-        "usage": "90.0%",
+        "usage": "89.3%",
         "rank": 3
       },
       {
         "id": "sludgebomb",
         "nameEn": "Sludge Bomb",
-        "usage": "81.4%",
+        "usage": "80.6%",
         "rank": 4
       },
       {
         "id": "mortalspin",
         "nameEn": "Mortal Spin",
-        "usage": "12.4%",
+        "usage": "12.7%",
         "rank": 5
       },
       {
         "id": "sludgewave",
         "nameEn": "Sludge Wave",
-        "usage": "6.3%",
+        "usage": "6.8%",
         "rank": 6
       }
     ],
@@ -6008,37 +5978,37 @@
           {
             "id": "powergem",
             "nameEn": "Power Gem",
-            "usage": "95.8%",
+            "usage": "95.4%",
             "rank": 1
           },
           {
             "id": "spikyshield",
             "nameEn": "Spiky Shield",
-            "usage": "92.5%",
+            "usage": "91.9%",
             "rank": 2
           },
           {
             "id": "earthpower",
             "nameEn": "Earth Power",
-            "usage": "90.0%",
+            "usage": "89.3%",
             "rank": 3
           },
           {
             "id": "sludgebomb",
             "nameEn": "Sludge Bomb",
-            "usage": "81.4%",
+            "usage": "80.6%",
             "rank": 4
           },
           {
             "id": "mortalspin",
             "nameEn": "Mortal Spin",
-            "usage": "12.4%",
+            "usage": "12.7%",
             "rank": 5
           },
           {
             "id": "sludgewave",
             "nameEn": "Sludge Wave",
-            "usage": "6.3%",
+            "usage": "6.8%",
             "rank": 6
           }
         ],
@@ -6115,38 +6085,38 @@
       {
         "id": "psychicfangs",
         "nameEn": "Psychic Fangs",
-        "usage": "89.1%",
+        "usage": "89.2%",
         "rank": 1
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "73.5%",
+        "usage": "73.4%",
         "rank": 2
       },
       {
         "id": "bulletpunch",
         "nameEn": "Bullet Punch",
-        "usage": "48.3%",
+        "usage": "47.6%",
         "rank": 3
-      },
-      {
-        "id": "ironhead",
-        "nameEn": "Iron Head",
-        "usage": "45.0%",
-        "rank": 4
       },
       {
         "id": "icepunch",
         "nameEn": "Ice Punch",
-        "usage": "30.1%",
+        "usage": "31.1%",
         "rank": 5
       },
       {
         "id": "meteormash",
         "nameEn": "Meteor Mash",
-        "usage": "22.0%",
+        "usage": "22.1%",
         "rank": 6
+      },
+      {
+        "id": "bodypress",
+        "nameEn": "Body Press",
+        "usage": "20.4%",
+        "rank": 7
       }
     ],
     "vgcDoublesMeta": {
@@ -6187,38 +6157,38 @@
           {
             "id": "psychicfangs",
             "nameEn": "Psychic Fangs",
-            "usage": "89.1%",
+            "usage": "89.2%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "73.5%",
+            "usage": "73.4%",
             "rank": 2
           },
           {
             "id": "bulletpunch",
             "nameEn": "Bullet Punch",
-            "usage": "48.3%",
+            "usage": "47.6%",
             "rank": 3
-          },
-          {
-            "id": "ironhead",
-            "nameEn": "Iron Head",
-            "usage": "45.0%",
-            "rank": 4
           },
           {
             "id": "icepunch",
             "nameEn": "Ice Punch",
-            "usage": "30.1%",
+            "usage": "31.1%",
             "rank": 5
           },
           {
             "id": "meteormash",
             "nameEn": "Meteor Mash",
-            "usage": "22.0%",
+            "usage": "22.1%",
             "rank": 6
+          },
+          {
+            "id": "bodypress",
+            "nameEn": "Body Press",
+            "usage": "20.4%",
+            "rank": 7
           }
         ],
         "vgcDoublesMeta": {
@@ -6258,38 +6228,38 @@
           {
             "id": "psychicfangs",
             "nameEn": "Psychic Fangs",
-            "usage": "89.1%",
+            "usage": "89.2%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "73.5%",
+            "usage": "73.4%",
             "rank": 2
           },
           {
             "id": "bulletpunch",
             "nameEn": "Bullet Punch",
-            "usage": "48.3%",
+            "usage": "47.6%",
             "rank": 3
-          },
-          {
-            "id": "ironhead",
-            "nameEn": "Iron Head",
-            "usage": "45.0%",
-            "rank": 4
           },
           {
             "id": "icepunch",
             "nameEn": "Ice Punch",
-            "usage": "30.1%",
+            "usage": "31.1%",
             "rank": 5
           },
           {
             "id": "meteormash",
             "nameEn": "Meteor Mash",
-            "usage": "22.0%",
+            "usage": "22.1%",
             "rank": 6
+          },
+          {
+            "id": "bodypress",
+            "nameEn": "Body Press",
+            "usage": "20.4%",
+            "rank": 7
           }
         ],
         "vgcDoublesMeta": {
@@ -6338,34 +6308,40 @@
     "championsLegal": true,
     "vgcDoublesMoves": [
       {
+        "id": "flareblitz",
+        "nameEn": "Flare Blitz",
+        "usage": "98.7%",
+        "rank": 1
+      },
+      {
+        "id": "headsmash",
+        "nameEn": "Head Smash",
+        "usage": "91.7%",
+        "rank": 2
+      },
+      {
+        "id": "extremespeed",
+        "nameEn": "Extreme Speed",
+        "usage": "88.8%",
+        "rank": 3
+      },
+      {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "87.2%",
+        "rank": 4
+      },
+      {
+        "id": "rockslide",
+        "nameEn": "Rock Slide",
+        "usage": "10.5%",
+        "rank": 5
+      },
+      {
         "id": "wildcharge",
         "nameEn": "Wild Charge",
-        "usage": "7.7%",
+        "usage": "8.0%",
         "rank": 6
-      },
-      {
-        "id": "closecombat",
-        "nameEn": "Close Combat",
-        "usage": "4.2%",
-        "rank": 7
-      },
-      {
-        "id": "psychicfangs",
-        "nameEn": "Psychic Fangs",
-        "usage": "1.9%",
-        "rank": 8
-      },
-      {
-        "id": "ironhead",
-        "nameEn": "Iron Head",
-        "usage": "0.9%",
-        "rank": 9
-      },
-      {
-        "id": "willowisp",
-        "nameEn": "Will-O-Wisp",
-        "usage": "0.8%",
-        "rank": 10
       }
     ],
     "vgcDoublesMeta": {
@@ -6406,19 +6382,19 @@
           {
             "id": "flareblitz",
             "nameEn": "Flare Blitz",
-            "usage": "75.6%",
+            "usage": "75.1%",
             "rank": 1
           },
           {
             "id": "extremespeed",
             "nameEn": "Extreme Speed",
-            "usage": "72.8%",
+            "usage": "73.0%",
             "rank": 2
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "31.4%",
+            "usage": "54.1%",
             "rank": 3
           },
           {
@@ -6430,13 +6406,13 @@
           {
             "id": "wildcharge",
             "nameEn": "Wild Charge",
-            "usage": "26.8%",
+            "usage": "26.6%",
             "rank": 5
           },
           {
             "id": "snarl",
             "nameEn": "Snarl",
-            "usage": "24.4%",
+            "usage": "24.0%",
             "rank": 6
           }
         ],
@@ -6477,34 +6453,40 @@
         "isDefault": false,
         "vgcDoublesMoves": [
           {
+            "id": "flareblitz",
+            "nameEn": "Flare Blitz",
+            "usage": "98.7%",
+            "rank": 1
+          },
+          {
+            "id": "headsmash",
+            "nameEn": "Head Smash",
+            "usage": "91.7%",
+            "rank": 2
+          },
+          {
+            "id": "extremespeed",
+            "nameEn": "Extreme Speed",
+            "usage": "88.8%",
+            "rank": 3
+          },
+          {
+            "id": "protect",
+            "nameEn": "Protect",
+            "usage": "87.2%",
+            "rank": 4
+          },
+          {
+            "id": "rockslide",
+            "nameEn": "Rock Slide",
+            "usage": "10.5%",
+            "rank": 5
+          },
+          {
             "id": "wildcharge",
             "nameEn": "Wild Charge",
-            "usage": "7.7%",
+            "usage": "8.0%",
             "rank": 6
-          },
-          {
-            "id": "closecombat",
-            "nameEn": "Close Combat",
-            "usage": "4.2%",
-            "rank": 7
-          },
-          {
-            "id": "psychicfangs",
-            "nameEn": "Psychic Fangs",
-            "usage": "1.9%",
-            "rank": 8
-          },
-          {
-            "id": "ironhead",
-            "nameEn": "Iron Head",
-            "usage": "0.9%",
-            "rank": 9
-          },
-          {
-            "id": "willowisp",
-            "nameEn": "Will-O-Wisp",
-            "usage": "0.8%",
-            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -6554,37 +6536,37 @@
       {
         "id": "tailwind",
         "nameEn": "Tailwind",
-        "usage": "93.3%",
+        "usage": "93.1%",
         "rank": 1
       },
       {
         "id": "flareblitz",
         "nameEn": "Flare Blitz",
-        "usage": "61.3%",
+        "usage": "61.4%",
         "rank": 2
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "55.6%",
+        "usage": "55.4%",
         "rank": 3
       },
       {
         "id": "bravebird",
         "nameEn": "Brave Bird",
-        "usage": "41.1%",
+        "usage": "41.7%",
         "rank": 4
       },
       {
         "id": "dualwingbeat",
         "nameEn": "Dual Wingbeat",
-        "usage": "40.1%",
+        "usage": "39.5%",
         "rank": 5
       },
       {
         "id": "quickguard",
         "nameEn": "Quick Guard",
-        "usage": "23.3%",
+        "usage": "22.7%",
         "rank": 6
       }
     ],
@@ -6626,37 +6608,37 @@
           {
             "id": "tailwind",
             "nameEn": "Tailwind",
-            "usage": "93.3%",
+            "usage": "93.1%",
             "rank": 1
           },
           {
             "id": "flareblitz",
             "nameEn": "Flare Blitz",
-            "usage": "61.3%",
+            "usage": "61.4%",
             "rank": 2
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "55.6%",
+            "usage": "55.4%",
             "rank": 3
           },
           {
             "id": "bravebird",
             "nameEn": "Brave Bird",
-            "usage": "41.1%",
+            "usage": "41.7%",
             "rank": 4
           },
           {
             "id": "dualwingbeat",
             "nameEn": "Dual Wingbeat",
-            "usage": "40.1%",
+            "usage": "39.5%",
             "rank": 5
           },
           {
             "id": "quickguard",
             "nameEn": "Quick Guard",
-            "usage": "23.3%",
+            "usage": "22.7%",
             "rank": 6
           }
         ],
@@ -6706,37 +6688,37 @@
       {
         "id": "shadowball",
         "nameEn": "Shadow Ball",
-        "usage": "92.5%",
+        "usage": "92.2%",
         "rank": 1
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "84.2%",
+        "usage": "83.4%",
         "rank": 2
       },
       {
         "id": "sludgebomb",
         "nameEn": "Sludge Bomb",
-        "usage": "63.1%",
+        "usage": "62.6%",
         "rank": 3
       },
       {
         "id": "perishsong",
         "nameEn": "Perish Song",
-        "usage": "48.9%",
+        "usage": "48.8%",
         "rank": 4
       },
       {
         "id": "disable",
         "nameEn": "Disable",
-        "usage": "21.1%",
+        "usage": "20.7%",
         "rank": 5
       },
       {
         "id": "substitute",
         "nameEn": "Substitute",
-        "usage": "19.3%",
+        "usage": "18.3%",
         "rank": 6
       }
     ],
@@ -6777,37 +6759,37 @@
           {
             "id": "shadowball",
             "nameEn": "Shadow Ball",
-            "usage": "92.5%",
+            "usage": "92.2%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "84.2%",
+            "usage": "83.4%",
             "rank": 2
           },
           {
             "id": "sludgebomb",
             "nameEn": "Sludge Bomb",
-            "usage": "63.1%",
+            "usage": "62.6%",
             "rank": 3
           },
           {
             "id": "perishsong",
             "nameEn": "Perish Song",
-            "usage": "48.9%",
+            "usage": "48.8%",
             "rank": 4
           },
           {
             "id": "disable",
             "nameEn": "Disable",
-            "usage": "21.1%",
+            "usage": "20.7%",
             "rank": 5
           },
           {
             "id": "substitute",
             "nameEn": "Substitute",
-            "usage": "19.3%",
+            "usage": "18.3%",
             "rank": 6
           }
         ],
@@ -6848,37 +6830,37 @@
           {
             "id": "shadowball",
             "nameEn": "Shadow Ball",
-            "usage": "92.5%",
+            "usage": "92.2%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "84.2%",
+            "usage": "83.4%",
             "rank": 2
           },
           {
             "id": "sludgebomb",
             "nameEn": "Sludge Bomb",
-            "usage": "63.1%",
+            "usage": "62.6%",
             "rank": 3
           },
           {
             "id": "perishsong",
             "nameEn": "Perish Song",
-            "usage": "48.9%",
+            "usage": "48.8%",
             "rank": 4
           },
           {
             "id": "disable",
             "nameEn": "Disable",
-            "usage": "21.1%",
+            "usage": "20.7%",
             "rank": 5
           },
           {
             "id": "substitute",
             "nameEn": "Substitute",
-            "usage": "19.3%",
+            "usage": "18.3%",
             "rank": 6
           }
         ],
@@ -6928,34 +6910,40 @@
     "championsLegal": true,
     "vgcDoublesMoves": [
       {
+        "id": "playrough",
+        "nameEn": "Play Rough",
+        "usage": "97.4%",
+        "rank": 1
+      },
+      {
+        "id": "suckerpunch",
+        "nameEn": "Sucker Punch",
+        "usage": "91.8%",
+        "rank": 2
+      },
+      {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "78.9%",
+        "rank": 3
+      },
+      {
+        "id": "ironhead",
+        "nameEn": "Iron Head",
+        "usage": "64.2%",
+        "rank": 4
+      },
+      {
+        "id": "rockslide",
+        "nameEn": "Rock Slide",
+        "usage": "36.8%",
+        "rank": 5
+      },
+      {
         "id": "swordsdance",
         "nameEn": "Swords Dance",
         "usage": "12.9%",
         "rank": 6
-      },
-      {
-        "id": "knockoff",
-        "nameEn": "Knock Off",
-        "usage": "5.8%",
-        "rank": 7
-      },
-      {
-        "id": "brickbreak",
-        "nameEn": "Brick Break",
-        "usage": "4.2%",
-        "rank": 8
-      },
-      {
-        "id": "thunderpunch",
-        "nameEn": "Thunder Punch",
-        "usage": "1.8%",
-        "rank": 9
-      },
-      {
-        "id": "psychicfangs",
-        "nameEn": "Psychic Fangs",
-        "usage": "1.2%",
-        "rank": 10
       }
     ],
     "vgcDoublesMeta": {
@@ -6995,34 +6983,40 @@
         "isDefault": true,
         "vgcDoublesMoves": [
           {
+            "id": "playrough",
+            "nameEn": "Play Rough",
+            "usage": "97.4%",
+            "rank": 1
+          },
+          {
+            "id": "suckerpunch",
+            "nameEn": "Sucker Punch",
+            "usage": "91.8%",
+            "rank": 2
+          },
+          {
+            "id": "protect",
+            "nameEn": "Protect",
+            "usage": "78.9%",
+            "rank": 3
+          },
+          {
+            "id": "ironhead",
+            "nameEn": "Iron Head",
+            "usage": "64.2%",
+            "rank": 4
+          },
+          {
+            "id": "rockslide",
+            "nameEn": "Rock Slide",
+            "usage": "36.8%",
+            "rank": 5
+          },
+          {
             "id": "swordsdance",
             "nameEn": "Swords Dance",
             "usage": "12.9%",
             "rank": 6
-          },
-          {
-            "id": "knockoff",
-            "nameEn": "Knock Off",
-            "usage": "5.8%",
-            "rank": 7
-          },
-          {
-            "id": "brickbreak",
-            "nameEn": "Brick Break",
-            "usage": "4.2%",
-            "rank": 8
-          },
-          {
-            "id": "thunderpunch",
-            "nameEn": "Thunder Punch",
-            "usage": "1.8%",
-            "rank": 9
-          },
-          {
-            "id": "psychicfangs",
-            "nameEn": "Psychic Fangs",
-            "usage": "1.2%",
-            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -7060,34 +7054,40 @@
         "isDefault": false,
         "vgcDoublesMoves": [
           {
+            "id": "playrough",
+            "nameEn": "Play Rough",
+            "usage": "97.4%",
+            "rank": 1
+          },
+          {
+            "id": "suckerpunch",
+            "nameEn": "Sucker Punch",
+            "usage": "91.8%",
+            "rank": 2
+          },
+          {
+            "id": "protect",
+            "nameEn": "Protect",
+            "usage": "78.9%",
+            "rank": 3
+          },
+          {
+            "id": "ironhead",
+            "nameEn": "Iron Head",
+            "usage": "64.2%",
+            "rank": 4
+          },
+          {
+            "id": "rockslide",
+            "nameEn": "Rock Slide",
+            "usage": "36.8%",
+            "rank": 5
+          },
+          {
             "id": "swordsdance",
             "nameEn": "Swords Dance",
             "usage": "12.9%",
             "rank": 6
-          },
-          {
-            "id": "knockoff",
-            "nameEn": "Knock Off",
-            "usage": "5.8%",
-            "rank": 7
-          },
-          {
-            "id": "brickbreak",
-            "nameEn": "Brick Break",
-            "usage": "4.2%",
-            "rank": 8
-          },
-          {
-            "id": "thunderpunch",
-            "nameEn": "Thunder Punch",
-            "usage": "1.8%",
-            "rank": 9
-          },
-          {
-            "id": "psychicfangs",
-            "nameEn": "Psychic Fangs",
-            "usage": "1.2%",
-            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -7138,37 +7138,37 @@
       {
         "id": "ragepowder",
         "nameEn": "Rage Powder",
-        "usage": "93.5%",
+        "usage": "93.4%",
         "rank": 1
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "92.1%",
+        "usage": "92.0%",
         "rank": 2
       },
       {
         "id": "gigadrain",
         "nameEn": "Giga Drain",
-        "usage": "68.6%",
+        "usage": "70.1%",
         "rank": 3
       },
       {
         "id": "overheat",
         "nameEn": "Overheat",
-        "usage": "60.2%",
+        "usage": "61.1%",
         "rank": 4
       },
       {
         "id": "leechseed",
         "nameEn": "Leech Seed",
-        "usage": "35.7%",
+        "usage": "34.3%",
         "rank": 5
       },
       {
         "id": "flamethrower",
         "nameEn": "Flamethrower",
-        "usage": "29.4%",
+        "usage": "28.7%",
         "rank": 6
       }
     ],
@@ -7211,37 +7211,37 @@
           {
             "id": "ragepowder",
             "nameEn": "Rage Powder",
-            "usage": "93.5%",
+            "usage": "93.4%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "92.1%",
+            "usage": "92.0%",
             "rank": 2
           },
           {
             "id": "gigadrain",
             "nameEn": "Giga Drain",
-            "usage": "68.6%",
+            "usage": "70.1%",
             "rank": 3
           },
           {
             "id": "overheat",
             "nameEn": "Overheat",
-            "usage": "60.2%",
+            "usage": "61.1%",
             "rank": 4
           },
           {
             "id": "leechseed",
             "nameEn": "Leech Seed",
-            "usage": "35.7%",
+            "usage": "34.3%",
             "rank": 5
           },
           {
             "id": "flamethrower",
             "nameEn": "Flamethrower",
-            "usage": "29.4%",
+            "usage": "28.7%",
             "rank": 6
           }
         ],
@@ -7325,31 +7325,31 @@
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "76.5%",
+        "usage": "73.4%",
         "rank": 2
       },
       {
         "id": "bugbite",
         "nameEn": "Bug Bite",
-        "usage": "71.8%",
+        "usage": "71.3%",
         "rank": 3
       },
       {
         "id": "swordsdance",
         "nameEn": "Swords Dance",
-        "usage": "54.4%",
+        "usage": "53.9%",
         "rank": 4
       },
       {
         "id": "closecombat",
         "nameEn": "Close Combat",
-        "usage": "29.9%",
+        "usage": "29.8%",
         "rank": 5
       },
       {
         "id": "dualwingbeat",
         "nameEn": "Dual Wingbeat",
-        "usage": "16.6%",
+        "usage": "17.1%",
         "rank": 6
       }
     ],
@@ -7398,31 +7398,31 @@
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "76.5%",
+            "usage": "73.4%",
             "rank": 2
           },
           {
             "id": "bugbite",
             "nameEn": "Bug Bite",
-            "usage": "71.8%",
+            "usage": "71.3%",
             "rank": 3
           },
           {
             "id": "swordsdance",
             "nameEn": "Swords Dance",
-            "usage": "54.4%",
+            "usage": "53.9%",
             "rank": 4
           },
           {
             "id": "closecombat",
             "nameEn": "Close Combat",
-            "usage": "29.9%",
+            "usage": "29.8%",
             "rank": 5
           },
           {
             "id": "dualwingbeat",
             "nameEn": "Dual Wingbeat",
-            "usage": "16.6%",
+            "usage": "17.1%",
             "rank": 6
           }
         ],
@@ -7469,31 +7469,31 @@
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "76.5%",
+            "usage": "73.4%",
             "rank": 2
           },
           {
             "id": "bugbite",
             "nameEn": "Bug Bite",
-            "usage": "71.8%",
+            "usage": "71.3%",
             "rank": 3
           },
           {
             "id": "swordsdance",
             "nameEn": "Swords Dance",
-            "usage": "54.4%",
+            "usage": "53.9%",
             "rank": 4
           },
           {
             "id": "closecombat",
             "nameEn": "Close Combat",
-            "usage": "29.9%",
+            "usage": "29.8%",
             "rank": 5
           },
           {
             "id": "dualwingbeat",
             "nameEn": "Dual Wingbeat",
-            "usage": "16.6%",
+            "usage": "17.1%",
             "rank": 6
           }
         ],
@@ -7542,34 +7542,40 @@
     "championsLegal": true,
     "vgcDoublesMoves": [
       {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "85.0%",
+        "rank": 1
+      },
+      {
+        "id": "weatherball",
+        "nameEn": "Weather Ball",
+        "usage": "77.3%",
+        "rank": 2
+      },
+      {
+        "id": "perishsong",
+        "nameEn": "Perish Song",
+        "usage": "54.1%",
+        "rank": 3
+      },
+      {
+        "id": "icebeam",
+        "nameEn": "Ice Beam",
+        "usage": "32.5%",
+        "rank": 4
+      },
+      {
+        "id": "muddywater",
+        "nameEn": "Muddy Water",
+        "usage": "25.4%",
+        "rank": 5
+      },
+      {
         "id": "hypnosis",
         "nameEn": "Hypnosis",
-        "usage": "22.9%",
+        "usage": "22.6%",
         "rank": 6
-      },
-      {
-        "id": "encore",
-        "nameEn": "Encore",
-        "usage": "20.7%",
-        "rank": 7
-      },
-      {
-        "id": "earthpower",
-        "nameEn": "Earth Power",
-        "usage": "14.6%",
-        "rank": 8
-      },
-      {
-        "id": "icywind",
-        "nameEn": "Icy Wind",
-        "usage": "13.7%",
-        "rank": 9
-      },
-      {
-        "id": "helpinghand",
-        "nameEn": "Helping Hand",
-        "usage": "13.2%",
-        "rank": 10
       }
     ],
     "vgcDoublesMeta": {
@@ -7608,34 +7614,40 @@
         "isDefault": true,
         "vgcDoublesMoves": [
           {
+            "id": "protect",
+            "nameEn": "Protect",
+            "usage": "85.0%",
+            "rank": 1
+          },
+          {
+            "id": "weatherball",
+            "nameEn": "Weather Ball",
+            "usage": "77.3%",
+            "rank": 2
+          },
+          {
+            "id": "perishsong",
+            "nameEn": "Perish Song",
+            "usage": "54.1%",
+            "rank": 3
+          },
+          {
+            "id": "icebeam",
+            "nameEn": "Ice Beam",
+            "usage": "32.5%",
+            "rank": 4
+          },
+          {
+            "id": "muddywater",
+            "nameEn": "Muddy Water",
+            "usage": "25.4%",
+            "rank": 5
+          },
+          {
             "id": "hypnosis",
             "nameEn": "Hypnosis",
-            "usage": "22.9%",
+            "usage": "22.6%",
             "rank": 6
-          },
-          {
-            "id": "encore",
-            "nameEn": "Encore",
-            "usage": "20.7%",
-            "rank": 7
-          },
-          {
-            "id": "earthpower",
-            "nameEn": "Earth Power",
-            "usage": "14.6%",
-            "rank": 8
-          },
-          {
-            "id": "icywind",
-            "nameEn": "Icy Wind",
-            "usage": "13.7%",
-            "rank": 9
-          },
-          {
-            "id": "helpinghand",
-            "nameEn": "Helping Hand",
-            "usage": "13.2%",
-            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -7686,31 +7698,31 @@
       {
         "id": "ragefist",
         "nameEn": "Rage Fist",
-        "usage": "76.6%",
+        "usage": "77.2%",
         "rank": 1
       },
       {
         "id": "drainpunch",
         "nameEn": "Drain Punch",
-        "usage": "65.3%",
+        "usage": "66.1%",
         "rank": 2
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "64.5%",
+        "usage": "64.2%",
         "rank": 3
       },
       {
         "id": "bulkup",
         "nameEn": "Bulk Up",
-        "usage": "39.9%",
+        "usage": "40.4%",
         "rank": 4
       },
       {
         "id": "closecombat",
         "nameEn": "Close Combat",
-        "usage": "30.9%",
+        "usage": "29.9%",
         "rank": 5
       },
       {
@@ -7759,31 +7771,31 @@
           {
             "id": "ragefist",
             "nameEn": "Rage Fist",
-            "usage": "76.6%",
+            "usage": "77.2%",
             "rank": 1
           },
           {
             "id": "drainpunch",
             "nameEn": "Drain Punch",
-            "usage": "65.3%",
+            "usage": "66.1%",
             "rank": 2
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "64.5%",
+            "usage": "64.2%",
             "rank": 3
           },
           {
             "id": "bulkup",
             "nameEn": "Bulk Up",
-            "usage": "39.9%",
+            "usage": "40.4%",
             "rank": 4
           },
           {
             "id": "closecombat",
             "nameEn": "Close Combat",
-            "usage": "30.9%",
+            "usage": "29.9%",
             "rank": 5
           },
           {
@@ -7839,37 +7851,37 @@
       {
         "id": "hydropump",
         "nameEn": "Hydro Pump",
-        "usage": "95.0%",
+        "usage": "95.1%",
         "rank": 1
       },
       {
         "id": "willowisp",
         "nameEn": "Will-O-Wisp",
-        "usage": "66.7%",
+        "usage": "66.8%",
         "rank": 2
       },
       {
         "id": "thunderbolt",
         "nameEn": "Thunderbolt",
-        "usage": "66.5%",
+        "usage": "66.1%",
         "rank": 3
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "44.8%",
+        "usage": "44.6%",
         "rank": 4
       },
       {
         "id": "voltswitch",
         "nameEn": "Volt Switch",
-        "usage": "38.2%",
+        "usage": "38.1%",
         "rank": 5
       },
       {
         "id": "electroweb",
         "nameEn": "Electroweb",
-        "usage": "17.4%",
+        "usage": "17.2%",
         "rank": 6
       }
     ],
@@ -7908,34 +7920,40 @@
         "isDefault": true,
         "vgcDoublesMoves": [
           {
+            "id": "shadowball",
+            "nameEn": "Shadow Ball",
+            "usage": "68.5%",
+            "rank": 1
+          },
+          {
+            "id": "thunderbolt",
+            "nameEn": "Thunderbolt",
+            "usage": "49.0%",
+            "rank": 2
+          },
+          {
+            "id": "voltswitch",
+            "nameEn": "Volt Switch",
+            "usage": "40.6%",
+            "rank": 3
+          },
+          {
+            "id": "discharge",
+            "nameEn": "Discharge",
+            "usage": "38.6%",
+            "rank": 4
+          },
+          {
+            "id": "willowisp",
+            "nameEn": "Will-O-Wisp",
+            "usage": "35.1%",
+            "rank": 5
+          },
+          {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "27.4%",
+            "usage": "28.3%",
             "rank": 6
-          },
-          {
-            "id": "electroweb",
-            "nameEn": "Electroweb",
-            "usage": "23.5%",
-            "rank": 7
-          },
-          {
-            "id": "trick",
-            "nameEn": "Trick",
-            "usage": "21.5%",
-            "rank": 8
-          },
-          {
-            "id": "hex",
-            "nameEn": "Hex",
-            "usage": "16.3%",
-            "rank": 9
-          },
-          {
-            "id": "darkpulse",
-            "nameEn": "Dark Pulse",
-            "usage": "12.1%",
-            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -7973,40 +7991,34 @@
         "isDefault": false,
         "vgcDoublesMoves": [
           {
-            "id": "overheat",
-            "nameEn": "Overheat",
-            "usage": "96.3%",
-            "rank": 1
-          },
-          {
-            "id": "voltswitch",
-            "nameEn": "Volt Switch",
-            "usage": "64.0%",
-            "rank": 2
-          },
-          {
-            "id": "thunderbolt",
-            "nameEn": "Thunderbolt",
-            "usage": "47.4%",
-            "rank": 3
-          },
-          {
-            "id": "discharge",
-            "nameEn": "Discharge",
-            "usage": "47.4%",
-            "rank": 4
-          },
-          {
-            "id": "willowisp",
-            "nameEn": "Will-O-Wisp",
-            "usage": "34.2%",
-            "rank": 5
-          },
-          {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "25.7%",
+            "usage": "25.3%",
             "rank": 6
+          },
+          {
+            "id": "trick",
+            "nameEn": "Trick",
+            "usage": "21.7%",
+            "rank": 7
+          },
+          {
+            "id": "electroweb",
+            "nameEn": "Electroweb",
+            "usage": "20.8%",
+            "rank": 8
+          },
+          {
+            "id": "thunder",
+            "nameEn": "Thunder",
+            "usage": "8.4%",
+            "rank": 9
+          },
+          {
+            "id": "shadowball",
+            "nameEn": "Shadow Ball",
+            "usage": "7.2%",
+            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -8046,37 +8058,37 @@
           {
             "id": "hydropump",
             "nameEn": "Hydro Pump",
-            "usage": "95.0%",
+            "usage": "95.1%",
             "rank": 1
           },
           {
             "id": "willowisp",
             "nameEn": "Will-O-Wisp",
-            "usage": "66.7%",
+            "usage": "66.8%",
             "rank": 2
           },
           {
             "id": "thunderbolt",
             "nameEn": "Thunderbolt",
-            "usage": "66.5%",
+            "usage": "66.1%",
             "rank": 3
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "44.8%",
+            "usage": "44.6%",
             "rank": 4
           },
           {
             "id": "voltswitch",
             "nameEn": "Volt Switch",
-            "usage": "38.2%",
+            "usage": "38.1%",
             "rank": 5
           },
           {
             "id": "electroweb",
             "nameEn": "Electroweb",
-            "usage": "17.4%",
+            "usage": "17.2%",
             "rank": 6
           }
         ],
@@ -8117,37 +8129,37 @@
           {
             "id": "blizzard",
             "nameEn": "Blizzard",
-            "usage": "97.5%",
+            "usage": "97.7%",
             "rank": 1
           },
           {
             "id": "thunderbolt",
             "nameEn": "Thunderbolt",
-            "usage": "57.1%",
+            "usage": "56.5%",
             "rank": 2
           },
           {
             "id": "voltswitch",
             "nameEn": "Volt Switch",
-            "usage": "49.8%",
+            "usage": "49.2%",
             "rank": 3
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "32.5%",
+            "usage": "33.3%",
             "rank": 4
           },
           {
             "id": "electroweb",
             "nameEn": "Electroweb",
-            "usage": "28.3%",
+            "usage": "28.2%",
             "rank": 5
           },
           {
             "id": "willowisp",
             "nameEn": "Will-O-Wisp",
-            "usage": "24.8%",
+            "usage": "24.2%",
             "rank": 6
           }
         ],
@@ -8220,31 +8232,31 @@
           {
             "id": "thunderbolt",
             "nameEn": "Thunderbolt",
-            "usage": "55.7%",
+            "usage": "55.0%",
             "rank": 2
           },
           {
             "id": "voltswitch",
             "nameEn": "Volt Switch",
-            "usage": "48.5%",
+            "usage": "48.7%",
             "rank": 3
           },
           {
             "id": "willowisp",
             "nameEn": "Will-O-Wisp",
-            "usage": "38.8%",
+            "usage": "38.9%",
             "rank": 4
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "33.7%",
+            "usage": "33.2%",
             "rank": 5
           },
           {
             "id": "electroweb",
             "nameEn": "Electroweb",
-            "usage": "24.0%",
+            "usage": "23.3%",
             "rank": 6
           }
         ],
@@ -8295,37 +8307,37 @@
       {
         "id": "tripleaxel",
         "nameEn": "Triple Axel",
-        "usage": "88.2%",
+        "usage": "88.7%",
         "rank": 1
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "60.9%",
+        "usage": "61.0%",
         "rank": 2
       },
       {
         "id": "powerwhip",
         "nameEn": "Power Whip",
-        "usage": "55.2%",
+        "usage": "55.7%",
         "rank": 3
       },
       {
         "id": "tropkick",
         "nameEn": "Trop Kick",
-        "usage": "42.7%",
+        "usage": "42.3%",
         "rank": 4
       },
       {
         "id": "highjumpkick",
         "nameEn": "High Jump Kick",
-        "usage": "38.3%",
+        "usage": "38.4%",
         "rank": 5
       },
       {
         "id": "lowkick",
         "nameEn": "Low Kick",
-        "usage": "30.3%",
+        "usage": "30.8%",
         "rank": 6
       }
     ],
@@ -8367,37 +8379,37 @@
           {
             "id": "tripleaxel",
             "nameEn": "Triple Axel",
-            "usage": "88.2%",
+            "usage": "88.7%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "60.9%",
+            "usage": "61.0%",
             "rank": 2
           },
           {
             "id": "powerwhip",
             "nameEn": "Power Whip",
-            "usage": "55.2%",
+            "usage": "55.7%",
             "rank": 3
           },
           {
             "id": "tropkick",
             "nameEn": "Trop Kick",
-            "usage": "42.7%",
+            "usage": "42.3%",
             "rank": 4
           },
           {
             "id": "highjumpkick",
             "nameEn": "High Jump Kick",
-            "usage": "38.3%",
+            "usage": "38.4%",
             "rank": 5
           },
           {
             "id": "lowkick",
             "nameEn": "Low Kick",
-            "usage": "30.3%",
+            "usage": "30.8%",
             "rank": 6
           }
         ],
@@ -8446,40 +8458,34 @@
     "championsLegal": true,
     "vgcDoublesMoves": [
       {
-        "id": "hypervoice",
-        "nameEn": "Hyper Voice",
-        "usage": "90.3%",
-        "rank": 1
-      },
-      {
-        "id": "protect",
-        "nameEn": "Protect",
-        "usage": "81.8%",
-        "rank": 2
-      },
-      {
-        "id": "moonblast",
-        "nameEn": "Moonblast",
-        "usage": "80.3%",
-        "rank": 3
-      },
-      {
-        "id": "calmmind",
-        "nameEn": "Calm Mind",
-        "usage": "27.7%",
-        "rank": 4
-      },
-      {
-        "id": "icebeam",
-        "nameEn": "Ice Beam",
-        "usage": "17.5%",
-        "rank": 5
+        "id": "aquajet",
+        "nameEn": "Aqua Jet",
+        "usage": "17.1%",
+        "rank": 6
       },
       {
         "id": "dazzlinggleam",
         "nameEn": "Dazzling Gleam",
-        "usage": "16.6%",
-        "rank": 6
+        "usage": "16.5%",
+        "rank": 7
+      },
+      {
+        "id": "energyball",
+        "nameEn": "Energy Ball",
+        "usage": "12.7%",
+        "rank": 8
+      },
+      {
+        "id": "sparklingaria",
+        "nameEn": "Sparkling Aria",
+        "usage": "7.8%",
+        "rank": 9
+      },
+      {
+        "id": "icywind",
+        "nameEn": "Icy Wind",
+        "usage": "1.0%",
+        "rank": 10
       }
     ],
     "vgcDoublesMeta": {
@@ -8518,40 +8524,34 @@
         "isDefault": true,
         "vgcDoublesMoves": [
           {
-            "id": "hypervoice",
-            "nameEn": "Hyper Voice",
-            "usage": "90.3%",
-            "rank": 1
-          },
-          {
-            "id": "protect",
-            "nameEn": "Protect",
-            "usage": "81.8%",
-            "rank": 2
-          },
-          {
-            "id": "moonblast",
-            "nameEn": "Moonblast",
-            "usage": "80.3%",
-            "rank": 3
-          },
-          {
-            "id": "calmmind",
-            "nameEn": "Calm Mind",
-            "usage": "27.7%",
-            "rank": 4
-          },
-          {
-            "id": "icebeam",
-            "nameEn": "Ice Beam",
-            "usage": "17.5%",
-            "rank": 5
+            "id": "aquajet",
+            "nameEn": "Aqua Jet",
+            "usage": "17.1%",
+            "rank": 6
           },
           {
             "id": "dazzlinggleam",
             "nameEn": "Dazzling Gleam",
-            "usage": "16.6%",
-            "rank": 6
+            "usage": "16.5%",
+            "rank": 7
+          },
+          {
+            "id": "energyball",
+            "nameEn": "Energy Ball",
+            "usage": "12.7%",
+            "rank": 8
+          },
+          {
+            "id": "sparklingaria",
+            "nameEn": "Sparkling Aria",
+            "usage": "7.8%",
+            "rank": 9
+          },
+          {
+            "id": "icywind",
+            "nameEn": "Icy Wind",
+            "usage": "1.0%",
+            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -8613,7 +8613,7 @@
       {
         "id": "lastresort",
         "nameEn": "Last Resort",
-        "usage": "39.4%",
+        "usage": "39.0%",
         "rank": 3
       },
       {
@@ -8625,13 +8625,13 @@
       {
         "id": "icepunch",
         "nameEn": "Ice Punch",
-        "usage": "24.2%",
+        "usage": "24.5%",
         "rank": 5
       },
       {
         "id": "drainpunch",
         "nameEn": "Drain Punch",
-        "usage": "19.9%",
+        "usage": "20.7%",
         "rank": 6
       }
     ],
@@ -8685,7 +8685,7 @@
           {
             "id": "lastresort",
             "nameEn": "Last Resort",
-            "usage": "39.4%",
+            "usage": "39.0%",
             "rank": 3
           },
           {
@@ -8697,13 +8697,13 @@
           {
             "id": "icepunch",
             "nameEn": "Ice Punch",
-            "usage": "24.2%",
+            "usage": "24.5%",
             "rank": 5
           },
           {
             "id": "drainpunch",
             "nameEn": "Drain Punch",
-            "usage": "19.9%",
+            "usage": "20.7%",
             "rank": 6
           }
         ],
@@ -8755,7 +8755,7 @@
           {
             "id": "lastresort",
             "nameEn": "Last Resort",
-            "usage": "39.4%",
+            "usage": "39.0%",
             "rank": 3
           },
           {
@@ -8767,13 +8767,13 @@
           {
             "id": "icepunch",
             "nameEn": "Ice Punch",
-            "usage": "24.2%",
+            "usage": "24.5%",
             "rank": 5
           },
           {
             "id": "drainpunch",
             "nameEn": "Drain Punch",
-            "usage": "19.9%",
+            "usage": "20.7%",
             "rank": 6
           }
         ],
@@ -8825,37 +8825,37 @@
       {
         "id": "clangingscales",
         "nameEn": "Clanging Scales",
-        "usage": "94.4%",
+        "usage": "94.2%",
         "rank": 1
       },
       {
         "id": "aurasphere",
         "nameEn": "Aura Sphere",
-        "usage": "88.2%",
+        "usage": "87.7%",
         "rank": 2
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "73.5%",
+        "usage": "75.9%",
         "rank": 3
       },
       {
         "id": "vacuumwave",
         "nameEn": "Vacuum Wave",
-        "usage": "52.1%",
+        "usage": "50.6%",
         "rank": 4
       },
       {
         "id": "clangoroussoul",
         "nameEn": "Clangorous Soul",
-        "usage": "30.5%",
+        "usage": "32.2%",
         "rank": 5
       },
       {
         "id": "helpinghand",
         "nameEn": "Helping Hand",
-        "usage": "11.9%",
+        "usage": "11.0%",
         "rank": 6
       }
     ],
@@ -8898,37 +8898,37 @@
           {
             "id": "clangingscales",
             "nameEn": "Clanging Scales",
-            "usage": "94.4%",
+            "usage": "94.2%",
             "rank": 1
           },
           {
             "id": "aurasphere",
             "nameEn": "Aura Sphere",
-            "usage": "88.2%",
+            "usage": "87.7%",
             "rank": 2
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "73.5%",
+            "usage": "75.9%",
             "rank": 3
           },
           {
             "id": "vacuumwave",
             "nameEn": "Vacuum Wave",
-            "usage": "52.1%",
+            "usage": "50.6%",
             "rank": 4
           },
           {
             "id": "clangoroussoul",
             "nameEn": "Clangorous Soul",
-            "usage": "30.5%",
+            "usage": "32.2%",
             "rank": 5
           },
           {
             "id": "helpinghand",
             "nameEn": "Helping Hand",
-            "usage": "11.9%",
+            "usage": "11.0%",
             "rank": 6
           }
         ],
@@ -8980,37 +8980,37 @@
       {
         "id": "bravebird",
         "nameEn": "Brave Bird",
-        "usage": "78.1%",
+        "usage": "77.0%",
         "rank": 1
       },
       {
         "id": "tailwind",
         "nameEn": "Tailwind",
-        "usage": "65.7%",
+        "usage": "64.5%",
         "rank": 2
       },
       {
         "id": "ironhead",
         "nameEn": "Iron Head",
-        "usage": "63.6%",
+        "usage": "63.0%",
         "rank": 3
-      },
-      {
-        "id": "protect",
-        "nameEn": "Protect",
-        "usage": "43.2%",
-        "rank": 4
       },
       {
         "id": "roost",
         "nameEn": "Roost",
-        "usage": "42.6%",
-        "rank": 5
+        "usage": "43.7%",
+        "rank": 4
       },
       {
         "id": "bodypress",
         "nameEn": "Body Press",
-        "usage": "40.3%",
+        "usage": "41.6%",
+        "rank": 5
+      },
+      {
+        "id": "protect",
+        "nameEn": "Protect",
+        "usage": "41.5%",
         "rank": 6
       }
     ],
@@ -9053,37 +9053,37 @@
           {
             "id": "bravebird",
             "nameEn": "Brave Bird",
-            "usage": "78.1%",
+            "usage": "77.0%",
             "rank": 1
           },
           {
             "id": "tailwind",
             "nameEn": "Tailwind",
-            "usage": "65.7%",
+            "usage": "64.5%",
             "rank": 2
           },
           {
             "id": "ironhead",
             "nameEn": "Iron Head",
-            "usage": "63.6%",
+            "usage": "63.0%",
             "rank": 3
-          },
-          {
-            "id": "protect",
-            "nameEn": "Protect",
-            "usage": "43.2%",
-            "rank": 4
           },
           {
             "id": "roost",
             "nameEn": "Roost",
-            "usage": "42.6%",
-            "rank": 5
+            "usage": "43.7%",
+            "rank": 4
           },
           {
             "id": "bodypress",
             "nameEn": "Body Press",
-            "usage": "40.3%",
+            "usage": "41.6%",
+            "rank": 5
+          },
+          {
+            "id": "protect",
+            "nameEn": "Protect",
+            "usage": "41.5%",
             "rank": 6
           }
         ],
@@ -9135,37 +9135,37 @@
       {
         "id": "hypervoice",
         "nameEn": "Hyper Voice",
-        "usage": "82.8%",
+        "usage": "82.5%",
         "rank": 1
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "82.4%",
+        "usage": "82.0%",
         "rank": 2
       },
       {
         "id": "psychic",
         "nameEn": "Psychic",
-        "usage": "53.4%",
+        "usage": "53.6%",
         "rank": 3
       },
       {
         "id": "psyshock",
         "nameEn": "Psyshock",
-        "usage": "20.8%",
+        "usage": "20.5%",
         "rank": 4
       },
       {
         "id": "trickroom",
         "nameEn": "Trick Room",
-        "usage": "19.1%",
+        "usage": "18.7%",
         "rank": 5
       },
       {
         "id": "vacuumwave",
         "nameEn": "Vacuum Wave",
-        "usage": "16.9%",
+        "usage": "17.0%",
         "rank": 6
       }
     ],
@@ -9208,37 +9208,37 @@
           {
             "id": "hypervoice",
             "nameEn": "Hyper Voice",
-            "usage": "82.8%",
+            "usage": "82.5%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "82.4%",
+            "usage": "82.0%",
             "rank": 2
           },
           {
             "id": "psychic",
             "nameEn": "Psychic",
-            "usage": "53.4%",
+            "usage": "53.6%",
             "rank": 3
           },
           {
             "id": "psyshock",
             "nameEn": "Psyshock",
-            "usage": "20.8%",
+            "usage": "20.5%",
             "rank": 4
           },
           {
             "id": "trickroom",
             "nameEn": "Trick Room",
-            "usage": "19.1%",
+            "usage": "18.7%",
             "rank": 5
           },
           {
             "id": "vacuumwave",
             "nameEn": "Vacuum Wave",
-            "usage": "16.9%",
+            "usage": "17.0%",
             "rank": 6
           }
         ],
@@ -9279,37 +9279,37 @@
           {
             "id": "hypervoice",
             "nameEn": "Hyper Voice",
-            "usage": "82.8%",
+            "usage": "82.5%",
             "rank": 1
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "82.4%",
+            "usage": "82.0%",
             "rank": 2
           },
           {
             "id": "psychic",
             "nameEn": "Psychic",
-            "usage": "53.4%",
+            "usage": "53.6%",
             "rank": 3
           },
           {
             "id": "psyshock",
             "nameEn": "Psyshock",
-            "usage": "20.8%",
+            "usage": "20.5%",
             "rank": 4
           },
           {
             "id": "trickroom",
             "nameEn": "Trick Room",
-            "usage": "19.1%",
+            "usage": "18.7%",
             "rank": 5
           },
           {
             "id": "vacuumwave",
             "nameEn": "Vacuum Wave",
-            "usage": "16.9%",
+            "usage": "17.0%",
             "rank": 6
           }
         ],
@@ -9366,31 +9366,31 @@
       {
         "id": "tripleaxel",
         "nameEn": "Triple Axel",
-        "usage": "78.6%",
+        "usage": "78.7%",
         "rank": 2
       },
       {
         "id": "knockoff",
         "nameEn": "Knock Off",
-        "usage": "52.0%",
+        "usage": "51.9%",
         "rank": 3
       },
       {
         "id": "uturn",
         "nameEn": "U-turn",
-        "usage": "31.0%",
+        "usage": "31.2%",
         "rank": 4
       },
       {
         "id": "protect",
         "nameEn": "Protect",
-        "usage": "30.1%",
+        "usage": "29.4%",
         "rank": 5
       },
       {
         "id": "suckerpunch",
         "nameEn": "Sucker Punch",
-        "usage": "26.9%",
+        "usage": "26.6%",
         "rank": 6
       }
     ],
@@ -9438,31 +9438,31 @@
           {
             "id": "tripleaxel",
             "nameEn": "Triple Axel",
-            "usage": "78.6%",
+            "usage": "78.7%",
             "rank": 2
           },
           {
             "id": "knockoff",
             "nameEn": "Knock Off",
-            "usage": "52.0%",
+            "usage": "51.9%",
             "rank": 3
           },
           {
             "id": "uturn",
             "nameEn": "U-turn",
-            "usage": "31.0%",
+            "usage": "31.2%",
             "rank": 4
           },
           {
             "id": "protect",
             "nameEn": "Protect",
-            "usage": "30.1%",
+            "usage": "29.4%",
             "rank": 5
           },
           {
             "id": "suckerpunch",
             "nameEn": "Sucker Punch",
-            "usage": "26.9%",
+            "usage": "26.6%",
             "rank": 6
           }
         ],
@@ -9511,40 +9511,34 @@
     "championsLegal": true,
     "vgcDoublesMoves": [
       {
-        "id": "closecombat",
-        "nameEn": "Close Combat",
-        "usage": "82.3%",
-        "rank": 1
+        "id": "blazekick",
+        "nameEn": "Blaze Kick",
+        "usage": "7.5%",
+        "rank": 6
       },
       {
-        "id": "flareblitz",
-        "nameEn": "Flare Blitz",
-        "usage": "79.5%",
-        "rank": 2
-      },
-      {
-        "id": "rockslide",
-        "nameEn": "Rock Slide",
-        "usage": "63.6%",
-        "rank": 3
-      },
-      {
-        "id": "detect",
-        "nameEn": "Detect",
-        "usage": "57.9%",
-        "rank": 4
-      },
-      {
-        "id": "protect",
-        "nameEn": "Protect",
-        "usage": "38.1%",
-        "rank": 5
+        "id": "thunderpunch",
+        "nameEn": "Thunder Punch",
+        "usage": "7.3%",
+        "rank": 7
       },
       {
         "id": "heatwave",
         "nameEn": "Heat Wave",
-        "usage": "7.6%",
-        "rank": 6
+        "usage": "7.3%",
+        "rank": 8
+      },
+      {
+        "id": "swordsdance",
+        "nameEn": "Swords Dance",
+        "usage": "7.2%",
+        "rank": 9
+      },
+      {
+        "id": "aurasphere",
+        "nameEn": "Aura Sphere",
+        "usage": "6.3%",
+        "rank": 10
       }
     ],
     "vgcDoublesMeta": {
@@ -9583,40 +9577,34 @@
         "isDefault": true,
         "vgcDoublesMoves": [
           {
-            "id": "closecombat",
-            "nameEn": "Close Combat",
-            "usage": "82.3%",
-            "rank": 1
+            "id": "blazekick",
+            "nameEn": "Blaze Kick",
+            "usage": "7.5%",
+            "rank": 6
           },
           {
-            "id": "flareblitz",
-            "nameEn": "Flare Blitz",
-            "usage": "79.5%",
-            "rank": 2
-          },
-          {
-            "id": "rockslide",
-            "nameEn": "Rock Slide",
-            "usage": "63.6%",
-            "rank": 3
-          },
-          {
-            "id": "detect",
-            "nameEn": "Detect",
-            "usage": "57.9%",
-            "rank": 4
-          },
-          {
-            "id": "protect",
-            "nameEn": "Protect",
-            "usage": "38.1%",
-            "rank": 5
+            "id": "thunderpunch",
+            "nameEn": "Thunder Punch",
+            "usage": "7.3%",
+            "rank": 7
           },
           {
             "id": "heatwave",
             "nameEn": "Heat Wave",
-            "usage": "7.6%",
-            "rank": 6
+            "usage": "7.3%",
+            "rank": 8
+          },
+          {
+            "id": "swordsdance",
+            "nameEn": "Swords Dance",
+            "usage": "7.2%",
+            "rank": 9
+          },
+          {
+            "id": "aurasphere",
+            "nameEn": "Aura Sphere",
+            "usage": "6.3%",
+            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
@@ -9654,40 +9642,34 @@
         "isDefault": false,
         "vgcDoublesMoves": [
           {
-            "id": "closecombat",
-            "nameEn": "Close Combat",
-            "usage": "82.3%",
-            "rank": 1
+            "id": "blazekick",
+            "nameEn": "Blaze Kick",
+            "usage": "7.5%",
+            "rank": 6
           },
           {
-            "id": "flareblitz",
-            "nameEn": "Flare Blitz",
-            "usage": "79.5%",
-            "rank": 2
-          },
-          {
-            "id": "rockslide",
-            "nameEn": "Rock Slide",
-            "usage": "63.6%",
-            "rank": 3
-          },
-          {
-            "id": "detect",
-            "nameEn": "Detect",
-            "usage": "57.9%",
-            "rank": 4
-          },
-          {
-            "id": "protect",
-            "nameEn": "Protect",
-            "usage": "38.1%",
-            "rank": 5
+            "id": "thunderpunch",
+            "nameEn": "Thunder Punch",
+            "usage": "7.3%",
+            "rank": 7
           },
           {
             "id": "heatwave",
             "nameEn": "Heat Wave",
-            "usage": "7.6%",
-            "rank": 6
+            "usage": "7.3%",
+            "rank": 8
+          },
+          {
+            "id": "swordsdance",
+            "nameEn": "Swords Dance",
+            "usage": "7.2%",
+            "rank": 9
+          },
+          {
+            "id": "aurasphere",
+            "nameEn": "Aura Sphere",
+            "usage": "6.3%",
+            "rank": 10
           }
         ],
         "vgcDoublesMeta": {
