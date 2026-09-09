@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Match both Team Preview test fixtures against public/templates/ (ROI Doc v1.2).
+Match Team Preview test fixtures (new team-select) against public/templates/ (ROI Doc v1.2).
 
-Reports per-slot predicted vs expected and overall accuracy (12 enemy slots).
+Reports per-slot predicted vs expected and overall accuracy (18 enemy slots).
 ROI constants locked — mirror src/lib/roi.ts / crop-preview-templates.py.
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # Locked — mirror src/lib/roi.ts (DO NOT change)
 ENEMY_PANEL = {"left": 0.811, "top": 0.143, "right": 0.965, "bottom": 0.832}
-THUMB_CROP = {"left": 0.20, "right": 0.55, "topInset": 0.25, "bottomInset": 0.05}
+THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}  # square: side=slotH; left offset
 TEMPLATE_SIZE = 64
 SLOT_COUNT = 6
 TARGET_ASPECT = 16 / 9
@@ -32,24 +32,36 @@ FIXTURES = [
         "path": ROOT / "public/fixtures/team-preview-test-1.png",
         "label": "team-preview-test-1",
         "expected": [
-            "gengar",
-            "sableye",
-            "zoroark",
-            "basculegion",
-            "annihilape",
-            "sinistcha",  # crop: tea bowl / whisk — 來悲粗茶 (not Poltchageist / Brambleghast)
+            "charizard",
+            "aerodactyl",
+            "meowscarada",
+            "garchomp",
+            "rotomwash",
+            "aegislash",
         ],
     },
     {
         "path": ROOT / "public/fixtures/team-preview-test-2.png",
         "label": "team-preview-test-2",
         "expected": [
+            "whimsicott",
             "charizard",
-            "bellibolt",
-            "scovillain",
-            "archaludon",
-            "blastoise",
-            "sableye",
+            "basculegion",
+            "kingambit",
+            "sneasler",
+            "garchomp",
+        ],
+    },
+    {
+        "path": ROOT / "public/fixtures/team-preview-test-3.png",
+        "label": "team-preview-test-3",
+        "expected": [
+            "ninetalesalola",
+            "empoleon",
+            "garchomp",
+            "staraptor",
+            "whimsicott",
+            "charizard",
         ],
     },
 ]
@@ -70,15 +82,55 @@ def content_rect(frame_w: int, frame_h: int) -> tuple[int, int, int, int]:
     return 0, 0, frame_w, frame_h
 
 
+def letterbox_to_template(im: Image.Image, *, keep_alpha: bool = False) -> Image.Image:
+    """Contain/letterbox into TEMPLATE_SIZE×TEMPLATE_SIZE (never stretch)."""
+    if keep_alpha:
+        rgba = im.convert("RGBA")
+        canvas = Image.new("RGBA", (TEMPLATE_SIZE, TEMPLATE_SIZE), (0, 0, 0, 0))
+        w, h = rgba.size
+        scale = min(TEMPLATE_SIZE / max(1, w), TEMPLATE_SIZE / max(1, h))
+        nw = max(1, int(round(w * scale)))
+        nh = max(1, int(round(h * scale)))
+        resized = rgba.resize((nw, nh), Image.Resampling.LANCZOS)
+        canvas.paste(resized, ((TEMPLATE_SIZE - nw) // 2, (TEMPLATE_SIZE - nh) // 2), resized)
+        return canvas
+    rgb = im.convert("RGB")
+    canvas = Image.new("RGB", (TEMPLATE_SIZE, TEMPLATE_SIZE), (0, 0, 0))
+    w, h = rgb.size
+    scale = min(TEMPLATE_SIZE / max(1, w), TEMPLATE_SIZE / max(1, h))
+    nw = max(1, int(round(w * scale)))
+    nh = max(1, int(round(h * scale)))
+    resized = rgb.resize((nw, nh), Image.Resampling.LANCZOS)
+    canvas.paste(resized, ((TEMPLATE_SIZE - nw) // 2, (TEMPLATE_SIZE - nh) // 2))
+    return canvas
+
+
 def to_gray(im: Image.Image) -> list[float]:
-    rgb = im.convert("RGB").resize((TEMPLATE_SIZE, TEMPLATE_SIZE), Image.Resampling.LANCZOS)
+    """Grayscale feature vector after contain/letterbox (no stretch)."""
+    rgb = letterbox_to_template(im).convert("RGB")
     pix = rgb.load()
     out: list[float] = []
     for y in range(TEMPLATE_SIZE):
         for x in range(TEMPLATE_SIZE):
-            r, g, b = pix[x, y]
+            r, g, b = pix[x, y][:3]
             out.append(0.299 * r + 0.587 * g + 0.114 * b)
     return out
+
+
+def to_gray_and_mask(im: Image.Image) -> tuple[list[float], list[float]]:
+    """Gray + alpha mask from RGBA template (transparent → mask 0)."""
+    rgba = letterbox_to_template(im, keep_alpha=True).convert("RGBA")
+    pix = rgba.load()
+    gray: list[float] = []
+    mask: list[float] = []
+    for y in range(TEMPLATE_SIZE):
+        for x in range(TEMPLATE_SIZE):
+            r, g, b, a = pix[x, y]
+            gray.append(0.299 * r + 0.587 * g + 0.114 * b)
+            mask.append(1.0 if a > 12 else 0.0)
+    return gray, mask
+
+
 
 
 def average_hash(gray: list[float], size: int = 8) -> str:
@@ -96,14 +148,17 @@ def average_hash(gray: list[float], size: int = 8) -> str:
     return "".join("1" if v >= avg else "0" for v in vals)
 
 
-def ncc(a: list[float], b: list[float]) -> float:
+def ncc(a: list[float], b: list[float], mask: list[float] | None = None) -> float:
     n = min(len(a), len(b))
     if n == 0:
         return 0.0
-    mean_a = sum(a[:n]) / n
-    mean_b = sum(b[:n]) / n
+    idxs = [i for i in range(n) if mask is None or mask[i] > 0]
+    if len(idxs) < 8:
+        return 0.0
+    mean_a = sum(a[i] for i in idxs) / len(idxs)
+    mean_b = sum(b[i] for i in idxs) / len(idxs)
     num = den_a = den_b = 0.0
-    for i in range(n):
+    for i in idxs:
         da = a[i] - mean_a
         db = b[i] - mean_b
         num += da * db
@@ -115,15 +170,18 @@ def ncc(a: list[float], b: list[float]) -> float:
     return num / den
 
 
-def ssd_similarity(a: list[float], b: list[float]) -> float:
+def ssd_similarity(a: list[float], b: list[float], mask: list[float] | None = None) -> float:
     n = min(len(a), len(b))
     if n == 0:
         return 0.0
+    idxs = [i for i in range(n) if mask is None or mask[i] > 0]
+    if len(idxs) < 8:
+        return 0.0
     s = 0.0
-    for i in range(n):
+    for i in idxs:
         d = (a[i] - b[i]) / 255.0
         s += d * d
-    return max(0.0, 1.0 - math.sqrt(s / n) * 2.0)
+    return max(0.0, 1.0 - math.sqrt(s / len(idxs)) * 2.0)
 
 
 def hamming(a: str, b: str) -> int:
@@ -131,15 +189,22 @@ def hamming(a: str, b: str) -> int:
     return sum(1 for i in range(n) if a[i] != b[i]) + abs(len(a) - len(b))
 
 
-def confidence(gray: list[float], hash_s: str, tmpl_gray: list[float], tmpl_hash: str) -> float:
-    ncc_score = (ncc(gray, tmpl_gray) + 1) / 2
-    ssd_score = ssd_similarity(gray, tmpl_gray)
+def confidence(
+    gray: list[float],
+    hash_s: str,
+    tmpl_gray: list[float],
+    tmpl_hash: str,
+    mask: list[float] | None = None,
+) -> float:
+    ncc_score = (ncc(gray, tmpl_gray, mask) + 1) / 2
+    ssd_score = ssd_similarity(gray, tmpl_gray, mask)
     hash_bits = max(len(hash_s), len(tmpl_hash)) or 64
     hash_score = max(0.0, 1.0 - hamming(hash_s, tmpl_hash) / (hash_bits * 0.35))
     return min(1.0, ncc_score * 0.55 + ssd_score * 0.25 + hash_score * 0.2)
 
 
 def crop_slot(im: Image.Image, slot: int) -> Image.Image:
+    """Yellow square: side = red card (slot) height; left = THUMB_CROP left offset."""
     cx, cy, cw, ch = content_rect(*im.size)
     px = int(cx + ENEMY_PANEL["left"] * cw)
     py = int(cy + ENEMY_PANEL["top"] * ch)
@@ -147,11 +212,13 @@ def crop_slot(im: Image.Image, slot: int) -> Image.Image:
     ph = max(1, int((ENEMY_PANEL["bottom"] - ENEMY_PANEL["top"]) * ch))
     slot_h = ph / SLOT_COUNT
     sx, sy, sw, sh = px, int(py + slot * slot_h), pw, max(1, int(slot_h))
+    side = sh
     tx = int(sx + sw * THUMB_CROP["left"])
-    ty = int(sy + sh * THUMB_CROP["topInset"])
-    tw = max(1, int(sw * (THUMB_CROP["right"] - THUMB_CROP["left"])))
-    th = max(1, int(sh * (1 - THUMB_CROP["topInset"] - THUMB_CROP["bottomInset"])))
-    return im.crop((tx, ty, tx + tw, ty + th))
+    max_x = sx + max(0, sw - side)
+    tx = min(max(sx, tx), max_x)
+    ty = sy
+    return im.crop((tx, ty, tx + side, ty + side))
+
 
 
 def load_templates(tmpl_dir: Path) -> list[dict]:
@@ -164,9 +231,16 @@ def load_templates(tmpl_dir: Path) -> list[dict]:
         if not fpath.exists():
             print(f"WARN missing template file: {fpath}")
             continue
-        g = to_gray(Image.open(fpath))
+        g, mask = to_gray_and_mask(Image.open(fpath))
         templates.append(
-            {"speciesId": sid, "gray": g, "hash": average_hash(g), "meta": entry, "file": fpath.name}
+            {
+                "speciesId": sid,
+                "gray": g,
+                "mask": mask,
+                "hash": average_hash(g),
+                "meta": entry,
+                "file": fpath.name,
+            }
         )
     return templates
 
@@ -197,7 +271,7 @@ def main() -> int:
             h = average_hash(gray)
             best_id, best_c = None, -1.0
             for t in templates:
-                c = confidence(gray, h, t["gray"], t["hash"])
+                c = confidence(gray, h, t["gray"], t["hash"], t.get("mask"))
                 if c > best_c:
                     best_id, best_c = t["speciesId"], c
             ok = best_id == expected and best_c >= CONFIDENCE_THRESHOLD
@@ -227,7 +301,7 @@ def main() -> int:
     lines = [
         "# Test fixture match results",
         "",
-        f"- Fixtures: `public/fixtures/team-preview-test-1.png`, `team-preview-test-2.png`",
+        f"- Fixtures: `public/fixtures/team-preview-test-1/2/3.png`",
         f"- Templates: `public/templates/*.png` (ROI Doc v1.2 crops, `source: roi-crop`; {len(templates)} files / {n_ids} ids)",
         f"- Matcher: NCC×0.55 + SSD×0.25 + aHash×0.20 (same weights as `recognize.ts`)",
         f"- Threshold: {CONFIDENCE_THRESHOLD}",

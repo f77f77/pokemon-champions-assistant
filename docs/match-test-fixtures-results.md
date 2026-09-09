@@ -1,42 +1,57 @@
 # Test fixture match results
 
-- Fixtures: `public/fixtures/team-preview-test-1.png`, `team-preview-test-2.png`
-- Templates: `public/templates/*.png` (ROI Doc v1.2 crops, `source: roi-crop`; 18 files / 17 ids)
+- Fixtures: `public/fixtures/team-preview-test-1/2/3.png`
+- Templates: `public/templates/*.png` (ROI Doc v1.2 crops, `source: roi-crop`; 50 files / 50 ids)
 - Matcher: NCC×0.55 + SSD×0.25 + aHash×0.20 (same weights as `recognize.ts`)
 - Threshold: 0.55
 - ROI Doc: v1.2 (panel/thumb constants **locked**)
-- **Overall accuracy: 12/12**
+- **Overall accuracy: 4/18**
 
-## Slot 6 identity (test-1)
+## Notes on templates
 
-- Crop shows tea-bowl / whisk silhouette → **sinistcha** (來悲粗茶), not Poltchageist (斯魔茶) or Brambleghast (怖納噬草).
-- Test-1 slot 3 labeled **zoroark** (Unovan base; crop is dark gray + red mane, not Hisuian white).
+- Primary templates: `sprite_poke_3` cell cuts (RGBA) under `public/templates/`.
+- Yellow ROI is a **square** with side = red card height (`THUMB_CROP.left = 0.18`).
+- Capture + template load use contain/letterbox into 64 (never stretch); match is grayscale with alpha mask.
+- Raw official sheet is **not** committed.
 
 ## team-preview-test-1
 
-**Accuracy: 6/6**
+**Accuracy: 1/6**
 
 | slot | expected | matched | confidence | ok |
 |------|----------|---------|------------|----|
-| 0 | gengar | gengar | 1.0000 | Y |
-| 1 | sableye | sableye | 1.0000 | Y |
-| 2 | zoroark | zoroark | 1.0000 | Y |
-| 3 | basculegion | basculegion | 1.0000 | Y |
-| 4 | annihilape | annihilape | 1.0000 | Y |
-| 5 | sinistcha | sinistcha | 1.0000 | Y |
+| 0 | charizard | charizard | 0.5888 | Y |
+| 1 | aerodactyl | aerodactyl | 0.4687 | N |
+| 2 | meowscarada | talonflame | 0.5301 | N |
+| 3 | garchomp | arcaninehisui | 0.5509 | N |
+| 4 | rotomwash | sableye | 0.6011 | N |
+| 5 | aegislash | sableye | 0.5928 | N |
 
 ## team-preview-test-2
 
-**Accuracy: 6/6**
+**Accuracy: 1/6**
 
 | slot | expected | matched | confidence | ok |
 |------|----------|---------|------------|----|
-| 0 | charizard | charizard | 1.0000 | Y |
-| 1 | bellibolt | bellibolt | 1.0000 | Y |
-| 2 | scovillain | scovillain | 1.0000 | Y |
-| 3 | archaludon | archaludon | 1.0000 | Y |
-| 4 | blastoise | blastoise | 1.0000 | Y |
-| 5 | sableye | sableye | 1.0000 | Y |
+| 0 | whimsicott | gengar | 0.6032 | N |
+| 1 | charizard | charizard | 0.6659 | Y |
+| 2 | basculegion | arcaninehisui | 0.5716 | N |
+| 3 | kingambit | aegislash | 0.5409 | N |
+| 4 | sneasler | talonflame | 0.5767 | N |
+| 5 | garchomp | corviknight | 0.4839 | N |
+
+## team-preview-test-3
+
+**Accuracy: 2/6**
+
+| slot | expected | matched | confidence | ok |
+|------|----------|---------|------------|----|
+| 0 | ninetalesalola | ninetalesalola | 0.6232 | Y |
+| 1 | empoleon | talonflame | 0.5810 | N |
+| 2 | garchomp | arcaninehisui | 0.5403 | N |
+| 3 | staraptor | gengar | 0.5023 | N |
+| 4 | whimsicott | torkoal | 0.5951 | N |
+| 5 | charizard | charizard | 0.6152 | Y |
 
 ## Notes
 

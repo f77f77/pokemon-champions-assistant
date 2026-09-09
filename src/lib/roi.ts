@@ -3,7 +3,8 @@
  *
  * 座標系一律相對「去黑邊後的 16:9 內容區」(contentRect)，不是整幀。
  * 預設敵方面板：(left,top)=(0.811,0.143) → (right,bottom)=(0.965,0.832)
- * 再均分成 6 格；每格內再裁縮圖：水平 20%–55%、上內縮 25%／下內縮 5%（ROI Doc v1.2）。
+ * 再均分成 6 格；每格黃框為正方形：邊長 = 紅卡（slot）高度，水平置於左側精靈區。
+ * 辨認裁切後 contain/letterbox 進 TEMPLATE_SIZE（不拉伸）；模板來自 sprite_poke_3 切格。
  *
  * 微調：Settings 可對面板四邊做 ±2%（相對內容寬／高）偏移。
  */
@@ -18,16 +19,19 @@ export const ENEMY_PANEL_DEFAULT = {
   bottom: 0.832,
 } as const;
 
-/** 單格內縮圖裁切（相對該 slot 矩形） */
+/**
+ * 黃框：正方形，邊長 = 紅卡（slot）高度；left = 正方形左緣相對 slot 寬的偏移（精靈在左）。
+ * right / topInset / bottomInset 僅供文件與舊腳本對照 — 幾何由 thumbRectInSlot 以正方形計算。
+ */
 export const THUMB_CROP = {
-  /** 左緣（相對 slot 寬） */
-  left: 0.20,
-  /** 右緣（相對 slot 寬）— 20%–55% → 寬度 35% */
-  right: 0.55,
-  /** 上內縮（相對 slot 高）— 精靈偏下，多裁上方空白 */
-  topInset: 0.25,
-  /** 下內縮（相對 slot 高） */
-  bottomInset: 0.05,
+  /** 正方形左緣（相對 slot 寬）— 覆蓋左側精靈，避開右側類型圖示 */
+  left: 0.18,
+  /** @deprecated 正方形寬由 slot 高度推得；保留欄位供腳本同步顯示 */
+  right: 0.18 + 0.42,
+  /** @deprecated 黃框頂貼齊紅卡頂 */
+  topInset: 0,
+  /** @deprecated 黃框底貼齊紅卡底 */
+  bottomInset: 0,
 } as const;
 
 export const SLOT_COUNT = 6;
@@ -145,20 +149,19 @@ export function slotRect(panelPx: PixelRect, slot: number, slots: number = SLOT_
 }
 
 /**
- * 單格內縮圖裁切（相對 slot：水平 20%–55%，上內縮 25%／下內縮 5%）。
- * 回傳整幀像素座標。
+ * 單格內黃框：正方形，邊長 = 紅卡（slot）高度，左緣 = slot.x + left×slot.width。
+ * 回傳整幀像素座標（不超出 slot 右緣）。
  */
 export function thumbRectInSlot(slot: PixelRect): PixelRect {
-  const insetTop = slot.height * THUMB_CROP.topInset;
-  const x = slot.x + slot.width * THUMB_CROP.left;
-  const y = slot.y + insetTop;
-  const width = slot.width * (THUMB_CROP.right - THUMB_CROP.left);
-  const height = slot.height * (1 - THUMB_CROP.topInset - THUMB_CROP.bottomInset);
+  const side = Math.max(1, slot.height);
+  let x = slot.x + slot.width * THUMB_CROP.left;
+  const maxX = slot.x + Math.max(0, slot.width - side);
+  x = Math.min(Math.max(slot.x, x), maxX);
   return {
     x: Math.floor(x),
-    y: Math.floor(y),
-    width: Math.max(1, Math.floor(width)),
-    height: Math.max(1, Math.floor(height)),
+    y: Math.floor(slot.y),
+    width: Math.floor(side),
+    height: Math.floor(side),
   };
 }
 
@@ -201,15 +204,17 @@ export function thumbCssPercent(
   const panelW = panel.right - panel.left;
   const slotH = panelH / slots;
   const slotTop = panel.top + slot * slotH;
-  const left = panel.left + panelW * THUMB_CROP.left;
-  const top = slotTop + slotH * THUMB_CROP.topInset;
-  const width = panelW * (THUMB_CROP.right - THUMB_CROP.left);
-  const height = slotH * (1 - THUMB_CROP.topInset - THUMB_CROP.bottomInset);
+  // Visual square on 16:9 content: height% of contentH == width% of contentW in pixels
+  const heightFrac = slotH;
+  const widthFrac = slotH / TARGET_ASPECT;
+  let left = panel.left + panelW * THUMB_CROP.left;
+  const maxLeft = panel.left + panelW - widthFrac;
+  left = Math.min(Math.max(panel.left, left), maxLeft);
   return {
     left: left * 100,
-    top: top * 100,
-    width: width * 100,
-    height: height * 100,
+    top: slotTop * 100,
+    width: widthFrac * 100,
+    height: heightFrac * 100,
   };
 }
 

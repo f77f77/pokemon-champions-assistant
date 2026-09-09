@@ -2,11 +2,10 @@
  * Team Preview 敵方小縮圖辨認（本地 aHash + 灰階 NCC，無雲端）。
  *
  * 流程：抓一幀 → contentRect（去黑邊）→ 敵方面板 ROI → 6 等分 →
- * 每格 thumb 裁切（左 20–55%、上內縮 25%／下內縮 5%）→ 縮放 TEMPLATE_SIZE → 比對。
+ * 每格黃框正方形（邊長=紅卡高，左側精靈）→ contain/letterbox 至 TEMPLATE_SIZE → 灰階比對。
  *
- * 模板庫：public/templates/{showdownId}.png（僅 Team Preview 小縮圖，非大美術／HOME art）。
- * 預設比對 ROI-crop 種子（source: roi-crop）。CBD menu sprites
- * （assets/templates/preview-thumbs/，source: cbd）為可選次要來源，畫面風格常與選隊縮圖不合。
+ * 模板庫：public/templates/{showdownId}.png — 切自官方 sprite_poke_3（128px 格 → contain 64）。
+ * Manifest source: sprite_poke_3。灰階特徵 only（NCC/SSD/aHash）；不拉伸。
  * 低信心 → speciesId/speciesNameZh = null（UI「未識別」）。不猜道具。
  * 不做逐幀即時辨認。
  */
@@ -68,46 +67,43 @@ export type RoiConfig = typeof ROI;
 export interface ThumbTemplate {
   speciesId: string;
   speciesNameZh: string;
-  /** 64×64 aHash 位元字串 */
+  /** 64×64 aHash 位元字串（僅不透明像素） */
   aHash: string;
   /** 灰階 float（長度 TEMPLATE_SIZE²），用於 NCC */
   gray: Float32Array;
+  /** Alpha mask 0/1（sprite_poke_3 透明底忽略）；缺省視為全 1 */
+  mask?: Float32Array;
   /** 可選：原圖 data URL（除錯） */
   dataUrl?: string;
 }
 
 /**
- * VGC seed showdownIds（圖二敵方欄 top→bottom）。
- * Forms/Mega/shiny、Rotom 家電型、Lycanroc 晝／夜、Hippowdon 性別色差日後各自加模板。
+ * Fallback seed showdownIds when manifest is missing (new team-select fixtures).
+ * Prefer public/templates/manifest.json ROI-crop entries at runtime.
  */
 export const SEED_TEMPLATE_IDS = [
-  'noivern',
-  'lycanroc', // Midday / 白晝
-  'politoed',
-  'rotom', // base form
-  'kangaskhan',
-  'hippowdon',
+  'charizard',
+  'aerodactyl',
+  'meowscarada',
+  'garchomp',
+  'rotomwash',
+  'aegislash',
 ] as const;
 
 const SEED_META: Record<string, string> = {
-  noivern: '音爆音波',
-  lycanroc: '鬃岩狼人',
-  politoed: '蚊香蛙皇',
-  rotom: '洛托姆',
-  kangaskhan: '袋獸',
-  hippowdon: '河馬獸',
-  // team-preview-test-1/2 ROI crops
-  gengar: '耿鬼',
-  sableye: '勾魂眼',
-  zoroark: '索羅亞克',
-  basculegion: '幽尾玄魚',
-  annihilape: '棄世猴',
-  sinistcha: '來悲粗茶',
   charizard: '噴火龍',
-  bellibolt: '電肚蛙',
-  scovillain: '辣椒傑作',
-  archaludon: '鋁鋼橋龍',
-  blastoise: '水箭龜',
+  aerodactyl: '化石翼龍',
+  meowscarada: '魔幻假面喵',
+  garchomp: '烈咬陸鯊',
+  rotomwash: '清洗洛托姆',
+  aegislash: '堅盾劍怪',
+  whimsicott: '風妖精',
+  basculegion: '幽尾玄魚',
+  kingambit: '仆刀將軍',
+  sneasler: '大狃拉',
+  ninetalesalola: '阿羅拉九尾',
+  empoleon: '帝王拿波',
+  staraptor: '姆克鷹',
 };
 
 /** 執行期模板庫（載入後填入；空 → 低信心／未識別） */
@@ -151,22 +147,27 @@ function hamming(a: string, b: string): number {
   return d + Math.abs(a.length - b.length);
 }
 
-/** 正規化互相關 ∈ [-1,1]；同圖 ≈ 1 */
-function ncc(a: Float32Array, b: Float32Array): number {
+/** 正規化互相關 ∈ [-1,1]；可選 mask（>0 的像素才計入） */
+function ncc(a: Float32Array, b: Float32Array, mask?: Float32Array): number {
   const n = Math.min(a.length, b.length);
   if (n === 0) return 0;
+  let count = 0;
   let meanA = 0;
   let meanB = 0;
   for (let i = 0; i < n; i++) {
+    if (mask && mask[i] <= 0) continue;
     meanA += a[i];
     meanB += b[i];
+    count++;
   }
-  meanA /= n;
-  meanB /= n;
+  if (count < 8) return 0;
+  meanA /= count;
+  meanB /= count;
   let num = 0;
   let denA = 0;
   let denB = 0;
   for (let i = 0; i < n; i++) {
+    if (mask && mask[i] <= 0) continue;
     const da = a[i] - meanA;
     const db = b[i] - meanB;
     num += da * db;
@@ -178,17 +179,58 @@ function ncc(a: Float32Array, b: Float32Array): number {
   return num / den;
 }
 
-/** 正規化 SSD 相似度 ∈ [0,1]（1 = 相同） */
-function ssdSimilarity(a: Float32Array, b: Float32Array): number {
+/** 正規化 SSD 相似度 ∈ [0,1]（1 = 相同）；可選 mask */
+function ssdSimilarity(a: Float32Array, b: Float32Array, mask?: Float32Array): number {
   const n = Math.min(a.length, b.length);
   if (n === 0) return 0;
   let sum = 0;
+  let count = 0;
   for (let i = 0; i < n; i++) {
+    if (mask && mask[i] <= 0) continue;
     const d = (a[i] - b[i]) / 255;
     sum += d * d;
+    count++;
   }
-  // 典型同圖 ≈ 0；差異大時 sum/n 可 > 1 → clamp
-  return Math.max(0, 1 - Math.sqrt(sum / n) * 2);
+  if (count < 8) return 0;
+  return Math.max(0, 1 - Math.sqrt(sum / count) * 2);
+}
+
+function alphaMaskFromImageData(data: ImageData, threshold = 12): Float32Array {
+  const { data: px } = data;
+  const out = new Float32Array(data.width * data.height);
+  for (let i = 0, j = 0; i < px.length; i += 4, j++) {
+    out[j] = px[i + 3] > threshold ? 1 : 0;
+  }
+  return out;
+}
+
+/**
+ * Draw source into TEMPLATE_SIZE×TEMPLATE_SIZE with contain/letterbox
+ * (preserve aspect; pad black). Never stretch — stretch breaks NCC matching.
+ */
+function drawContained(
+  ctx: CanvasRenderingContext2D,
+  source: CanvasImageSource,
+  srcW: number,
+  srcH: number,
+  opts?: { padBlack?: boolean },
+): void {
+  ctx.clearRect(0, 0, TEMPLATE_SIZE, TEMPLATE_SIZE);
+  if (opts?.padBlack !== false) {
+    // Capture path: black letterbox pad (matches gray pipeline).
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, TEMPLATE_SIZE, TEMPLATE_SIZE);
+  }
+  // Template load: leave cleared (transparent) so alpha mask works.
+  const sw = Math.max(1, srcW);
+  const sh = Math.max(1, srcH);
+  const scale = Math.min(TEMPLATE_SIZE / sw, TEMPLATE_SIZE / sh);
+  const dw = Math.max(1, Math.round(sw * scale));
+  const dh = Math.max(1, Math.round(sh * scale));
+  const dx = Math.floor((TEMPLATE_SIZE - dw) / 2);
+  const dy = Math.floor((TEMPLATE_SIZE - dh) / 2);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(source, 0, 0, sw, sh, dx, dy, dw, dh);
 }
 
 function imageDataFromBitmap(bmp: ImageBitmap): ImageData {
@@ -196,8 +238,8 @@ function imageDataFromBitmap(bmp: ImageBitmap): ImageData {
   c.width = TEMPLATE_SIZE;
   c.height = TEMPLATE_SIZE;
   const ctx = c.getContext('2d', { willReadFrequently: true })!;
-  ctx.imageSmoothingEnabled = true;
-  ctx.drawImage(bmp, 0, 0, TEMPLATE_SIZE, TEMPLATE_SIZE);
+  // Same contain path as capture crops so NCC compares like-for-like.
+  drawContained(ctx, bmp, bmp.width, bmp.height, { padBlack: false });
   return ctx.getImageData(0, 0, TEMPLATE_SIZE, TEMPLATE_SIZE);
 }
 
@@ -235,7 +277,7 @@ async function resolveTemplateFiles(): Promise<ResolvedTemplateFile[]> {
       const manifest = (await res.json()) as TemplatesManifest;
       for (const t of manifest.templates ?? []) {
         if (!t?.speciesId) continue;
-        if (t.source && t.source !== 'roi-crop') continue;
+        if (t.source && t.source !== 'sprite_poke_3' && t.source !== 'roi-crop') continue;
         const file = t.file || `${t.speciesId}.png`;
         if (seenFiles.has(file)) continue;
         seenFiles.add(file);
@@ -296,11 +338,13 @@ export async function loadPreviewThumbTemplates(
       const imageData = await fetchTemplateFile(file);
       if (!imageData) continue;
       const zh = findSpecies(speciesId)?.nameZh ?? nameZh ?? SEED_META[speciesId] ?? speciesId;
+      const mask = alphaMaskFromImageData(imageData);
       loaded.push({
         speciesId,
         speciesNameZh: zh,
         aHash: averageHash(imageData),
         gray: toGray(imageData),
+        mask,
       });
     }
     PREVIEW_THUMB_TEMPLATES = loaded;
@@ -314,7 +358,10 @@ export async function loadPreviewThumbTemplates(
   }
 }
 
-/** 將任意矩形裁切並縮放到 TEMPLATE_SIZE×TEMPLATE_SIZE */
+/**
+ * Crop rect then contain/letterbox into TEMPLATE_SIZE×TEMPLATE_SIZE
+ * (preserve aspect; black pad). Do not stretch into a square.
+ */
 function cropResizeToTemplate(
   src: CanvasRenderingContext2D,
   rect: { x: number; y: number; width: number; height: number },
@@ -337,8 +384,7 @@ function cropResizeToTemplate(
   rawCanvas.width = raw.width;
   rawCanvas.height = raw.height;
   rawCanvas.getContext('2d')!.putImageData(raw, 0, 0);
-  tctx.imageSmoothingEnabled = true;
-  tctx.drawImage(rawCanvas, 0, 0, TEMPLATE_SIZE, TEMPLATE_SIZE);
+  drawContained(tctx, rawCanvas, raw.width, raw.height);
   const imageData = tctx.getImageData(0, 0, TEMPLATE_SIZE, TEMPLATE_SIZE);
   return {
     imageData,
@@ -368,8 +414,8 @@ function matchTemplate(hash: string, gray: Float32Array): {
   };
 
   for (const t of PREVIEW_THUMB_TEMPLATES) {
-    const nccScore = (ncc(gray, t.gray) + 1) / 2; // [-1,1] → [0,1]
-    const ssdScore = ssdSimilarity(gray, t.gray);
+    const nccScore = (ncc(gray, t.gray, t.mask) + 1) / 2; // [-1,1] → [0,1]
+    const ssdScore = ssdSimilarity(gray, t.gray, t.mask);
     const hashBits = Math.max(hash.length, t.aHash.length) || 64;
     const hashScore = Math.max(0, 1 - hamming(hash, t.aHash) / (hashBits * 0.35));
     // 權重：NCC 主導（對亮度偏移較穩），SSD／hash 輔助
@@ -400,7 +446,7 @@ function emptyResults(reasonConfidence = 0): RecognizeResult[] {
 }
 
 /**
- * 從已繪製的整幀 canvas 辨認 6 槽（驗收：可餵 team-preview.png）。
+ * 從已繪製的整幀 canvas 辨認 6 槽（驗收：可餵 team-preview-test-*.png）。
  */
 export async function recognizeEnemyTeamFromCanvas(
   canvas: HTMLCanvasElement,
@@ -477,7 +523,7 @@ export async function recognizeEnemyTeam(
 export const TEAM_PREVIEW_FIXTURES = [
   'fixtures/team-preview-test-1.png',
   'fixtures/team-preview-test-2.png',
-  'fixtures/team-preview.png',
+  'fixtures/team-preview-test-3.png',
 ] as const;
 
 let fixtureCursor = 0;

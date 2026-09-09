@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Crop Team Preview enemy thumbs using the SAME constants as src/lib/roi.ts (ROI Doc v1.2).
+Crop Team Preview enemy thumbs using the SAME constants as src/lib/roi.ts (ROI square-thumb + sprite_poke_3).
 
 Usage:
   python scripts/crop-preview-templates.py [source.png] [out_dir]
@@ -29,7 +29,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # Locked — mirror src/lib/roi.ts
 ENEMY_PANEL = {"left": 0.811, "top": 0.143, "right": 0.965, "bottom": 0.832}
-THUMB_CROP = {"left": 0.20, "right": 0.55, "topInset": 0.25, "bottomInset": 0.05}
+THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}  # square: side=slotH; left offset
 TEMPLATE_SIZE = 64
 SLOT_COUNT = 6
 TARGET_ASPECT = 16 / 9
@@ -45,18 +45,33 @@ SEED_SLOTS = [
 ]
 
 ZH_FALLBACK = {
-    "gengar": "耿鬼",
-    "sableye": "勾魂眼",
-    "zoroark": "索羅亞克",
-    "basculegion": "幽尾玄魚",
-    "annihilape": "棄世猴",
-    "sinistcha": "來悲粗茶",
     "charizard": "噴火龍",
-    "bellibolt": "電肚蛙",
-    "scovillain": "辣椒傑作",
-    "archaludon": "鋁鋼橋龍",
-    "blastoise": "水箭龜",
+    "aerodactyl": "化石翼龍",
+    "meowscarada": "魔幻假面喵",
+    "garchomp": "烈咬陸鯊",
+    "rotomwash": "清洗洛托姆",
+    "aegislash": "堅盾劍怪",
+    "whimsicott": "風妖精",
+    "basculegion": "幽尾玄魚",
+    "kingambit": "仆刀將軍",
+    "sneasler": "大狃拉",
+    "ninetalesalola": "阿羅拉九尾",
+    "empoleon": "帝王拿波",
+    "staraptor": "姆克鷹",
 }
+
+def letterbox_to_template(im: Image.Image) -> Image.Image:
+    """Contain/letterbox into TEMPLATE_SIZE (black pad; never stretch)."""
+    rgb = im.convert("RGB")
+    canvas = Image.new("RGB", (TEMPLATE_SIZE, TEMPLATE_SIZE), (0, 0, 0))
+    w, h = rgb.size
+    scale = min(TEMPLATE_SIZE / max(1, w), TEMPLATE_SIZE / max(1, h))
+    nw = max(1, int(round(w * scale)))
+    nh = max(1, int(round(h * scale)))
+    resized = rgb.resize((nw, nh), Image.Resampling.LANCZOS)
+    canvas.paste(resized, ((TEMPLATE_SIZE - nw) // 2, (TEMPLATE_SIZE - nh) // 2))
+    return canvas
+
 
 
 def content_rect(frame_w: int, frame_h: int) -> tuple[int, int, int, int]:
@@ -76,7 +91,7 @@ def content_rect(frame_w: int, frame_h: int) -> tuple[int, int, int, int]:
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("source", nargs="?", default=str(ROOT / "public/fixtures/team-preview.png"))
+    p.add_argument("source", nargs="?", default=str(ROOT / "public/fixtures/team-preview-test-1.png"))
     p.add_argument("out_dir", nargs="?", default=str(ROOT / "public/templates"))
     p.add_argument(
         "--slots",
@@ -127,13 +142,13 @@ def main(argv: list[str] | None = None) -> None:
     for slot, meta in enumerate(slots_meta):
         slot_h = ph / SLOT_COUNT
         sx, sy, sw, sh = px, int(py + slot * slot_h), pw, max(1, int(slot_h))
+        side = sh  # square = red card height
         tx = int(sx + sw * THUMB_CROP["left"])
-        ty = int(sy + sh * THUMB_CROP["topInset"])
-        tw = max(1, int(sw * (THUMB_CROP["right"] - THUMB_CROP["left"])))
-        th = max(1, int(sh * (1 - THUMB_CROP["topInset"] - THUMB_CROP["bottomInset"])))
-        crop = im.crop((tx, ty, tx + tw, ty + th)).resize(
-            (TEMPLATE_SIZE, TEMPLATE_SIZE), Image.Resampling.LANCZOS
-        )
+        max_x = sx + max(0, sw - side)
+        tx = min(max(sx, tx), max_x)
+        ty = sy
+        tw = th = side
+        crop = letterbox_to_template(im.crop((tx, ty, tx + tw, ty + th)))
         sid = meta["speciesId"]
         dest = out_dir / f"{sid}.png"
         crop.save(dest, "PNG")
@@ -177,7 +192,7 @@ def main(argv: list[str] | None = None) -> None:
             "thumbCrop": THUMB_CROP,
             "templateSize": TEMPLATE_SIZE,
             "notes": (
-                "PRIMARY recognition templates: ROI Doc v1.2 Team Preview crops (NOT HOME art). "
+                "PRIMARY recognition templates: ROI square-thumb + sprite_poke_3 Team Preview crops (NOT HOME art). "
                 "Forms/Mega/shiny separate later. CBD menu sprites under "
                 "assets/templates/preview-thumbs/ (source: cbd) are optional secondary."
             ),

@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # Locked — mirror src/lib/roi.ts (DO NOT change)
 ENEMY_PANEL = {"left": 0.811, "top": 0.143, "right": 0.965, "bottom": 0.832}
-THUMB_CROP = {"left": 0.20, "right": 0.55, "topInset": 0.25, "bottomInset": 0.05}
+THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}  # square: side=slotH; left offset
 TEMPLATE_SIZE = 64
 SLOT_COUNT = 6
 TARGET_ASPECT = 16 / 9
@@ -71,8 +71,24 @@ def content_rect(frame_w: int, frame_h: int) -> tuple[int, int, int, int]:
     return 0, 0, frame_w, frame_h
 
 
+def letterbox_to_template(im: Image.Image) -> Image.Image:
+    """Contain/letterbox into TEMPLATE_SIZE×TEMPLATE_SIZE (black pad; never stretch)."""
+    rgb = im.convert("RGB")
+    canvas = Image.new("RGB", (TEMPLATE_SIZE, TEMPLATE_SIZE), (0, 0, 0))
+    w, h = rgb.size
+    scale = min(TEMPLATE_SIZE / max(1, w), TEMPLATE_SIZE / max(1, h))
+    nw = max(1, int(round(w * scale)))
+    nh = max(1, int(round(h * scale)))
+    resized = rgb.resize((nw, nh), Image.Resampling.LANCZOS)
+    ox = (TEMPLATE_SIZE - nw) // 2
+    oy = (TEMPLATE_SIZE - nh) // 2
+    canvas.paste(resized, (ox, oy))
+    return canvas
+
+
 def to_gray(im: Image.Image) -> list[float]:
-    rgb = im.convert("RGB").resize((TEMPLATE_SIZE, TEMPLATE_SIZE), Image.Resampling.LANCZOS)
+    """Grayscale feature vector after contain/letterbox (no stretch)."""
+    rgb = letterbox_to_template(im)
     pix = rgb.load()
     out: list[float] = []
     for y in range(TEMPLATE_SIZE):
@@ -80,6 +96,7 @@ def to_gray(im: Image.Image) -> list[float]:
             r, g, b = pix[x, y]
             out.append(0.299 * r + 0.587 * g + 0.114 * b)
     return out
+
 
 
 def average_hash(gray: list[float], size: int = 8) -> str:
@@ -141,6 +158,7 @@ def confidence(gray: list[float], hash_s: str, tmpl_gray: list[float], tmpl_hash
 
 
 def crop_slot(im: Image.Image, slot: int) -> Image.Image:
+    """Yellow square: side = red card (slot) height; left = THUMB_CROP left offset."""
     cx, cy, cw, ch = content_rect(*im.size)
     px = int(cx + ENEMY_PANEL["left"] * cw)
     py = int(cy + ENEMY_PANEL["top"] * ch)
@@ -148,11 +166,13 @@ def crop_slot(im: Image.Image, slot: int) -> Image.Image:
     ph = max(1, int((ENEMY_PANEL["bottom"] - ENEMY_PANEL["top"]) * ch))
     slot_h = ph / SLOT_COUNT
     sx, sy, sw, sh = px, int(py + slot * slot_h), pw, max(1, int(slot_h))
+    side = sh
     tx = int(sx + sw * THUMB_CROP["left"])
-    ty = int(sy + sh * THUMB_CROP["topInset"])
-    tw = max(1, int(sw * (THUMB_CROP["right"] - THUMB_CROP["left"])))
-    th = max(1, int(sh * (1 - THUMB_CROP["topInset"] - THUMB_CROP["bottomInset"])))
-    return im.crop((tx, ty, tx + tw, ty + th))
+    max_x = sx + max(0, sw - side)
+    tx = min(max(sx, tx), max_x)
+    ty = sy
+    return im.crop((tx, ty, tx + side, ty + side))
+
 
 
 def load_roi_templates(tmpl_dir: Path) -> list[dict]:

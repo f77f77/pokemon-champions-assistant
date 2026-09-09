@@ -1,6 +1,7 @@
 {
-  "source": "ROI Doc v1.2 crops — 圖二 + team-preview-test-1/2",
-  "roiDoc": "v1.2",
+  "source": "Champions sprite_poke_3 official sheet cells (RGBA cut; alpha-masked gray match)",
+  "sheet": "sprite_poke_3 (local cut only; raw sheet not committed)",
+  "roiDoc": "v1.3-square-thumb",
   "panel": {
     "left": 0.811,
     "top": 0.143,
@@ -8,297 +9,766 @@
     "bottom": 0.832
   },
   "thumbCrop": {
-    "left": 0.2,
-    "right": 0.55,
-    "topInset": 0.25,
-    "bottomInset": 0.05
+    "left": 0.18,
+    "right": 0.6,
+    "topInset": 0.0,
+    "bottomInset": 0.0
   },
+  "thumbGeometry": "square side = red card (slot) height; left offset on sprite",
   "templateSize": 64,
-  "notes": "PRIMARY recognition templates: ROI Doc v1.2 Team Preview crops (NOT HOME art). Multiple files may share a showdownId (pose/fixture variants). CBD menu sprites under assets/templates/preview-thumbs/ (source: cbd) are optional secondary.",
+  "notes": "PRIMARY templates from sprite_poke_3. Match in grayscale with alpha mask (ignore transparent template pixels). Capture: square yellow ROI → contain/letterbox 64, never stretch.",
   "templates": [
     {
-      "speciesId": "noivern",
-      "speciesNameZh": "音爆音波",
-      "speciesNameEn": "Noivern",
-      "file": "noivern.png",
-      "formNote": null,
-      "slotSource": 0,
-      "cropPx": {
-        "x": 1346,
-        "y": 153,
-        "w": 86,
-        "h": 72
+      "speciesId": "kingambit",
+      "speciesNameZh": "仆刀將軍",
+      "speciesNameEn": "Kingambit",
+      "file": "kingambit.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0983 form=00",
+      "sheetCell": {
+        "col": 16,
+        "row": 2,
+        "dex": 983,
+        "form": 0,
+        "px": 128
       },
-      "source": "roi-crop"
+      "source": "sprite_poke_3"
     },
     {
-      "speciesId": "lycanroc",
-      "speciesNameZh": "鬃岩狼人",
-      "speciesNameEn": "Lycanroc-Midday",
-      "file": "lycanroc.png",
-      "formNote": "Midday / 白晝",
-      "slotSource": 1,
-      "cropPx": {
-        "x": 1346,
-        "y": 256,
-        "w": 86,
-        "h": 72
+      "speciesId": "garchomp",
+      "speciesNameZh": "烈咬陸鯊",
+      "speciesNameEn": "Garchomp",
+      "file": "garchomp.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0445 form=00",
+      "sheetCell": {
+        "col": 4,
+        "row": 9,
+        "dex": 445,
+        "form": 0,
+        "px": 128
       },
-      "source": "roi-crop"
+      "source": "sprite_poke_3"
     },
     {
-      "speciesId": "politoed",
-      "speciesNameZh": "蚊香蛙皇",
-      "speciesNameEn": "Politoed",
-      "file": "politoed.png",
-      "formNote": null,
-      "slotSource": 2,
-      "cropPx": {
-        "x": 1346,
-        "y": 359,
-        "w": 86,
-        "h": 72
+      "speciesId": "sneasler",
+      "speciesNameZh": "大狃拉",
+      "speciesNameEn": "Sneasler",
+      "file": "sneasler.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0903 form=00",
+      "sheetCell": {
+        "col": 15,
+        "row": 7,
+        "dex": 903,
+        "form": 0,
+        "px": 128
       },
-      "source": "roi-crop"
-    },
-    {
-      "speciesId": "rotom",
-      "speciesNameZh": "洛托姆",
-      "speciesNameEn": "Rotom",
-      "file": "rotom.png",
-      "formNote": "base form (not appliances)",
-      "slotSource": 3,
-      "cropPx": {
-        "x": 1346,
-        "y": 463,
-        "w": 86,
-        "h": 72
-      },
-      "source": "roi-crop"
-    },
-    {
-      "speciesId": "kangaskhan",
-      "speciesNameZh": "袋獸",
-      "speciesNameEn": "Kangaskhan",
-      "file": "kangaskhan.png",
-      "formNote": null,
-      "slotSource": 4,
-      "cropPx": {
-        "x": 1346,
-        "y": 566,
-        "w": 86,
-        "h": 72
-      },
-      "source": "roi-crop"
-    },
-    {
-      "speciesId": "hippowdon",
-      "speciesNameZh": "河馬獸",
-      "speciesNameEn": "Hippowdon",
-      "file": "hippowdon.png",
-      "formNote": null,
-      "slotSource": 5,
-      "cropPx": {
-        "x": 1346,
-        "y": 669,
-        "w": 86,
-        "h": 72
-      },
-      "source": "roi-crop"
-    },
-    {
-      "speciesId": "annihilape",
-      "speciesNameZh": "棄世猴",
-      "speciesNameEn": "Annihilape",
-      "file": "annihilape.png",
-      "formNote": null,
-      "slotSource": 4,
-      "cropPx": {
-        "x": 734,
-        "y": 310,
-        "w": 46,
-        "h": 39
-      },
-      "source": "roi-crop",
-      "fixture": "team-preview-test-1"
-    },
-    {
-      "speciesId": "archaludon",
-      "speciesNameZh": "鋁鋼橋龍",
-      "speciesNameEn": "Archaludon",
-      "file": "archaludon.png",
-      "formNote": null,
-      "slotSource": 3,
-      "cropPx": {
-        "x": 734,
-        "y": 254,
-        "w": 46,
-        "h": 39
-      },
-      "source": "roi-crop",
-      "fixture": "team-preview-test-2"
+      "source": "sprite_poke_3"
     },
     {
       "speciesId": "basculegion",
       "speciesNameZh": "幽尾玄魚",
       "speciesNameEn": "Basculegion",
       "file": "basculegion.png",
-      "formNote": "Male",
-      "slotSource": 3,
-      "cropPx": {
-        "x": 734,
-        "y": 254,
-        "w": 46,
-        "h": 39
+      "formNote": "sprite_poke_3 RGBA cell dex=0902 form=00",
+      "sheetCell": {
+        "col": 15,
+        "row": 5,
+        "dex": 902,
+        "form": 0,
+        "px": 128
       },
-      "source": "roi-crop",
-      "fixture": "team-preview-test-1"
+      "source": "sprite_poke_3"
     },
     {
-      "speciesId": "bellibolt",
-      "speciesNameZh": "電肚蛙",
-      "speciesNameEn": "Bellibolt",
-      "file": "bellibolt.png",
-      "formNote": null,
-      "slotSource": 1,
-      "cropPx": {
-        "x": 734,
-        "y": 141,
-        "w": 46,
-        "h": 39
+      "speciesId": "whimsicott",
+      "speciesNameZh": "風妖精",
+      "speciesNameEn": "Whimsicott",
+      "file": "whimsicott.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0547 form=00",
+      "sheetCell": {
+        "col": 11,
+        "row": 6,
+        "dex": 547,
+        "form": 0,
+        "px": 128
       },
-      "source": "roi-crop",
-      "fixture": "team-preview-test-2"
-    },
-    {
-      "speciesId": "blastoise",
-      "speciesNameZh": "水箭龜",
-      "speciesNameEn": "Blastoise",
-      "file": "blastoise.png",
-      "formNote": null,
-      "slotSource": 4,
-      "cropPx": {
-        "x": 734,
-        "y": 310,
-        "w": 46,
-        "h": 39
-      },
-      "source": "roi-crop",
-      "fixture": "team-preview-test-2"
-    },
-    {
-      "speciesId": "charizard",
-      "speciesNameZh": "噴火龍",
-      "speciesNameEn": "Charizard",
-      "file": "charizard.png",
-      "formNote": "shiny appearance in fixture (still showdownId charizard)",
-      "slotSource": 0,
-      "cropPx": {
-        "x": 734,
-        "y": 85,
-        "w": 46,
-        "h": 39
-      },
-      "source": "roi-crop",
-      "fixture": "team-preview-test-2"
-    },
-    {
-      "speciesId": "gengar",
-      "speciesNameZh": "耿鬼",
-      "speciesNameEn": "Gengar",
-      "file": "gengar.png",
-      "formNote": null,
-      "slotSource": 0,
-      "cropPx": {
-        "x": 734,
-        "y": 85,
-        "w": 46,
-        "h": 39
-      },
-      "source": "roi-crop",
-      "fixture": "team-preview-test-1"
-    },
-    {
-      "speciesId": "sableye",
-      "speciesNameZh": "勾魂眼",
-      "speciesNameEn": "Sableye",
-      "file": "sableye-test2.png",
-      "formNote": "variant from test-2 slot 6",
-      "slotSource": 5,
-      "cropPx": {
-        "x": 734,
-        "y": 366,
-        "w": 46,
-        "h": 39
-      },
-      "source": "roi-crop",
-      "fixture": "team-preview-test-2"
-    },
-    {
-      "speciesId": "sableye",
-      "speciesNameZh": "勾魂眼",
-      "speciesNameEn": "Sableye",
-      "file": "sableye.png",
-      "formNote": null,
-      "slotSource": 1,
-      "cropPx": {
-        "x": 734,
-        "y": 141,
-        "w": 46,
-        "h": 39
-      },
-      "source": "roi-crop",
-      "fixture": "team-preview-test-1"
-    },
-    {
-      "speciesId": "scovillain",
-      "speciesNameZh": "辣椒傑作",
-      "speciesNameEn": "Scovillain",
-      "file": "scovillain.png",
-      "formNote": null,
-      "slotSource": 2,
-      "cropPx": {
-        "x": 734,
-        "y": 197,
-        "w": 46,
-        "h": 39
-      },
-      "source": "roi-crop",
-      "fixture": "team-preview-test-2"
+      "source": "sprite_poke_3"
     },
     {
       "speciesId": "sinistcha",
       "speciesNameZh": "來悲粗茶",
       "speciesNameEn": "Sinistcha",
       "file": "sinistcha.png",
-      "formNote": "identified from crop (tea bowl + whisk; not Poltchageist/Brambleghast)",
-      "slotSource": 5,
-      "cropPx": {
-        "x": 734,
-        "y": 366,
-        "w": 46,
-        "h": 39
+      "formNote": "sprite_poke_3 RGBA cell dex=1013 form=00",
+      "sheetCell": {
+        "col": 16,
+        "row": 5,
+        "dex": 1013,
+        "form": 0,
+        "px": 128
       },
-      "source": "roi-crop",
-      "fixture": "team-preview-test-1"
+      "source": "sprite_poke_3"
     },
     {
-      "speciesId": "zoroark",
-      "speciesNameZh": "索羅亞克",
-      "speciesNameEn": "Zoroark",
-      "file": "zoroark.png",
-      "formNote": "Unovan / base (Dark/Ghost)",
-      "slotSource": 2,
-      "cropPx": {
-        "x": 734,
-        "y": 197,
-        "w": 46,
-        "h": 39
+      "speciesId": "incineroar",
+      "speciesNameZh": "熾焰咆哮虎",
+      "speciesNameEn": "Incineroar",
+      "file": "incineroar.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0727 form=00",
+      "sheetCell": {
+        "col": 3,
+        "row": 13,
+        "dex": 727,
+        "form": 0,
+        "px": 128
       },
-      "source": "roi-crop",
-      "fixture": "team-preview-test-1"
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "farigiraf",
+      "speciesNameZh": "奇麒麟",
+      "speciesNameEn": "Farigiraf",
+      "file": "farigiraf.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0981 form=00",
+      "sheetCell": {
+        "col": 16,
+        "row": 1,
+        "dex": 981,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "charizard",
+      "speciesNameZh": "噴火龍",
+      "speciesNameEn": "Charizard",
+      "file": "charizard.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0006 form=00",
+      "sheetCell": {
+        "col": 1,
+        "row": 0,
+        "dex": 6,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "staraptor",
+      "speciesNameZh": "姆克鷹",
+      "speciesNameEn": "Staraptor",
+      "file": "staraptor.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0398 form=00",
+      "sheetCell": {
+        "col": 9,
+        "row": 6,
+        "dex": 398,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "sylveon",
+      "speciesNameZh": "仙子伊布",
+      "speciesNameEn": "Sylveon",
+      "file": "sylveon.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0700 form=00",
+      "sheetCell": {
+        "col": 13,
+        "row": 0,
+        "dex": 700,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "raichu",
+      "speciesNameZh": "雷丘",
+      "speciesNameEn": "Raichu",
+      "file": "raichu.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0026 form=00",
+      "sheetCell": {
+        "col": 1,
+        "row": 2,
+        "dex": 26,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "archaludon",
+      "speciesNameZh": "鋁鋼橋龍",
+      "speciesNameEn": "Archaludon",
+      "file": "archaludon.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=1018 form=00",
+      "sheetCell": {
+        "col": 16,
+        "row": 6,
+        "dex": 1018,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "tyranitar",
+      "speciesNameZh": "班基拉斯",
+      "speciesNameEn": "Tyranitar",
+      "file": "tyranitar.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0248 form=00",
+      "sheetCell": {
+        "col": 4,
+        "row": 7,
+        "dex": 248,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "pelipper",
+      "speciesNameZh": "大嘴鷗",
+      "speciesNameEn": "Pelipper",
+      "file": "pelipper.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0279 form=00",
+      "sheetCell": {
+        "col": 8,
+        "row": 0,
+        "dex": 279,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "milotic",
+      "speciesNameZh": "美納斯",
+      "speciesNameEn": "Milotic",
+      "file": "milotic.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0350 form=00",
+      "sheetCell": {
+        "col": 4,
+        "row": 8,
+        "dex": 350,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "aerodactyl",
+      "speciesNameZh": "化石翼龍",
+      "speciesNameEn": "Aerodactyl",
+      "file": "aerodactyl.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0142 form=00",
+      "sheetCell": {
+        "col": 6,
+        "row": 2,
+        "dex": 142,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "venusaur",
+      "speciesNameZh": "妙蛙花",
+      "speciesNameEn": "Venusaur",
+      "file": "venusaur.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0003 form=00",
+      "sheetCell": {
+        "col": 0,
+        "row": 0,
+        "dex": 3,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "froslass",
+      "speciesNameZh": "雪妖女",
+      "speciesNameEn": "Froslass",
+      "file": "froslass.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0478 form=00",
+      "sheetCell": {
+        "col": 10,
+        "row": 6,
+        "dex": 478,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "swampert",
+      "speciesNameZh": "巨沼怪",
+      "speciesNameEn": "Swampert",
+      "file": "swampert.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0260 form=00",
+      "sheetCell": {
+        "col": 7,
+        "row": 7,
+        "dex": 260,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "delphox",
+      "speciesNameZh": "妖火紅狐",
+      "speciesNameEn": "Delphox",
+      "file": "delphox.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0655 form=00",
+      "sheetCell": {
+        "col": 12,
+        "row": 2,
+        "dex": 655,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "dragonite",
+      "speciesNameZh": "快龍",
+      "speciesNameEn": "Dragonite",
+      "file": "dragonite.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0149 form=00",
+      "sheetCell": {
+        "col": 6,
+        "row": 4,
+        "dex": 149,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "gholdengo",
+      "speciesNameZh": "賽富豪",
+      "speciesNameEn": "Gholdengo",
+      "file": "gholdengo.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=1000 form=00",
+      "sheetCell": {
+        "col": 16,
+        "row": 4,
+        "dex": 1000,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "grimmsnarl",
+      "speciesNameZh": "長毛巨魔",
+      "speciesNameEn": "Grimmsnarl",
+      "file": "grimmsnarl.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0861 form=00",
+      "sheetCell": {
+        "col": 6,
+        "row": 14,
+        "dex": 861,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "torkoal",
+      "speciesNameZh": "煤炭龜",
+      "speciesNameEn": "Torkoal",
+      "file": "torkoal.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0324 form=00",
+      "sheetCell": {
+        "col": 2,
+        "row": 8,
+        "dex": 324,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "blastoise",
+      "speciesNameZh": "水箭龜",
+      "speciesNameEn": "Blastoise",
+      "file": "blastoise.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0009 form=00",
+      "sheetCell": {
+        "col": 0,
+        "row": 1,
+        "dex": 9,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "sableye",
+      "speciesNameZh": "勾魂眼",
+      "speciesNameEn": "Sableye",
+      "file": "sableye.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0302 form=00",
+      "sheetCell": {
+        "col": 8,
+        "row": 2,
+        "dex": 302,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "ninetalesalola",
+      "speciesNameZh": "阿羅拉九尾",
+      "speciesNameEn": "Ninetales",
+      "file": "ninetalesalola.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0038 form=01",
+      "sheetCell": {
+        "col": 3,
+        "row": 2,
+        "dex": 38,
+        "form": 1,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "excadrill",
+      "speciesNameZh": "龍頭地鼠",
+      "speciesNameEn": "Excadrill",
+      "file": "excadrill.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0530 form=00",
+      "sheetCell": {
+        "col": 11,
+        "row": 2,
+        "dex": 530,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "glimmora",
+      "speciesNameZh": "晶光花",
+      "speciesNameEn": "Glimmora",
+      "file": "glimmora.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0970 form=00",
+      "sheetCell": {
+        "col": 14,
+        "row": 15,
+        "dex": 970,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "metagross",
+      "speciesNameZh": "巨金怪",
+      "speciesNameEn": "Metagross",
+      "file": "metagross.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0376 form=00",
+      "sheetCell": {
+        "col": 9,
+        "row": 2,
+        "dex": 376,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "arcaninehisui",
+      "speciesNameZh": "風速狗",
+      "speciesNameEn": "Arcanine",
+      "file": "arcaninehisui.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0059 form=01",
+      "sheetCell": {
+        "col": 4,
+        "row": 1,
+        "dex": 59,
+        "form": 1,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "talonflame",
+      "speciesNameZh": "烈箭鷹",
+      "speciesNameEn": "Talonflame",
+      "file": "talonflame.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0663 form=00",
+      "sheetCell": {
+        "col": 12,
+        "row": 5,
+        "dex": 663,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "gengar",
+      "speciesNameZh": "耿鬼",
+      "speciesNameEn": "Gengar",
+      "file": "gengar.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0094 form=00",
+      "sheetCell": {
+        "col": 4,
+        "row": 4,
+        "dex": 94,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "mawile",
+      "speciesNameZh": "大嘴娃",
+      "speciesNameEn": "Mawile",
+      "file": "mawile.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0303 form=00",
+      "sheetCell": {
+        "col": 8,
+        "row": 3,
+        "dex": 303,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "scovillain",
+      "speciesNameZh": "狠辣椒",
+      "speciesNameEn": "Scovillain",
+      "file": "scovillain.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0952 form=00",
+      "sheetCell": {
+        "col": 9,
+        "row": 15,
+        "dex": 952,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "scizor",
+      "speciesNameZh": "巨鉗螳螂",
+      "speciesNameEn": "Scizor",
+      "file": "scizor.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0212 form=00",
+      "sheetCell": {
+        "col": 0,
+        "row": 7,
+        "dex": 212,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "politoed",
+      "speciesNameZh": "蚊香蛙皇",
+      "speciesNameEn": "Politoed",
+      "file": "politoed.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0186 form=00",
+      "sheetCell": {
+        "col": 6,
+        "row": 6,
+        "dex": 186,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "annihilape",
+      "speciesNameZh": "棄世猴",
+      "speciesNameEn": "Annihilape",
+      "file": "annihilape.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0979 form=00",
+      "sheetCell": {
+        "col": 16,
+        "row": 0,
+        "dex": 979,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "rotomwash",
+      "speciesNameZh": "清洗洛托姆",
+      "speciesNameEn": "Rotom",
+      "file": "rotomwash.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0479 form=02",
+      "sheetCell": {
+        "col": 10,
+        "row": 9,
+        "dex": 479,
+        "form": 2,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "tsareena",
+      "speciesNameZh": "甜冷美后",
+      "speciesNameEn": "Tsareena",
+      "file": "tsareena.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0763 form=00",
+      "sheetCell": {
+        "col": 14,
+        "row": 0,
+        "dex": 763,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "primarina",
+      "speciesNameZh": "西獅海壬",
+      "speciesNameEn": "Primarina",
+      "file": "primarina.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0730 form=00",
+      "sheetCell": {
+        "col": 4,
+        "row": 13,
+        "dex": 730,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "kangaskhan",
+      "speciesNameZh": "袋獸",
+      "speciesNameEn": "Kangaskhan",
+      "file": "kangaskhan.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0115 form=00",
+      "sheetCell": {
+        "col": 5,
+        "row": 0,
+        "dex": 115,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "kommoo",
+      "speciesNameZh": "杖尾鱗甲龍",
+      "speciesNameEn": "Kommo-o",
+      "file": "kommoo.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0784 form=00",
+      "sheetCell": {
+        "col": 14,
+        "row": 6,
+        "dex": 784,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "corviknight",
+      "speciesNameZh": "鋼鎧鴉",
+      "speciesNameEn": "Corviknight",
+      "file": "corviknight.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0823 form=00",
+      "sheetCell": {
+        "col": 14,
+        "row": 10,
+        "dex": 823,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "gardevoir",
+      "speciesNameZh": "沙奈朵",
+      "speciesNameEn": "Gardevoir",
+      "file": "gardevoir.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0282 form=00",
+      "sheetCell": {
+        "col": 8,
+        "row": 1,
+        "dex": 282,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "meowscarada",
+      "speciesNameZh": "魔幻假面喵",
+      "speciesNameEn": "Meowscarada",
+      "file": "meowscarada.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0908 form=00",
+      "sheetCell": {
+        "col": 15,
+        "row": 9,
+        "dex": 908,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "blaziken",
+      "speciesNameZh": "火焰雞",
+      "speciesNameEn": "Blaziken",
+      "file": "blaziken.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0257 form=00",
+      "sheetCell": {
+        "col": 6,
+        "row": 7,
+        "dex": 257,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "aegislash",
+      "speciesNameZh": "堅盾劍怪",
+      "speciesNameEn": "aegislash",
+      "file": "aegislash.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0681 form=00",
+      "sheetCell": {
+        "col": 3,
+        "row": 12,
+        "dex": 681,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
+    },
+    {
+      "speciesId": "empoleon",
+      "speciesNameZh": "帝王拿波",
+      "speciesNameEn": "empoleon",
+      "file": "empoleon.png",
+      "formNote": "sprite_poke_3 RGBA cell dex=0395 form=00",
+      "sheetCell": {
+        "col": 9,
+        "row": 5,
+        "dex": 395,
+        "form": 0,
+        "px": 128
+      },
+      "source": "sprite_poke_3"
     }
   ],
-  "defaultSource": "roi-crop",
-  "sourceKind": "roi-crop"
+  "defaultSource": "sprite_poke_3",
+  "sourceKind": "sprite_poke_3"
 }
