@@ -2,9 +2,10 @@
  * Team Preview 敵方小縮圖辨認（本地 aHash + 灰階 NCC，無雲端）。
  *
  * 流程：抓一幀 → contentRect（去黑邊）→ 敵方面板 ROI → 6 等分 →
- * 每格黃框正方形（邊長=紅卡高，左側精靈）→ contain/letterbox 至 TEMPLATE_SIZE → 灰階比對。
+ * 每格黃框正方形（邊長=紅卡高，左側精靈）→ 抑制紅卡底 → content-aware 重對齊 →
+ * 64×64 多尺度／微位移灰階比對（mask = 模板 alpha ∩ query 非黑）。
  *
- * 模板庫：public/templates/{showdownId}.png — 切自官方 sprite_poke_3（128px 格 → contain 64）。
+ * 模板庫：public/templates/{showdownId}.png — 切自官方 sprite_poke_3（trim 透明邊 → contain 64）。
  * Manifest source: sprite_poke_3。灰階特徵 only（NCC/SSD/aHash）；不拉伸。
  * 低信心 → speciesId/speciesNameZh = null（UI「未識別」）。不猜道具。
  * 不做逐幀即時辨認。
@@ -51,6 +52,10 @@ export {
 
 /** 信心門檻：低於此 → 未識別 */
 export const CONFIDENCE_THRESHOLD = 0.55;
+
+/** Query multi-scale / translation sweep (mirror scripts/match-test-fixtures.py) */
+export const MATCH_SCALES = [0.8, 0.95, 1.1, 1.25, 1.4] as const;
+export const MATCH_SHIFTS = [-8, -4, 0, 4, 8] as const;
 
 /** @deprecated 舊 ROI 形狀；請改用 ENEMY_PANEL_DEFAULT + resolveEnemyPanel */
 export const ROI = {
@@ -359,8 +364,195 @@ export async function loadPreviewThumbTemplates(
 }
 
 /**
- * Crop rect then contain/letterbox into TEMPLATE_SIZE×TEMPLATE_SIZE
- * (preserve aspect; black pad). Do not stretch into a square.
+ * Suppress near-maroon Team Select card background (and thin bottom bar).
+ */
+function suppressCardBackground(data: ImageData): ImageData {
+  const { width, height, data: px } = data;
+  const out = new ImageData(width, height);
+  const op = out.data;
+  for (let i = 0; i < px.length; i += 4) {
+    const r = px[i];
+    const g = px[i + 1];
+    const b = px[i + 2];
+    const maroon = r > 70 && r > g * 1.5 && r > b * 1.3 && g < 100 && b < 110;
+    if (maroon) {
+      op[i] = op[i + 1] = op[i + 2] = 0;
+      op[i + 3] = 255;
+    } else {
+      op[i] = r;
+      op[i + 1] = g;
+      op[i + 2] = b;
+      op[i + 3] = 255;
+    }
+  }
+  // Zero mostly-dark bottom rows (UI bar)
+  for (let y = height - 1; y >= Math.max(0, height - 12); y--) {
+    let dark = 0;
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      if (op[i] + op[i + 1] + op[i + 2] < 45) dark++;
+    }
+    if (dark / width > 0.55) {
+      for (let x = 0; x < width; x++) {
+        const i = (y * width + x) * 4;
+        op[i] = op[i + 1] = op[i + 2] = 0;
+      }
+    } else {
+      break;
+    }
+  }
+  return out;
+}
+
+/**
+ * Tight square around non-black sprite blob (content-aware recenter).
+ */
+function contentAwareSquare(data: ImageData, pad = 6): ImageData {
+  const { width, height, data: px } = data;
+  let x0 = width;
+  let y0 = height;
+  let x1 = 0;
+  let y1 = 0;
+  let count = 0;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      if (px[i] + px[i + 1] + px[i + 2] > 20) {
+        count++;
+        if (x < x0) x0 = x;
+        if (y < y0) y0 = y;
+        if (x + 1 > x1) x1 = x + 1;
+        if (y + 1 > y1) y1 = y + 1;
+      }
+    }
+  }
+  if (count < 16) return data;
+  let side = Math.max(x1 - x0, y1 - y0) + pad;
+  side = Math.min(side, width, height);
+  const cx = (x0 + x1) / 2;
+  const cy = (y0 + y1) / 2;
+  let sx = Math.round(cx - side / 2);
+  let sy = Math.round(cy - side / 2);
+  sx = Math.max(0, Math.min(sx, width - side));
+  sy = Math.max(0, Math.min(sy, height - side));
+  const c = document.createElement('canvas');
+  c.width = side;
+  c.height = side;
+  const ctx = c.getContext('2d')!;
+  const srcCanvas = document.createElement('canvas');
+  srcCanvas.width = width;
+  srcCanvas.height = height;
+  srcCanvas.getContext('2d')!.putImageData(data, 0, 0);
+  ctx.drawImage(srcCanvas, sx, sy, side, side, 0, 0, side, side);
+  return ctx.getImageData(0, 0, side, side);
+}
+
+function grayFromImageData(data: ImageData): Float32Array {
+  return toGray(data);
+}
+
+function averageHashGray(gray: Float32Array, size = 8): string {
+  const block = TEMPLATE_SIZE / size;
+  const vals: number[] = [];
+  for (let gy = 0; gy < size; gy++) {
+    for (let gx = 0; gx < size; gx++) {
+      let s = 0;
+      const y0 = Math.floor(gy * block);
+      const x0 = Math.floor(gx * block);
+      const y1 = Math.floor((gy + 1) * block);
+      const x1 = Math.floor((gx + 1) * block);
+      let n = 0;
+      for (let y = y0; y < y1; y++) {
+        for (let x = x0; x < x1; x++) {
+          s += gray[y * TEMPLATE_SIZE + x];
+          n++;
+        }
+      }
+      vals.push(s / Math.max(1, n));
+    }
+  }
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+  return vals.map((v) => (v >= avg ? '1' : '0')).join('');
+}
+
+function queryNonblackMask(gray: Float32Array, thr = 12): Float32Array {
+  const out = new Float32Array(gray.length);
+  for (let i = 0; i < gray.length; i++) out[i] = gray[i] > thr ? 1 : 0;
+  return out;
+}
+
+function intersectMask(a?: Float32Array, b?: Float32Array): Float32Array | undefined {
+  if (!a) return b;
+  if (!b) return a;
+  const out = new Float32Array(a.length);
+  for (let i = 0; i < a.length; i++) out[i] = a[i] > 0 && b[i] > 0 ? 1 : 0;
+  return out;
+}
+
+/** Scale+shift gray plane onto TEMPLATE_SIZE canvas (black pad / center-crop). */
+function placeScaledGray(gray: Float32Array, scale: number, dx: number, dy: number): Float32Array | null {
+  const nw = Math.max(1, Math.round(TEMPLATE_SIZE * scale));
+  // Draw via canvas for bilinear resize
+  const src = document.createElement('canvas');
+  src.width = TEMPLATE_SIZE;
+  src.height = TEMPLATE_SIZE;
+  const sctx = src.getContext('2d')!;
+  const img = sctx.createImageData(TEMPLATE_SIZE, TEMPLATE_SIZE);
+  for (let i = 0, j = 0; i < gray.length; i++, j += 4) {
+    const v = Math.max(0, Math.min(255, gray[i]));
+    img.data[j] = img.data[j + 1] = img.data[j + 2] = v;
+    img.data[j + 3] = 255;
+  }
+  sctx.putImageData(img, 0, 0);
+  const scaled = document.createElement('canvas');
+  scaled.width = nw;
+  scaled.height = nw;
+  const xctx = scaled.getContext('2d')!;
+  xctx.imageSmoothingEnabled = true;
+  xctx.drawImage(src, 0, 0, TEMPLATE_SIZE, TEMPLATE_SIZE, 0, 0, nw, nw);
+  const out = new Float32Array(TEMPLATE_SIZE * TEMPLATE_SIZE);
+  if (nw >= TEMPLATE_SIZE) {
+    let x = Math.floor((nw - TEMPLATE_SIZE) / 2) + dx;
+    let y = Math.floor((nw - TEMPLATE_SIZE) / 2) + dy;
+    x = Math.max(0, Math.min(x, nw - TEMPLATE_SIZE));
+    y = Math.max(0, Math.min(y, nw - TEMPLATE_SIZE));
+    const patch = xctx.getImageData(x, y, TEMPLATE_SIZE, TEMPLATE_SIZE);
+    for (let i = 0, j = 0; j < patch.data.length; i++, j += 4) {
+      out[i] = 0.299 * patch.data[j] + 0.587 * patch.data[j + 1] + 0.114 * patch.data[j + 2];
+    }
+  } else {
+    const ox = Math.floor((TEMPLATE_SIZE - nw) / 2) + dx;
+    const oy = Math.floor((TEMPLATE_SIZE - nw) / 2) + dy;
+    if (ox < 0 || oy < 0 || ox + nw > TEMPLATE_SIZE || oy + nw > TEMPLATE_SIZE) return null;
+    const patch = xctx.getImageData(0, 0, nw, nw);
+    out.fill(0);
+    for (let row = 0; row < nw; row++) {
+      for (let col = 0; col < nw; col++) {
+        const j = (row * nw + col) * 4;
+        const v = 0.299 * patch.data[j] + 0.587 * patch.data[j + 1] + 0.114 * patch.data[j + 2];
+        out[(oy + row) * TEMPLATE_SIZE + (ox + col)] = v;
+      }
+    }
+  }
+  return out;
+}
+
+function* iterQueryVariants(gray0: Float32Array): Generator<Float32Array> {
+  yield gray0;
+  for (const sc of MATCH_SCALES) {
+    for (const dy of MATCH_SHIFTS) {
+      for (const dx of MATCH_SHIFTS) {
+        if (Math.abs(sc - 1) < 1e-6 && dx === 0 && dy === 0) continue;
+        const g = placeScaledGray(gray0, sc, dx, dy);
+        if (g) yield g;
+      }
+    }
+  }
+}
+
+/**
+ * Crop yellow square → suppress maroon BG → content-aware recenter → 64×64.
+ * Square crop resizes without stretch (aspect already 1:1).
  */
 function cropResizeToTemplate(
   src: CanvasRenderingContext2D,
@@ -380,22 +572,25 @@ function cropResizeToTemplate(
     Math.max(1, rect.width),
     Math.max(1, rect.height),
   );
+  const suppressed = suppressCardBackground(raw);
+  const recentered = contentAwareSquare(suppressed);
   const rawCanvas = document.createElement('canvas');
-  rawCanvas.width = raw.width;
-  rawCanvas.height = raw.height;
-  rawCanvas.getContext('2d')!.putImageData(raw, 0, 0);
-  drawContained(tctx, rawCanvas, raw.width, raw.height);
+  rawCanvas.width = recentered.width;
+  rawCanvas.height = recentered.height;
+  rawCanvas.getContext('2d')!.putImageData(recentered, 0, 0);
+  // Square → drawContained is identity scale letterbox (fills 64)
+  drawContained(tctx, rawCanvas, recentered.width, recentered.height);
   const imageData = tctx.getImageData(0, 0, TEMPLATE_SIZE, TEMPLATE_SIZE);
   return {
     imageData,
     dataUrl: tmp.toDataURL('image/png'),
-    gray: toGray(imageData),
+    gray: grayFromImageData(imageData),
   };
 }
 
 /**
- * 本地比對：灰階 NCC（主）+ SSD + aHash（輔）。
- * confidence ∈ [0,1]；低於 CONFIDENCE_THRESHOLD → 呼叫端當未識別。
+ * 本地比對：多尺度／微位移 + 灰階 NCC（主）+ SSD + aHash（輔）。
+ * mask = 模板 alpha ∩ query 非黑。confidence ∈ [0,1]。
  */
 function matchTemplate(hash: string, gray: Float32Array): {
   speciesId: string | null;
@@ -413,19 +608,23 @@ function matchTemplate(hash: string, gray: Float32Array): {
     confidence: 0,
   };
 
-  for (const t of PREVIEW_THUMB_TEMPLATES) {
-    const nccScore = (ncc(gray, t.gray, t.mask) + 1) / 2; // [-1,1] → [0,1]
-    const ssdScore = ssdSimilarity(gray, t.gray, t.mask);
-    const hashBits = Math.max(hash.length, t.aHash.length) || 64;
-    const hashScore = Math.max(0, 1 - hamming(hash, t.aHash) / (hashBits * 0.35));
-    // 權重：NCC 主導（對亮度偏移較穩），SSD／hash 輔助
-    const confidence = Math.min(1, nccScore * 0.55 + ssdScore * 0.25 + hashScore * 0.2);
-    if (confidence > best.confidence) {
-      best = {
-        speciesId: t.speciesId,
-        speciesNameZh: t.speciesNameZh,
-        confidence,
-      };
+  for (const g of iterQueryVariants(gray)) {
+    const qMask = queryNonblackMask(g);
+    const h = averageHashGray(g);
+    for (const t of PREVIEW_THUMB_TEMPLATES) {
+      const mask = intersectMask(t.mask, qMask);
+      const nccScore = (ncc(g, t.gray, mask) + 1) / 2;
+      const ssdScore = ssdSimilarity(g, t.gray, mask);
+      const hashBits = Math.max(h.length, t.aHash.length) || 64;
+      const hashScore = Math.max(0, 1 - hamming(h, t.aHash) / (hashBits * 0.35));
+      const confidence = Math.min(1, nccScore * 0.55 + ssdScore * 0.25 + hashScore * 0.2);
+      if (confidence > best.confidence) {
+        best = {
+          speciesId: t.speciesId,
+          speciesNameZh: t.speciesNameZh,
+          confidence,
+        };
+      }
     }
   }
 

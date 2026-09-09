@@ -16,7 +16,7 @@
   },
   "thumbGeometry": "square side = red card (slot) height; left offset on sprite",
   "templateSize": 64,
-  "notes": "PRIMARY templates from sprite_poke_3. Match in grayscale with alpha mask (ignore transparent template pixels). Capture: square yellow ROI → contain/letterbox 64, never stretch.",
+  "notes": "PRIMARY templates from sprite_poke_3 (alpha-trimmed cells). Match grayscale with alpha∩query mask. Capture: square yellow ROI → contain/letterbox 64, never stretch.",
   "templates": [
     {
       "speciesId": "kingambit",
@@ -488,12 +488,12 @@
       "speciesNameZh": "風速狗",
       "speciesNameEn": "Arcanine",
       "file": "arcaninehisui.png",
-      "formNote": "sprite_poke_3 RGBA cell dex=0059 form=01",
+      "formNote": "sprite_poke_3 RGBA cell dex=0059 form=00",
       "sheetCell": {
         "col": 4,
-        "row": 1,
+        "row": 0,
         "dex": 59,
-        "form": 1,
+        "form": 0,
         "px": 128
       },
       "source": "sprite_poke_3"

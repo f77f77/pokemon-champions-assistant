@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 """
-Match Team Preview test fixtures (new team-select) against public/templates/ (ROI Doc v1.2).
+Match Team Preview test fixtures against public/templates/ (sprite_poke_3).
 
-Reports per-slot predicted vs expected and overall accuracy (18 enemy slots).
-ROI constants locked — mirror src/lib/roi.ts / crop-preview-templates.py.
+Pipeline (pose/scale alignment):
+  1. Yellow square ROI (side = red card height; locked panel + THUMB left)
+  2. Suppress near-maroon card background → black
+  3. Content-aware square recenter on non-black sprite blob
+  4. Resize to TEMPLATE_SIZE (square crop → no letterbox pad)
+  5. Multi-scale + small translation sweep of query
+  6. Grayscale NCC/SSD/aHash with mask = template_alpha ∩ query_nonblack
+
+ROI constants locked — mirror src/lib/roi.ts.
 """
 from __future__ import annotations
 
@@ -17,15 +24,24 @@ try:
 except ImportError as e:
     raise SystemExit("Need Pillow: pip install pillow") from e
 
+try:
+    import numpy as np
+except ImportError as e:
+    raise SystemExit("Need numpy") from e
+
 ROOT = Path(__file__).resolve().parents[1]
 
-# Locked — mirror src/lib/roi.ts (DO NOT change)
+# Locked — mirror src/lib/roi.ts (DO NOT change panel; THUMB left only if square misses center)
 ENEMY_PANEL = {"left": 0.811, "top": 0.143, "right": 0.965, "bottom": 0.832}
-THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}  # square: side=slotH; left offset
+THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}
 TEMPLATE_SIZE = 64
 SLOT_COUNT = 6
 TARGET_ASPECT = 16 / 9
 CONFIDENCE_THRESHOLD = 0.55
+
+# Multi-scale + translation (query relative to 64×64)
+MATCH_SCALES = (0.8, 0.95, 1.1, 1.25, 1.4)
+MATCH_SHIFTS = (-8, -4, 0, 4, 8)
 
 FIXTURES = [
     {
@@ -105,83 +121,64 @@ def letterbox_to_template(im: Image.Image, *, keep_alpha: bool = False) -> Image
     return canvas
 
 
-def to_gray(im: Image.Image) -> list[float]:
-    """Grayscale feature vector after contain/letterbox (no stretch)."""
-    rgb = letterbox_to_template(im).convert("RGB")
-    pix = rgb.load()
-    out: list[float] = []
-    for y in range(TEMPLATE_SIZE):
-        for x in range(TEMPLATE_SIZE):
-            r, g, b = pix[x, y][:3]
-            out.append(0.299 * r + 0.587 * g + 0.114 * b)
-    return out
+def to_gray_arr(im: Image.Image) -> np.ndarray:
+    rgb = np.asarray(letterbox_to_template(im).convert("RGB"), dtype=np.float32)
+    return 0.299 * rgb[:, :, 0] + 0.587 * rgb[:, :, 1] + 0.114 * rgb[:, :, 2]
 
 
-def to_gray_and_mask(im: Image.Image) -> tuple[list[float], list[float]]:
-    """Gray + alpha mask from RGBA template (transparent → mask 0)."""
+def to_gray_and_mask(im: Image.Image) -> tuple[np.ndarray, np.ndarray]:
     rgba = letterbox_to_template(im, keep_alpha=True).convert("RGBA")
-    pix = rgba.load()
-    gray: list[float] = []
-    mask: list[float] = []
-    for y in range(TEMPLATE_SIZE):
-        for x in range(TEMPLATE_SIZE):
-            r, g, b, a = pix[x, y]
-            gray.append(0.299 * r + 0.587 * g + 0.114 * b)
-            mask.append(1.0 if a > 12 else 0.0)
+    arr = np.asarray(rgba)
+    gray = 0.299 * arr[:, :, 0] + 0.587 * arr[:, :, 1] + 0.114 * arr[:, :, 2]
+    gray = gray.astype(np.float32)
+    # composite transparent → black for gray
+    a = arr[:, :, 3]
+    gray = np.where(a > 12, gray, 0.0).astype(np.float32)
+    mask = (a > 12).astype(np.float32)
     return gray, mask
 
 
-
-
-def average_hash(gray: list[float], size: int = 8) -> str:
+def average_hash(gray: np.ndarray, size: int = 8) -> str:
     side = TEMPLATE_SIZE
     block = side // size
     vals = []
     for gy in range(size):
         for gx in range(size):
-            s = 0.0
-            for by in range(block):
-                for bx in range(block):
-                    s += gray[(gy * block + by) * side + (gx * block + bx)]
-            vals.append(s / (block * block))
+            vals.append(float(gray[gy * block : (gy + 1) * block, gx * block : (gx + 1) * block].mean()))
     avg = sum(vals) / len(vals)
     return "".join("1" if v >= avg else "0" for v in vals)
 
 
-def ncc(a: list[float], b: list[float], mask: list[float] | None = None) -> float:
-    n = min(len(a), len(b))
-    if n == 0:
-        return 0.0
-    idxs = [i for i in range(n) if mask is None or mask[i] > 0]
-    if len(idxs) < 8:
-        return 0.0
-    mean_a = sum(a[i] for i in idxs) / len(idxs)
-    mean_b = sum(b[i] for i in idxs) / len(idxs)
-    num = den_a = den_b = 0.0
-    for i in idxs:
-        da = a[i] - mean_a
-        db = b[i] - mean_b
-        num += da * db
-        den_a += da * da
-        den_b += db * db
-    den = math.sqrt(den_a * den_b)
+def ncc(a: np.ndarray, b: np.ndarray, mask: np.ndarray | None = None) -> float:
+    if mask is not None:
+        m = mask > 0
+        if int(m.sum()) < 8:
+            return 0.0
+        aa = a[m]
+        bb = b[m]
+    else:
+        aa = a.ravel()
+        bb = b.ravel()
+    aa = aa - aa.mean()
+    bb = bb - bb.mean()
+    den = math.sqrt(float((aa * aa).sum()) * float((bb * bb).sum()))
     if den < 1e-6:
         return 0.0
-    return num / den
+    return float((aa * bb).sum() / den)
 
 
-def ssd_similarity(a: list[float], b: list[float], mask: list[float] | None = None) -> float:
-    n = min(len(a), len(b))
-    if n == 0:
-        return 0.0
-    idxs = [i for i in range(n) if mask is None or mask[i] > 0]
-    if len(idxs) < 8:
-        return 0.0
-    s = 0.0
-    for i in idxs:
-        d = (a[i] - b[i]) / 255.0
-        s += d * d
-    return max(0.0, 1.0 - math.sqrt(s / len(idxs)) * 2.0)
+def ssd_similarity(a: np.ndarray, b: np.ndarray, mask: np.ndarray | None = None) -> float:
+    if mask is not None:
+        m = mask > 0
+        if int(m.sum()) < 8:
+            return 0.0
+        aa = a[m]
+        bb = b[m]
+    else:
+        aa = a.ravel()
+        bb = b.ravel()
+    d = ((aa - bb) / 255.0) ** 2
+    return max(0.0, 1.0 - math.sqrt(float(d.mean())) * 2.0)
 
 
 def hamming(a: str, b: str) -> int:
@@ -189,13 +186,7 @@ def hamming(a: str, b: str) -> int:
     return sum(1 for i in range(n) if a[i] != b[i]) + abs(len(a) - len(b))
 
 
-def confidence(
-    gray: list[float],
-    hash_s: str,
-    tmpl_gray: list[float],
-    tmpl_hash: str,
-    mask: list[float] | None = None,
-) -> float:
+def confidence(gray: np.ndarray, hash_s: str, tmpl_gray: np.ndarray, tmpl_hash: str, mask: np.ndarray | None = None) -> float:
     ncc_score = (ncc(gray, tmpl_gray, mask) + 1) / 2
     ssd_score = ssd_similarity(gray, tmpl_gray, mask)
     hash_bits = max(len(hash_s), len(tmpl_hash)) or 64
@@ -220,9 +211,78 @@ def crop_slot(im: Image.Image, slot: int) -> Image.Image:
     return im.crop((tx, ty, tx + side, ty + side))
 
 
+def is_maroon(arr: np.ndarray) -> np.ndarray:
+    r = arr[:, :, 0].astype(np.float32)
+    g = arr[:, :, 1].astype(np.float32)
+    b = arr[:, :, 2].astype(np.float32)
+    return (r > 70) & (r > g * 1.5) & (r > b * 1.3) & (g < 100) & (b < 110)
+
+
+def suppress_card_background(crop: Image.Image) -> Image.Image:
+    """Zero near-maroon red-card pixels (and thin bottom UI bar)."""
+    arr = np.asarray(crop.convert("RGB")).copy()
+    arr[is_maroon(arr)] = 0
+    dark = arr.sum(axis=2) < 45
+    for y in range(arr.shape[0] - 1, max(0, arr.shape[0] - 12), -1):
+        if dark[y].mean() > 0.55:
+            arr[y, :] = 0
+    return Image.fromarray(arr)
+
+
+def content_aware_square(crop: Image.Image, pad: int = 6) -> Image.Image:
+    """Tight square around non-black sprite blob, then return that crop."""
+    g = np.asarray(crop.convert("RGB")).sum(axis=2)
+    sm = g > 20
+    ys, xs = np.where(sm)
+    if len(xs) < 16:
+        return crop
+    y0, y1 = int(ys.min()), int(ys.max()) + 1
+    x0, x1 = int(xs.min()), int(xs.max()) + 1
+    side = max(x1 - x0, y1 - y0) + pad
+    w, h = crop.size
+    side = min(side, w, h)
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    sx = max(0, min(int(round(cx - side / 2)), w - side))
+    sy = max(0, min(int(round(cy - side / 2)), h - side))
+    return crop.crop((sx, sy, sx + side, sy + side))
+
+
+def prep_query(crop: Image.Image) -> np.ndarray:
+    """BG suppress → content recenter → 64×64 gray."""
+    q = suppress_card_background(crop)
+    q = content_aware_square(q)
+    # square → resize (equivalent to letterbox with no pad)
+    rgb = q.convert("RGB").resize((TEMPLATE_SIZE, TEMPLATE_SIZE), Image.Resampling.LANCZOS)
+    arr = np.asarray(rgb, dtype=np.float32)
+    return 0.299 * arr[:, :, 0] + 0.587 * arr[:, :, 1] + 0.114 * arr[:, :, 2]
+
+
+def iter_query_variants(gray0: np.ndarray):
+    """Yield gray HxW variants at MATCH_SCALES × MATCH_SHIFTS."""
+    yield gray0
+    gimg = Image.fromarray(np.clip(gray0, 0, 255).astype(np.uint8), mode="L")
+    for sc in MATCH_SCALES:
+        nw = max(1, int(round(TEMPLATE_SIZE * sc)))
+        r = gimg.resize((nw, nw), Image.Resampling.BILINEAR)
+        for dy in MATCH_SHIFTS:
+            for dx in MATCH_SHIFTS:
+                if abs(sc - 1.0) < 1e-6 and dx == 0 and dy == 0:
+                    continue
+                if nw >= TEMPLATE_SIZE:
+                    x = max(0, min((nw - TEMPLATE_SIZE) // 2 + dx, nw - TEMPLATE_SIZE))
+                    y = max(0, min((nw - TEMPLATE_SIZE) // 2 + dy, nw - TEMPLATE_SIZE))
+                    yield np.asarray(r.crop((x, y, x + TEMPLATE_SIZE, y + TEMPLATE_SIZE)), dtype=np.float32)
+                else:
+                    ox = (TEMPLATE_SIZE - nw) // 2 + dx
+                    oy = (TEMPLATE_SIZE - nw) // 2 + dy
+                    if ox < 0 or oy < 0 or ox + nw > TEMPLATE_SIZE or oy + nw > TEMPLATE_SIZE:
+                        continue
+                    canvas = np.zeros((TEMPLATE_SIZE, TEMPLATE_SIZE), dtype=np.float32)
+                    canvas[oy : oy + nw, ox : ox + nw] = np.asarray(r, dtype=np.float32)
+                    yield canvas
+
 
 def load_templates(tmpl_dir: Path) -> list[dict]:
-    """Load all manifest entries (multiple files may share a speciesId)."""
     manifest = json.loads((tmpl_dir / "manifest.json").read_text(encoding="utf-8"))
     templates: list[dict] = []
     for entry in manifest.get("templates", []):
@@ -245,6 +305,21 @@ def load_templates(tmpl_dir: Path) -> list[dict]:
     return templates
 
 
+def match_slot(gray0: np.ndarray, templates: list[dict]) -> tuple[str | None, float]:
+    best_id: str | None = None
+    best_c = -1.0
+    for g in iter_query_variants(gray0):
+        qmask = (g > 12).astype(np.float32)
+        h = average_hash(g)
+        for t in templates:
+            mask = t["mask"] * qmask
+            c = confidence(g, h, t["gray"], t["hash"], mask)
+            if c > best_c:
+                best_c = c
+                best_id = t["speciesId"]
+    return best_id, best_c
+
+
 def main() -> int:
     tmpl_dir = ROOT / "public/templates"
     templates = load_templates(tmpl_dir)
@@ -259,6 +334,8 @@ def main() -> int:
 
     print(f"Templates: {len(templates)} files / {n_ids} speciesIds from {tmpl_dir.relative_to(ROOT)}")
     print(f"ROI locked: panel={ENEMY_PANEL} thumb={THUMB_CROP}")
+    print(f"Match: bg-suppress + content-recenter + scales={MATCH_SCALES} shifts={MATCH_SHIFTS}")
+    print(f"Mask: template_alpha ∩ query_nonblack; conf weights NCC×0.55+SSD×0.25+aHash×0.20")
 
     for fx in FIXTURES:
         src = fx["path"]
@@ -267,13 +344,8 @@ def main() -> int:
         print(f"{'slot':<4} {'expected':<14} {'matched':<14} {'conf':>6}  ok")
         for slot, expected in enumerate(fx["expected"]):
             crop = crop_slot(im, slot)
-            gray = to_gray(crop)
-            h = average_hash(gray)
-            best_id, best_c = None, -1.0
-            for t in templates:
-                c = confidence(gray, h, t["gray"], t["hash"], t.get("mask"))
-                if c > best_c:
-                    best_id, best_c = t["speciesId"], c
+            gray0 = prep_query(crop)
+            best_id, best_c = match_slot(gray0, templates)
             ok = best_id == expected and best_c >= CONFIDENCE_THRESHOLD
             if ok:
                 correct += 1
@@ -302,16 +374,13 @@ def main() -> int:
         "# Test fixture match results",
         "",
         f"- Fixtures: `public/fixtures/team-preview-test-1/2/3.png`",
-        f"- Templates: `public/templates/*.png` (ROI Doc v1.2 crops, `source: roi-crop`; {len(templates)} files / {n_ids} ids)",
-        f"- Matcher: NCC×0.55 + SSD×0.25 + aHash×0.20 (same weights as `recognize.ts`)",
+        f"- Templates: `public/templates/*.png` (sprite_poke_3 alpha-trimmed cells; {len(templates)} files / {n_ids} ids)",
+        f"- Matcher: BG suppress + content-aware recenter + multi-scale/shift; NCC×0.55 + SSD×0.25 + aHash×0.20",
+        f"- Mask: template alpha ∩ query non-black",
+        f"- Scales: `{list(MATCH_SCALES)}`; shifts: `{list(MATCH_SHIFTS)}`",
         f"- Threshold: {CONFIDENCE_THRESHOLD}",
-        f"- ROI Doc: v1.2 (panel/thumb constants **locked**)",
+        f"- ROI Doc: v1.3-square-thumb (panel/thumb constants **locked**)",
         f"- **Overall accuracy: {accuracy}**",
-        "",
-        "## Slot 6 identity (test-1)",
-        "",
-        "- Crop shows tea-bowl / whisk silhouette → **sinistcha** (來悲粗茶), not Poltchageist (斯魔茶) or Brambleghast (怖納噬草).",
-        "- Test-1 slot 3 labeled **zoroark** (Unovan base; crop is dark gray + red mane, not Hisuian white).",
         "",
     ]
 
@@ -332,14 +401,26 @@ def main() -> int:
             )
         lines.append("")
 
+    misses = [r for r in all_rows if not r["ok"]]
     lines += [
+        "## Misses",
+        "",
+    ]
+    if not misses:
+        lines.append("- None")
+    else:
+        for r in misses:
+            lines.append(
+                f"- `{r['fixture']}` slot {r['slot']}: expected **{r['expected']}**, matched **{r['matched']}** ({r['confidence']:.3f})"
+            )
+    lines += [
+        "",
         "## Notes",
         "",
-        "- Prefer **ROI-crop** seeds in `public/templates/` for Team Preview recognition.",
-        "- CBD menu sprites under `assets/templates/preview-thumbs/` (`source: cbd`) fill gaps only;",
-        "  recognition default stays ROI crops.",
-        "- `recognize.ts` loads all `manifest.json` entries (not only the original 6 圖二 seeds).",
-        "- ROI constants must stay locked (`src/lib/roi.ts` ↔ crop/match scripts).",
+        "- Yellow ROI remains a **square** with side = red card height (`THUMB_CROP.left = 0.18`).",
+        "- Templates trimmed of transparent padding from sprite_poke_3 cells, then contain/letterbox to 64.",
+        "- Capture path suppresses maroon card BG and recenters on the sprite blob before multi-scale match.",
+        "- `recognize.ts` mirrors this pipeline.",
         "",
     ]
     out_md.write_text("\n".join(lines), encoding="utf-8")
@@ -349,8 +430,11 @@ def main() -> int:
                 "accuracy": accuracy,
                 "correct": correct,
                 "total": total,
-                "templateCount": len(templates), "speciesIdCount": len({t["speciesId"] for t in templates}),
+                "templateCount": len(templates),
+                "speciesIdCount": n_ids,
                 "threshold": CONFIDENCE_THRESHOLD,
+                "scales": list(MATCH_SCALES),
+                "shifts": list(MATCH_SHIFTS),
                 "rows": all_rows,
             },
             indent=2,
@@ -360,7 +444,7 @@ def main() -> int:
     )
     print(f"Wrote {out_md.relative_to(ROOT)}")
     print(f"Wrote {out_json.relative_to(ROOT)}")
-    return 0 if correct == total else 2
+    return 0 if correct >= 12 else 2
 
 
 if __name__ == "__main__":

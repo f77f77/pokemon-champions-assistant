@@ -79,8 +79,21 @@ def main() -> int:
                 return dex, 0
         raise KeyError(sid)
 
+    def trim_alpha(cell: Image.Image, thr: int = 12, pad: int = 1) -> Image.Image:
+        """Crop transparent padding so sprite fills similar fraction as in-card icons."""
+        rgba = cell.convert("RGBA")
+        a = list(rgba.getdata())
+        w, h = rgba.size
+        xs = [i % w for i, p in enumerate(a) if p[3] > thr]
+        ys = [i // w for i, p in enumerate(a) if p[3] > thr]
+        if len(xs) < 8:
+            return rgba
+        x0, x1 = max(0, min(xs) - pad), min(w, max(xs) + 1 + pad)
+        y0, y1 = max(0, min(ys) - pad), min(h, max(ys) + 1 + pad)
+        return rgba.crop((x0, y0, x1, y1))
+
     def letterbox_rgba(cell: Image.Image) -> Image.Image:
-        cell = cell.convert("RGBA")
+        cell = trim_alpha(cell.convert("RGBA"))
         canvas = Image.new("RGBA", (TEMPLATE_SIZE, TEMPLATE_SIZE), (0, 0, 0, 0))
         w, h = cell.size
         scale = min(TEMPLATE_SIZE / max(1, w), TEMPLATE_SIZE / max(1, h))
@@ -142,7 +155,7 @@ def main() -> int:
         "thumbGeometry": "square side = red card (slot) height; left offset on sprite",
         "templateSize": TEMPLATE_SIZE,
         "notes": (
-            "PRIMARY templates from sprite_poke_3. Match grayscale with alpha mask. "
+            "PRIMARY templates from sprite_poke_3 (alpha-trimmed cells). Match grayscale with alpha∩query mask. "
             "Capture: square yellow ROI → contain/letterbox 64, never stretch."
         ),
         "templates": templates,
