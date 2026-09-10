@@ -1,15 +1,19 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-07T19:54:31.969Z",
+  "generatedAt": "2026-09-10T01:59:53.204Z",
+  "updatedAt": "2026-09-10",
+  "usageUpdatedAt": "2026-09-10",
+  "usageSourceLabel": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com · 更新 2026-09-10",
   "sources": {
     "pokeapi": "https://pokeapi.co/api/v2",
     "cbd": "https://championsbattledata.com/api/pokemon/{showdownId}",
     "cbdDoublesBattle": "https://championsbattledata.com/api/battle/Doubles/{showdownId}",
     "cbdIndex": "https://championsbattledata.com/api/index",
     "allowlist": "data/allowlist.json",
-    "notes": "Classic PokéAPI base stats + nationalDex + forms[] (not CBD screen-scaled). Move names/types from PokéAPI; usage % only from CBD VGC Doubles (2v2 / 6-pick-4). Locale keys: en / zh-Hant / ja. See assets/CREDITS.md."
+    "legalAllowlist": "data/legal-allowlist.json",
+    "notes": "Classic PokéAPI base stats + nationalDex + forms[] (not CBD screen-scaled). Move names/types from PokéAPI; usage % only from CBD VGC Doubles (2v2 / 6-pick-4). Locale keys: en / zh-Hant / ja. Legal Champions forms via map-legal-allowlist.mjs. See assets/CREDITS.md."
   },
-  "pokemonCount": 50,
-  "movesCount": 415,
-  "allowlistCount": 50
+  "pokemonCount": 262,
+  "movesCount": 626,
+  "allowlistCount": 262
 }
