@@ -13,7 +13,32 @@ import { TYPE_ID_TO_ZH, type TypeIconId } from './typeIcons';
  * - Electron prod suggestion: `{userData}/.moves-cache/YYYY-MM-DD/{speciesKey}.json`
  */
 
-export const MOVES_SOURCE_LABEL = 'VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com';
+const MOVES_SOURCE_BASE = 'VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com';
+
+/** Mutable; bootstrapped from public/data/meta.json `usageUpdatedAt` when available. */
+export let MOVES_SOURCE_LABEL = MOVES_SOURCE_BASE;
+
+let usageUpdatedAt: string | null = null;
+
+export function getUsageUpdatedAt(): string | null {
+  return usageUpdatedAt;
+}
+
+export function formatMovesSourceLabel(dateYmd?: string | null): string {
+  const d = dateYmd || usageUpdatedAt;
+  return d ? `${MOVES_SOURCE_BASE} · 更新 ${d}` : MOVES_SOURCE_BASE;
+}
+
+function applyMetaUsageDate(meta: { usageUpdatedAt?: string; updatedAt?: string; usageSourceLabel?: string } | null) {
+  if (!meta) return;
+  const d = meta.usageUpdatedAt || meta.updatedAt || null;
+  if (d) {
+    usageUpdatedAt = String(d).slice(0, 10);
+    MOVES_SOURCE_LABEL = meta.usageSourceLabel || formatMovesSourceLabel(usageUpdatedAt);
+  } else if (meta.usageSourceLabel) {
+    MOVES_SOURCE_LABEL = meta.usageSourceLabel;
+  }
+}
 
 export interface GeneratedMoveRecord {
   id: string;
@@ -118,10 +143,12 @@ export async function loadMovesData(
   }
   if (!loadPromise) {
     loadPromise = (async () => {
-      const [moves, pokemon] = await Promise.all([
+      const [moves, pokemon, meta] = await Promise.all([
         fetchJson<GeneratedMoveRecord[]>(`${baseUrl}/moves.json`),
         fetchJson<PokemonMovesRecord[]>(`${baseUrl}/pokemon.json`),
+        fetchJson<{ usageUpdatedAt?: string; updatedAt?: string; usageSourceLabel?: string }>(`${baseUrl}/meta.json`),
       ]);
+      applyMetaUsageDate(meta);
       MOVES_BY_ID.clear();
       DOUBLES_BY_SPECIES.clear();
       META_BY_SPECIES.clear();
@@ -194,7 +221,13 @@ export function setCachedMoves(speciesKey: string, moves: MoveSlot[]): void {
 export function getMovesSourceLabel(speciesKey?: string): string | null {
   if (!speciesKey) return MOVES_SOURCE_LABEL;
   const meta = META_BY_SPECIES.get(speciesKey);
-  if (meta?.label) return meta.label;
+  if (meta?.label) {
+    // Ensure date suffix even if baked label is stale
+    if (usageUpdatedAt && !/更新\s*\d{4}-\d{2}-\d{2}/.test(meta.label)) {
+      return `${meta.label.replace(/\s*·\s*更新\s*\d{4}-\d{2}-\d{2}\s*$/, '')} · 更新 ${usageUpdatedAt}`;
+    }
+    return meta.label;
+  }
   if (DOUBLES_BY_SPECIES.has(speciesKey)) return MOVES_SOURCE_LABEL;
   return null;
 }

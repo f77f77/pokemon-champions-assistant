@@ -3,7 +3,8 @@
  * Build offline Pokémon / move JSON for the Champions assistant.
  *
  * Sources:
- *   - Allowlist: data/allowlist.json (showdownIds; ≥ top-50 CBD Doubles)
+ *   - Allowlist: data/allowlist.json (legal Champions forms / showdownIds;
+ *                 build via scripts/map-legal-allowlist.mjs from data/legal-allowlist.json)
  *   - CBD index: https://championsbattledata.com/api/index
  *                (Doubles usage rank → --update-allowlist --top=N)
  *   - CBD API:   https://championsbattledata.com/api/pokemon/{showdownId}
@@ -49,12 +50,50 @@ const SHOWDOWN_OVERRIDES = {
   basculegion: { species: 'basculegion', pokemon: 'basculegion-male' },
   basculegionf: { species: 'basculegion', pokemon: 'basculegion-female' },
   mausholdfour: { species: 'maushold', pokemon: 'maushold-family-of-four' },
-  maushold: { species: 'maushold', pokemon: 'maushold' },
+  maushold: { species: 'maushold', pokemon: 'maushold-family-of-four' },
   ninetalesalola: { species: 'ninetales', pokemon: 'ninetales-alola' },
+  raichualola: { species: 'raichu', pokemon: 'raichu-alola' },
+  persianalola: { species: 'persian', pokemon: 'persian-alola' },
   arcaninehisui: { species: 'arcanine', pokemon: 'arcanine-hisui' },
   kommoo: { species: 'kommo-o', pokemon: 'kommo-o' },
-  // Champions Floette is often Eternal Flower; base floette still resolves
-  floette: { species: 'floette', pokemon: 'floette' },
+  vivillonfancy: { species: 'vivillon', pokemon: 'vivillon' },
+  vivillon: { species: 'vivillon', pokemon: 'vivillon' },
+  pyroar: { species: 'pyroar', pokemon: 'pyroar-male' },
+  aegislash: { species: 'aegislash', pokemon: 'aegislash-shield' },
+  mimikyu: { species: 'mimikyu', pokemon: 'mimikyu-disguised' },
+  morpeko: { species: 'morpeko', pokemon: 'morpeko-full-belly' },
+  palafin: { species: 'palafin', pokemon: 'palafin-zero' },
+  mrmime: { species: 'mr-mime', pokemon: 'mr-mime' },
+  mrrime: { species: 'mr-rime', pokemon: 'mr-rime' },
+  floette: { species: 'floette', pokemon: 'floette-eternal' },
+  meowstic: { species: 'meowstic', pokemon: 'meowstic-male' },
+  meowsticf: { species: 'meowstic', pokemon: 'meowstic-female' },
+  indeedee: { species: 'indeedee', pokemon: 'indeedee-male' },
+  indeedeef: { species: 'indeedee', pokemon: 'indeedee-female' },
+  toxtricity: { species: 'toxtricity', pokemon: 'toxtricity-amped' },
+  toxtricitylowkey: { species: 'toxtricity', pokemon: 'toxtricity-low-key' },
+  gourgeist: { species: 'gourgeist', pokemon: 'gourgeist-average' },
+  gourgeistsmall: { species: 'gourgeist', pokemon: 'gourgeist-small' },
+  gourgeistlarge: { species: 'gourgeist', pokemon: 'gourgeist-large' },
+  gourgeistsuper: { species: 'gourgeist', pokemon: 'gourgeist-super' },
+  squawkabilly: { species: 'squawkabilly', pokemon: 'squawkabilly-green-plumage' },
+  squawkabillyblue: { species: 'squawkabilly', pokemon: 'squawkabilly-blue-plumage' },
+  squawkabillyyellow: { species: 'squawkabilly', pokemon: 'squawkabilly-yellow-plumage' },
+  squawkabillywhite: { species: 'squawkabilly', pokemon: 'squawkabilly-white-plumage' },
+  taurospaldeacombat: { species: 'tauros', pokemon: 'tauros-paldea-combat-breed' },
+  taurospaldeablaze: { species: 'tauros', pokemon: 'tauros-paldea-blaze-breed' },
+  taurospaldeaaqua: { species: 'tauros', pokemon: 'tauros-paldea-aqua-breed' },
+  slowbrogalar: { species: 'slowbro', pokemon: 'slowbro-galar' },
+  slowkinggalar: { species: 'slowking', pokemon: 'slowking-galar' },
+  stunfiskgalar: { species: 'stunfisk', pokemon: 'stunfisk-galar' },
+  zoroarkhisui: { species: 'zoroark', pokemon: 'zoroark-hisui' },
+  goodrahisui: { species: 'goodra', pokemon: 'goodra-hisui' },
+  samurotthisui: { species: 'samurott', pokemon: 'samurott-hisui' },
+  decidueyehisui: { species: 'decidueye', pokemon: 'decidueye-hisui' },
+  avalugghisui: { species: 'avalugg', pokemon: 'avalugg-hisui' },
+  typhlosionhisui: { species: 'typhlosion', pokemon: 'typhlosion-hisui' },
+  vivillonfancy: { species: 'vivillon', pokemon: 'vivillon' },
+  vivillon: { species: 'vivillon', pokemon: 'vivillon' },
 };
 
 /** PokéAPI pokemon name → CBD / Showdown id (best-effort). */
@@ -69,12 +108,41 @@ const POKEAPI_TO_SHOWDOWN = {
   'rotom-mow': 'rotommow',
   'basculegion-male': 'basculegion',
   'basculegion-female': 'basculegionf',
-  'maushold-family-of-four': 'mausholdfour',
-  'maushold-family-of-three': 'maushold',
+  'maushold-family-of-four': 'maushold',
+  'maushold-family-of-three': 'mausholdthree',
   'ninetales-alola': 'ninetalesalola',
+  'raichu-alola': 'raichualola',
+  'persian-alola': 'persianalola',
   'arcanine-hisui': 'arcaninehisui',
   'kommo-o': 'kommoo',
   'floette-eternal': 'floette',
+  'meowstic-male': 'meowstic',
+  'meowstic-female': 'meowsticf',
+  'indeedee-male': 'indeedee',
+  'indeedee-female': 'indeedeef',
+  'toxtricity-amped': 'toxtricity',
+  'toxtricity-low-key': 'toxtricitylowkey',
+  'gourgeist-average': 'gourgeist',
+  'gourgeist-small': 'gourgeistsmall',
+  'gourgeist-large': 'gourgeistlarge',
+  'gourgeist-super': 'gourgeistsuper',
+  'squawkabilly-green-plumage': 'squawkabilly',
+  'squawkabilly-blue-plumage': 'squawkabillyblue',
+  'squawkabilly-yellow-plumage': 'squawkabillyyellow',
+  'squawkabilly-white-plumage': 'squawkabillywhite',
+  'tauros-paldea-combat-breed': 'taurospaldeacombat',
+  'tauros-paldea-blaze-breed': 'taurospaldeablaze',
+  'tauros-paldea-aqua-breed': 'taurospaldeaaqua',
+  'slowbro-galar': 'slowbrogalar',
+  'slowking-galar': 'slowkinggalar',
+  'stunfisk-galar': 'stunfiskgalar',
+  'zoroark-hisui': 'zoroarkhisui',
+  'goodra-hisui': 'goodrahisui',
+  'samurott-hisui': 'samurotthisui',
+  'decidueye-hisui': 'decidueyehisui',
+  'avalugg-hisui': 'avalugghisui',
+  'typhlosion-hisui': 'typhlosionhisui',
+  'vivillon-fancy': 'vivillonfancy',
   'charizard-mega-x': 'charizard',
   'charizard-mega-y': 'charizard',
   'blastoise-mega': 'blastoise',
@@ -91,6 +159,21 @@ const POKEAPI_TO_SHOWDOWN = {
   'metagross-mega': 'metagross',
   'floette-mega': 'floette',
 };
+
+
+/** YYYY-MM-DD in Asia/Hong_Kong for usage source line. */
+function formatUsageDate(d = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Hong_Kong',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(d);
+}
+
+function formatUsageSourceLabel(d = new Date()) {
+  return `VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com · 更新 ${formatUsageDate(d)}`;
+}
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -122,12 +205,32 @@ function parseArgs(argv) {
   return { allowlistPath, dryRun, updateAllowlist, topN };
 }
 
+/**
+ * Allowlist shapes:
+ *  - string[] / { showdownIds: string[] }
+ *  - { entries: [{ showdownId, pokemonSlug?, formKey?, nationalDex?, ... }] }
+ * Returns { ids: string[], entryById: Map<string, object> }
+ */
 function readAllowlist(filePath) {
   const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  const ids = Array.isArray(raw) ? raw : raw.showdownIds || raw.ids || [];
+  const entryById = new Map();
+  if (Array.isArray(raw?.entries)) {
+    for (const e of raw.entries) {
+      const sid = String(e.showdownId || '').trim().toLowerCase();
+      if (!sid) continue;
+      if (!entryById.has(sid)) entryById.set(sid, e);
+    }
+  }
+  const ids = Array.isArray(raw)
+    ? raw
+    : raw.showdownIds || raw.ids || [...entryById.keys()];
   const cleaned = [...new Set(ids.map((id) => String(id).trim().toLowerCase()).filter(Boolean))];
   if (cleaned.length === 0) throw new Error(`Empty allowlist: ${filePath}`);
-  return cleaned;
+  // Ensure entryById covers plain id lists
+  for (const id of cleaned) {
+    if (!entryById.has(id)) entryById.set(id, { showdownId: id });
+  }
+  return { ids: cleaned, entryById };
 }
 
 async function fetchJson(url) {
@@ -261,7 +364,7 @@ async function fetchCbdDoublesTopMoves(showdownId, limit = 6) {
         format: 'Doubles',
         season: data?.season ?? null,
         battleSource: data?.source ?? null,
-        label: 'VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com',
+        label: formatUsageSourceLabel(new Date()),
       },
     };
   } catch (err) {
@@ -372,8 +475,15 @@ async function loadFormEntry(varietyPokemonName, cbdShowdownId, doublesCache) {
   };
 }
 
-async function buildPokemonRecord(showdownId, doublesCache) {
-  const { species: speciesSlug, pokemon: pokemonSlug } = resolvePokeapiTargets(showdownId);
+async function buildPokemonRecord(showdownId, doublesCache, entryHint = null) {
+  let speciesSlug;
+  let pokemonSlug;
+  if (entryHint?.pokemonSlug) {
+    pokemonSlug = entryHint.pokemonSlug;
+    speciesSlug = entryHint.speciesKey || resolvePokeapiTargets(showdownId).species;
+  } else {
+    ({ species: speciesSlug, pokemon: pokemonSlug } = resolvePokeapiTargets(showdownId));
+  }
   console.log(`  PokéAPI species=${speciesSlug} pokemon=${pokemonSlug}`);
 
   let species = await rateLimitedJsonOptional(
@@ -414,7 +524,14 @@ async function buildPokemonRecord(showdownId, doublesCache) {
   const cbdData = await fetchCbdPokemon(showdownId);
 
   let formNames = { en: null, 'zh-Hant': null, ja: null };
-  const formUrl = pokemonData.forms?.[0]?.url;
+  const preferredFormKey = entryHint?.formKey || null;
+  let formUrl = null;
+  if (preferredFormKey) {
+    const hit = (pokemonData.forms || []).find((f) => f.name === preferredFormKey);
+    formUrl = hit?.url || `${POKEAPI}/pokemon-form/${encodeURIComponent(preferredFormKey)}`;
+  } else {
+    formUrl = pokemonData.forms?.[0]?.url;
+  }
   if (formUrl) {
     try {
       const form = await rateLimitedJson(formUrl);
@@ -428,7 +545,16 @@ async function buildPokemonRecord(showdownId, doublesCache) {
   }
 
   const names = pickNames(species.names);
-  const formKey = pokemonData.name;
+  if (entryHint?.zhHant) {
+    const zh = String(entryHint.zhHant);
+    const m = zh.match(/^[^(（]+\s*[（(](.+?)[)）]\s*$/);
+    const baseZh = zh.replace(/\s*[（(].*$/, '').trim();
+    if (baseZh) names['zh-Hant'] = baseZh;
+    if (m && m[1] && !formNames['zh-Hant']) {
+      formNames = { ...formNames, 'zh-Hant': m[1].trim() };
+    }
+  }
+  const formKey = preferredFormKey || pokemonData.name;
   const speciesKey = species.name;
   const nationalDex = species.id;
 
@@ -466,28 +592,42 @@ async function buildPokemonRecord(showdownId, doublesCache) {
     }
   }
 
-  // Forms list from PokéAPI varieties (+ CBD usage when a distinct showdownId exists)
+  // Forms list: skip full variety crawl in legal-form mode (entry has pokemonSlug) for speed.
+  // Still attach a single self form so UI form metadata stays available.
   const forms = [];
-  const varieties = Array.isArray(species.varieties) ? species.varieties : [];
-  for (const v of varieties) {
-    const vName = v?.pokemon?.name;
-    if (!vName || isSkippedVariety(vName)) continue;
+  if (entryHint?.pokemonSlug) {
     try {
-      const cbdId = pokeapiNameToShowdownId(vName);
-      // Prefer exact CBD id when mapped; megas often share base showdownId for usage
-      const formEntry = await loadFormEntry(vName, cbdId, doublesCache);
+      const formEntry = await loadFormEntry(pokemonData.name, showdownId, doublesCache);
+      if (entryHint.formKey) formEntry.formKey = entryHint.formKey;
       forms.push(formEntry);
-      if (formEntry.vgcDoublesMoves) {
-        for (const m of formEntry.vgcDoublesMoves) {
-          if (m.nameEn && !moveNames.includes(m.nameEn)) moveNames.push(m.nameEn);
-        }
-      }
     } catch (err) {
-      console.warn(`  variety skip ${vName}: ${err.message || err}`);
+      console.warn(`  self-form skip: ${err.message || err}`);
+    }
+  } else {
+    const varieties = Array.isArray(species.varieties) ? species.varieties : [];
+    for (const v of varieties) {
+      const vName = v?.pokemon?.name;
+      if (!vName || isSkippedVariety(vName)) continue;
+      try {
+        const cbdId = pokeapiNameToShowdownId(vName);
+        const formEntry = await loadFormEntry(vName, cbdId, doublesCache);
+        forms.push(formEntry);
+        if (formEntry.vgcDoublesMoves) {
+          for (const m of formEntry.vgcDoublesMoves) {
+            if (m.nameEn && !moveNames.includes(m.nameEn)) moveNames.push(m.nameEn);
+          }
+        }
+      } catch (err) {
+        console.warn(`  variety skip ${vName}: ${err.message || err}`);
+      }
     }
   }
   if (forms.length) {
     record.forms = forms;
+  }
+  if (entryHint?.id) record.championsId = entryHint.id;
+  if (entryHint?.zhHant && !record.names['zh-Hant']) {
+    record.names['zh-Hant'] = entryHint.zhHant;
   }
 
   return {
@@ -575,13 +715,14 @@ async function main() {
     else console.log(`dry-run allowlist top${topN}: ${ranked.map((r) => r.showdownId).join(', ')}`);
   }
 
-  const showdownIds = readAllowlist(allowlistPath);
-  console.log(`Allowlist (${showdownIds.length}): ${showdownIds.join(', ')}`);
+  const { ids: showdownIds, entryById } = readAllowlist(allowlistPath);
+  console.log(`Allowlist (${showdownIds.length}): ${showdownIds.slice(0, 12).join(', ')}${showdownIds.length > 12 ? ', …' : ''}`);
   console.log(`Rate limit ${RATE_LIMIT_MS}ms; dryRun=${dryRun}; schema=${SCHEMA_VERSION}`);
 
   const pokemon = [];
   const moveNameSet = new Map();
   const doublesCache = new Map();
+  const usageFetchedAt = new Date();
 
   for (const id of showdownIds) {
     console.log(`[pokemon] ${id}`);
@@ -589,6 +730,7 @@ async function main() {
       const { record, moveNames, fromCbdMoves, doublesCount } = await buildPokemonRecord(
         id,
         doublesCache,
+        entryById.get(id) || null,
       );
       pokemon.push(record);
       const formCount = record.forms?.length || 0;
@@ -618,17 +760,23 @@ async function main() {
   }
   moves.sort((a, b) => String(a.id).localeCompare(String(b.id)));
 
+  const generatedAt = new Date();
+  const usageUpdatedAt = formatUsageDate(usageFetchedAt);
   const meta = {
     schemaVersion: SCHEMA_VERSION,
-    generatedAt: new Date().toISOString(),
+    generatedAt: generatedAt.toISOString(),
+    updatedAt: formatUsageDate(generatedAt),
+    usageUpdatedAt,
+    usageSourceLabel: formatUsageSourceLabel(usageFetchedAt),
     sources: {
       pokeapi: POKEAPI,
       cbd: `${CBD_ORIGIN}/api/pokemon/{showdownId}`,
       cbdDoublesBattle: `${CBD_ORIGIN}/api/battle/Doubles/{showdownId}`,
       cbdIndex: `${CBD_ORIGIN}/api/index`,
       allowlist: path.relative(ROOT, allowlistPath).replace(/\\/g, '/'),
+      legalAllowlist: 'data/legal-allowlist.json',
       notes:
-        'Classic PokéAPI base stats + nationalDex + forms[] (not CBD screen-scaled). Move names/types from PokéAPI; usage % only from CBD VGC Doubles (2v2 / 6-pick-4). Locale keys: en / zh-Hant / ja. See assets/CREDITS.md.',
+        'Classic PokéAPI base stats + nationalDex + forms[] (not CBD screen-scaled). Move names/types from PokéAPI; usage % only from CBD VGC Doubles (2v2 / 6-pick-4). Locale keys: en / zh-Hant / ja. Legal Champions forms via map-legal-allowlist.mjs. See assets/CREDITS.md.',
     },
     pokemonCount: pokemon.length,
     movesCount: moves.length,

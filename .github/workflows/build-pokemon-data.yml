@@ -3,8 +3,8 @@ name: Build Pokémon data
 on:
   workflow_dispatch:
   schedule:
-    # Weekly Monday 16:00 UTC ≈ Tuesday 00:00 HKT
-    - cron: "0 16 * * 1"
+    # Daily 16:00 UTC = 00:00 HKT (Asia/Hong_Kong)
+    - cron: "0 16 * * *"
 
 permissions:
   contents: write
@@ -49,6 +49,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No data changes to commit."
           else
-            git commit -m "chore: regenerate Pokémon data from PokéAPI + CBD allowlist"
+            git commit -m "chore: daily CBD Doubles usage refresh (legal Champions allowlist)"
             git push origin HEAD:main
           fi
