@@ -29,7 +29,7 @@ THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0} 
 TEMPLATE_SIZE = 64
 SLOT_COUNT = 6
 CARD_GAP_FRAC = 0.08  # fraction of pitch that is inter-card gap (mirror src/lib/roi.ts)
-PANEL_OUTER_MARGIN_FRAC = 0.012  # green visual outer pad (content-height frac; mirror roi.ts)
+PANEL_OUTER_MARGIN_FRAC = 0.02  # green visual outer pad (content-height frac; mirror roi.ts)
 TARGET_ASPECT = 16 / 9
 CONFIDENCE_THRESHOLD = 0.55
 
@@ -145,11 +145,11 @@ def confidence(gray: list[float], hash_s: str, tmpl_gray: list[float], tmpl_hash
     return min(1.0, ncc_score * 0.55 + ssd_score * 0.25 + hash_score * 0.2)
 
 
-def crop_slot(im: Image.Image, slot: int, *, card_body: bool = False) -> Image.Image:
-    """Yellow square crop for matching.
+def crop_slot(im: Image.Image, slot: int, *, card_body: bool = True) -> Image.Image:
+    """Yellow square crop for matching (= overlay yellow / app recognition).
 
-    Default card_body=False → side = full pitch (matches app recognition; ~15/18).
-    card_body=True → side = pitch×(1-CARD_GAP_FRAC) (overlay yellow geometry).
+    Default card_body=True → side = pitch×(1-CARD_GAP_FRAC) (card body; yellow geometry).
+    card_body=False → side = full pitch (legacy).
     """
     cx, cy, cw, ch = content_rect(*im.size)
     px = int(cx + ENEMY_PANEL["left"] * cw)

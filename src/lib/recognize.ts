@@ -22,7 +22,7 @@ import {
   computeContentRect,
   resolveEnemyPanel,
   panelToFrameRect,
-  slotRect,
+  cardRect,
   thumbRectInSlot,
 } from './roi';
 
@@ -668,11 +668,10 @@ export async function recognizeEnemyTeamFromCanvas(
     const results: RecognizeResult[] = [];
     for (let slot = 0; slot < SLOT_COUNT; slot++) {
       try {
-        // Recognition crop: full pitch square (side≈pitch). Overlay yellow uses card
-        // body (CARD_GAP_FRAC) via thumbCssPercent; shrinking the match crop to card
-        // body regresses fixtures (~11/18 vs ~15/18).
-        const sRect = slotRect(panelPx, slot);
-        const tRect = thumbRectInSlot(sRect);
+        // Recognition crop === overlay yellow: card body height (CARD_GAP_FRAC),
+        // then square thumb via thumbRectInSlot (same geometry as thumbCssPercent).
+        const card = cardRect(panelPx, slot);
+        const tRect = thumbRectInSlot(card);
         const { imageData, dataUrl, gray } = cropResizeToTemplate(ctx, tRect);
         const hash = averageHash(imageData);
         const matched = matchTemplate(hash, gray);

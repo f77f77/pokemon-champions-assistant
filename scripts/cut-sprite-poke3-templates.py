@@ -28,7 +28,7 @@ TEMPLATE_SIZE = 64
 ENEMY_PANEL = {"left": 0.811, "top": 0.143, "right": 0.965, "bottom": 0.832}
 THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}
 CARD_GAP_FRAC = 0.08  # fraction of pitch that is inter-card gap (mirror src/lib/roi.ts)
-PANEL_OUTER_MARGIN_FRAC = 0.012  # green visual outer pad (content-height frac; mirror roi.ts)
+PANEL_OUTER_MARGIN_FRAC = 0.02  # green visual outer pad (content-height frac; mirror roi.ts)
 
 
 

@@ -7,20 +7,20 @@
 - Scales: `[0.8, 0.95, 1.1, 1.25, 1.4]`; shifts: `[-8, -4, 0, 4, 8]`
 - Threshold: 0.55
 - ROI Doc: v1.3-square-thumb (panel/thumb constants **locked**)
-- **Overall accuracy: 15/18**
+- **Overall accuracy: 11/18**
 
 ## team-preview-test-1
 
-**Accuracy: 5/6**
+**Accuracy: 2/6**
 
 | slot | expected | matched | confidence | ok |
 |------|----------|---------|------------|----|
-| 0 | charizard | charizard | 0.6862 | Y |
-| 1 | aerodactyl | aerodactyl | 0.7233 | Y |
-| 2 | meowscarada | talonflame | 0.6086 | N |
-| 3 | garchomp | garchomp | 0.6541 | Y |
-| 4 | rotomwash | rotomwash | 0.5964 | Y |
-| 5 | aegislash | aegislash | 0.7261 | Y |
+| 0 | charizard | empoleon | 0.6590 | N |
+| 1 | aerodactyl | aerodactyl | 0.7786 | Y |
+| 2 | meowscarada | sneasler | 0.7173 | N |
+| 3 | garchomp | garchomp | 0.6079 | Y |
+| 4 | rotomwash | excadrill | 0.6095 | N |
+| 5 | aegislash | swampert | 0.6611 | N |
 
 ## team-preview-test-2
 
@@ -28,38 +28,42 @@
 
 | slot | expected | matched | confidence | ok |
 |------|----------|---------|------------|----|
-| 0 | whimsicott | whimsicott | 0.7451 | Y |
-| 1 | charizard | charizard | 0.7307 | Y |
-| 2 | basculegion | basculegion | 0.7338 | Y |
-| 3 | kingambit | kingambit | 0.6363 | Y |
-| 4 | sneasler | empoleon | 0.6340 | N |
-| 5 | garchomp | garchomp | 0.6823 | Y |
+| 0 | whimsicott | whimsicott | 0.6669 | Y |
+| 1 | charizard | charizard | 0.6927 | Y |
+| 2 | basculegion | basculegion | 0.7119 | Y |
+| 3 | kingambit | kingambit | 0.7198 | Y |
+| 4 | sneasler | sneasler | 0.7418 | Y |
+| 5 | garchomp | swampert | 0.5964 | N |
 
 ## team-preview-test-3
 
-**Accuracy: 5/6**
+**Accuracy: 4/6**
 
 | slot | expected | matched | confidence | ok |
 |------|----------|---------|------------|----|
-| 0 | ninetalesalola | ninetalesalola | 0.7680 | Y |
-| 1 | empoleon | empoleon | 0.7920 | Y |
-| 2 | garchomp | garchomp | 0.6320 | Y |
-| 3 | staraptor | staraptor | 0.7871 | Y |
-| 4 | whimsicott | whimsicott | 0.6954 | Y |
-| 5 | charizard | incineroar | 0.5985 | N |
+| 0 | ninetalesalola | ninetalesalola | 0.7772 | Y |
+| 1 | empoleon | empoleon | 0.8080 | Y |
+| 2 | garchomp | corviknight | 0.6092 | N |
+| 3 | staraptor | staraptor | 0.7977 | Y |
+| 4 | whimsicott | whimsicott | 0.6633 | Y |
+| 5 | charizard | glimmora | 0.6179 | N |
 
 ## Misses
 
-- `team-preview-test-1` slot 2: expected **meowscarada**, matched **talonflame** (0.609)
-- `team-preview-test-2` slot 4: expected **sneasler**, matched **empoleon** (0.634)
-- `team-preview-test-3` slot 5: expected **charizard**, matched **incineroar** (0.599)
+- `team-preview-test-1` slot 0: expected **charizard**, matched **empoleon** (0.659)
+- `team-preview-test-1` slot 2: expected **meowscarada**, matched **sneasler** (0.717)
+- `team-preview-test-1` slot 4: expected **rotomwash**, matched **excadrill** (0.610)
+- `team-preview-test-1` slot 5: expected **aegislash**, matched **swampert** (0.661)
+- `team-preview-test-2` slot 5: expected **garchomp**, matched **swampert** (0.596)
+- `team-preview-test-3` slot 2: expected **garchomp**, matched **corviknight** (0.609)
+- `team-preview-test-3` slot 5: expected **charizard**, matched **glimmora** (0.618)
 
 ## Notes
 
 - Overlay yellow is a **square** with side = red card **body** height (pitch×(1-CARD_GAP_FRAC), CARD_GAP_FRAC=0.08) via `thumbCssPercent`/`cardRect`.
-- Recognition/match crop uses **full pitch** square (side=pitch; `card_body=False`) — card-body shrink regresses fixtures; `THUMB_CROP.left = 0.18`.
+- Recognition/match crop === yellow square (`card_body=True`; side=pitch×(1-CARD_GAP_FRAC) via `cardRect`→`thumbRectInSlot`); `THUMB_CROP.left = 0.18`.
 - Templates trimmed of transparent padding from sprite_poke_3 cells, then contain/letterbox to 64.
 - Capture path suppresses maroon card BG and recenters on the sprite blob before multi-scale match.
-- `recognize.ts` mirrors this pipeline.
-
-- Green visual frame uses `PANEL_OUTER_MARGIN_FRAC=0.012` (outer pad only); pitch/yellow/recognition still locked to `ENEMY_PANEL` — accuracy unchanged at **15/18**.
+- `recognize.ts` mirrors this pipeline (`cardRect` → `thumbRectInSlot`).
+- Green visual frame uses `PANEL_OUTER_MARGIN_FRAC=0.02` (outer pad only; ~22px @1080p contentH); pitch/yellow/recognition still locked to `ENEMY_PANEL`.
+- Accuracy with yellow-aligned crop: **11/18** (prior full-pitch `card_body=False` was **15/18**).

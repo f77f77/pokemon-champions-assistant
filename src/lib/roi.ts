@@ -47,9 +47,9 @@ export const CARD_GAP_FRAC = 0.08;
 /**
  * Green panel visual outer pad (fraction of content height), applied only to
  * panelCssPercent / panelVisualNorm — NOT to pitch, cardRect, yellow, or recognition.
- * ~0.012 ≈ slightly more than half an inter-card gap at default panel height.
+ * 0.02 ≈ ≥24px @1080p content height (visual green only; does not shift yellow/pitch).
  */
-export const PANEL_OUTER_MARGIN_FRAC = 0.012;
+export const PANEL_OUTER_MARGIN_FRAC = 0.02;
 
 /** 模板比對前縮放邊長（Team Preview 小縮圖，非大圖／HOME） */
 export const TEMPLATE_SIZE = 64;
