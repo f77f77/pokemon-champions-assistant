@@ -61,3 +61,5 @@
 - Templates trimmed of transparent padding from sprite_poke_3 cells, then contain/letterbox to 64.
 - Capture path suppresses maroon card BG and recenters on the sprite blob before multi-scale match.
 - `recognize.ts` mirrors this pipeline.
+
+- Green visual frame uses `PANEL_OUTER_MARGIN_FRAC=0.012` (outer pad only); pitch/yellow/recognition still locked to `ENEMY_PANEL` — accuracy unchanged at **15/18**.

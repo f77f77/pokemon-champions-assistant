@@ -1,5 +1,5 @@
 import type { PokemonFormOption, PokemonSet, PokemonType, StatKey } from '../types';
-import { ALL_TYPES, TYPE_COLORS, defensiveMatchups, matchupClass } from '../lib/typeChart';
+import { ALL_TYPES, TYPE_COLORS, defensiveMatchups } from '../lib/typeChart';
 import { typeIconUrl } from '../lib/typeIcons';
 import { calcAllStats } from '../lib/speedCalc';
 import { formatSpeciesLabel } from '../lib/species';
@@ -55,6 +55,84 @@ function formatUsage(usage: string | number | undefined): string | null {
 function formOptionsOf(pokemon: PokemonSet): PokemonFormOption[] {
   return Array.isArray(pokemon.forms) ? pokemon.forms : [];
 }
+
+function formatMultLabel(m: number): string {
+  if (m === 0) return '0';
+  if (m === 0.25) return '1/4';
+  if (m === 0.5) return '1/2';
+  if (m === 2) return '2';
+  if (m === 4) return '4';
+  return String(m);
+}
+
+function multCssKey(m: number): string {
+  if (m === 0) return 'immune';
+  if (m === 0.25) return 'quarter';
+  if (m === 0.5) return 'half';
+  if (m >= 4) return 'x4';
+  if (m > 1) return 'weak';
+  return 'half';
+}
+
+/** Group non-neutral matchups into compact rows; ×4 and ×0 share one row. */
+function MatchupRows({ matchups }: { matchups: Record<PokemonType, number> }) {
+  const byMult = new Map<number, PokemonType[]>();
+  for (const t of ALL_TYPES) {
+    const m = matchups[t];
+    if (m === 1) continue; // hide neutral
+    const list = byMult.get(m) ?? [];
+    list.push(t);
+    byMult.set(m, list);
+  }
+
+  const rowSpecs: Array<Array<{ mult: number; types: PokemonType[] }>> = [];
+  // ×4 (and any ≥4) + ×0 share one compact row with dual badges
+  const fours = [...byMult.entries()].filter(([m]) => m >= 4).sort((a, b) => b[0] - a[0]);
+  const zeros = byMult.has(0) ? [{ mult: 0, types: byMult.get(0)! }] : [];
+  const fourGroups = fours.map(([mult, types]) => ({ mult, types }));
+  if (fourGroups.length || zeros.length) {
+    rowSpecs.push([...fourGroups, ...zeros]);
+  }
+  for (const m of [2, 0.5, 0.25]) {
+    if (byMult.has(m)) rowSpecs.push([{ mult: m, types: byMult.get(m)! }]);
+  }
+  // leftovers (e.g. ×⅛)
+  const used = new Set<number>();
+  for (const row of rowSpecs) for (const g of row) used.add(g.mult);
+  for (const [m, types] of [...byMult.entries()].sort((a, b) => b[0] - a[0])) {
+    if (used.has(m)) continue;
+    rowSpecs.push([{ mult: m, types }]);
+  }
+
+  if (!rowSpecs.length) return null;
+
+  return (
+    <div className="type-grid" title="屬性抗性／弱點（雙屬性乘算；隱藏 ×1）">
+      {rowSpecs.map((groups, ri) => (
+        <div key={ri} className="type-grid__row">
+          {groups.map(({ mult, types }) => (
+            <span key={mult} className="type-grid__group">
+              {types.map((t) => {
+                const icon = typeIconUrl(t);
+                return icon ? (
+                  <img key={t} src={icon} alt={t} title={`${t}: ×${mult}`} className="type-grid__icon" />
+                ) : (
+                  <span key={t} className="type-grid__icon" title={`${t}: ×${mult}`}>
+                    {t.slice(0, 1)}
+                  </span>
+                );
+              })}
+              <span className={`type-grid__mult type-grid__mult--${multCssKey(mult)}`} title={`×${mult}`}>
+                {formatMultLabel(mult)}
+              </span>
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 
 export function PokemonCard({
   pokemon,
@@ -194,23 +272,7 @@ export function PokemonCard({
         ))}
       </div>
 
-      {matchups && (
-        <div className="type-grid" title="屬性抗性／弱點（雙屬性乘算）">
-          {ALL_TYPES.map((t) => {
-            const m = matchups[t];
-            const icon = typeIconUrl(t);
-            const cls = matchupClass(m);
-            return (
-              <span key={t} className={`type-dot type-dot--${cls}`} title={`${t}: ×${m}`}>
-                {icon ? <img src={icon} alt={t} className="type-dot__img" /> : t.slice(0, 1)}
-                {(cls === 'weak' || cls === 'x4' || cls === 'immune' || cls === 'resist') && (
-                  <span className="type-dot__mult">×{m === 0.25 ? '¼' : m === 0.5 ? '½' : m}</span>
-                )}
-              </span>
-            );
-          })}
-        </div>
-      )}
+      {matchups && <MatchupRows matchups={matchups} />}
 
       <div className={`move-grid ${variant === 'enemy' ? 'move-grid--six' : ''}`}>
         {pokemon.moves.slice(0, moveLimit).map((mv, i) => {

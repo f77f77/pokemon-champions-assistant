@@ -14,7 +14,7 @@ import {
 import {
   resolveEnemyPanel,
   panelCssPercent,
-  slotCssPercent,
+  cardCssPercent,
   thumbCssPercent,
   SLOT_COUNT,
   fixtureTeamPreviewUrl,
@@ -311,17 +311,17 @@ export function CapturePanel({
         />
         {debugOverlay &&
           Array.from({ length: SLOT_COUNT }, (_, slot) => {
-            const s = slotCssPercent(panel, slot);
+            const c = cardCssPercent(panel, slot);
             const t = thumbCssPercent(panel, slot);
             return (
               <div key={slot}>
                 <div
                   className="capture-preview__roi capture-preview__roi--slot"
                   style={{
-                    left: `${s.left}%`,
-                    top: `${s.top}%`,
-                    width: `${s.width}%`,
-                    height: `${s.height}%`,
+                    left: `${c.left}%`,
+                    top: `${c.top}%`,
+                    width: `${c.width}%`,
+                    height: `${c.height}%`,
                   }}
                 />
                 <div

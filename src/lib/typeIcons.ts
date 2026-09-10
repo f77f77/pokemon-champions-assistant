@@ -1,7 +1,7 @@
 import type { PokemonType } from '../types';
 import { ALL_TYPES } from './typeChart';
 
-/** English id used in `public/types/{id}.png` URLs */
+/** English id used in `public/types/{id}.svg` URLs */
 export type TypeIconId =
   | 'normal'
   | 'fire'
@@ -81,7 +81,7 @@ export function typeIconUrl(typeOrId: PokemonType | TypeIconId | string): string
   if (!id) return null;
   const base = import.meta.env.BASE_URL || '/';
   const prefix = base.endsWith('/') ? base : `${base}/`;
-  return `${prefix}types/${id}.png`;
+  return `${prefix}types/${id}.svg`;
 }
 
 /** Species type badge URLs (1–2 types). */

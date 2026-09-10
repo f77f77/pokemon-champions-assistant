@@ -107,7 +107,7 @@ Acceptance:
 
 ## Type / Tera icons
 
-18 Traditional Chinese type icons live in `public/types/` with stable English filenames (`fire.png`, `water.png`, …). Mapping (繁中 ↔ id ↔ URL) is in `src/lib/typeIcons.ts` via `import.meta.env.BASE_URL + 'types/{id}.png'`. PokemonCard species badges and move buttons (TeamPanel / EnemyPanel) render these images alongside 繁中 labels. ROI / recognize are unchanged.
+18 type icons live in `public/types/` as SVG with stable English filenames (`fire.svg`, `water.svg`, …; legacy PNGs retained). Mapping (繁中 ↔ id ↔ URL) is in `src/lib/typeIcons.ts` via `import.meta.env.BASE_URL + 'types/{id}.svg'`. PokemonCard species badges, move buttons, and weakness rows use these icons. Green debug frame uses `PANEL_OUTER_MARGIN_FRAC` outside the locked pitch panel so yellow/recognition stay unshifted.
 
 ## Layout
 

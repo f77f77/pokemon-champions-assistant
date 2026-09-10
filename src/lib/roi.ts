@@ -2,9 +2,10 @@
  * Team Preview 敵方縮圖 ROI（對齊 VGC 助手規格）。
  *
  * 座標系一律相對「去黑邊後的 16:9 內容區」(contentRect)，不是整幀。
- * 預設敵方面板：(left,top)=(0.811,0.143) → (right,bottom)=(0.965,0.832)
+ * 預設敵方面板（內層 card pitch）：(left,top)=(0.811,0.143) → (right,bottom)=(0.965,0.832)
  * 再均分成 6 等距 pitch；紅卡本體 = pitch×(1-CARD_GAP_FRAC)（上下留 gap）；
  * 黃框為正方形：邊長 = 紅卡本體高度，水平置於左側精靈區（黃框之間可見 gap）。
+ * 綠框為視覺外框：相對內層 pitch 上下再外擴 PANEL_OUTER_MARGIN_FRAC（不影響黃框／辨認）。
  * 辨認裁切後 contain/letterbox 進 TEMPLATE_SIZE（不拉伸）；模板來自 sprite_poke_3 切格。
  *
  * 微調：Settings 可對面板四邊做 ±2%（相對內容寬／高）偏移。
@@ -42,6 +43,13 @@ export const SLOT_COUNT = 6;
  * ~7–9% of pitch from VGC screenshots; 0.08 ≈ mid of measured range.
  */
 export const CARD_GAP_FRAC = 0.08;
+
+/**
+ * Green panel visual outer pad (fraction of content height), applied only to
+ * panelCssPercent / panelVisualNorm — NOT to pitch, cardRect, yellow, or recognition.
+ * ~0.012 ≈ slightly more than half an inter-card gap at default panel height.
+ */
+export const PANEL_OUTER_MARGIN_FRAC = 0.012;
 
 /** 模板比對前縮放邊長（Team Preview 小縮圖，非大圖／HOME） */
 export const TEMPLATE_SIZE = 64;
@@ -194,18 +202,36 @@ export function thumbRectInSlot(card: PixelRect): PixelRect {
   };
 }
 
-/** Overlay 用：相對「預覽容器／內容區」的 CSS %（0–100） */
+/**
+ * Visual green frame = inner pitch panel expanded by PANEL_OUTER_MARGIN_FRAC
+ * on top/bottom (content-height fractions). Pitch/cards/yellow stay on `panel`.
+ */
+export function panelVisualNorm(
+  panel: PanelRectNorm,
+  marginFrac: number = PANEL_OUTER_MARGIN_FRAC,
+): PanelRectNorm {
+  const m = Math.max(0, marginFrac);
+  return {
+    left: panel.left,
+    right: panel.right,
+    top: clamp(panel.top - m, 0, 0.98),
+    bottom: clamp(panel.bottom + m, panel.top - m + 0.02, 1),
+  };
+}
+
+/** Overlay 用綠框：相對「預覽容器／內容區」的 CSS %（0–100）；含外緣 margin */
 export function panelCssPercent(panel: PanelRectNorm): {
   left: number;
   top: number;
   width: number;
   height: number;
 } {
+  const v = panelVisualNorm(panel);
   return {
-    left: panel.left * 100,
-    top: panel.top * 100,
-    width: (panel.right - panel.left) * 100,
-    height: (panel.bottom - panel.top) * 100,
+    left: v.left * 100,
+    top: v.top * 100,
+    width: (v.right - v.left) * 100,
+    height: (v.bottom - v.top) * 100,
   };
 }
 
