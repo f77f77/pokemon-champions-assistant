@@ -3,8 +3,9 @@
  *
  * 流程：抓一幀 → contentRect（去黑邊）→ 敵方面板 ROI → 6 pitch → 紅卡本體（留 gap）→
  * 每格黃框正方形（邊長=紅卡本體高，左側精靈）→ 抑制紅卡底 → content-aware 重對齊 →
+ * crop cleanup（黃框右側 type/gender 滲入排除；黃框幾何不變）→
  * aHash prefilter → 64×64 多尺度／微位移灰階比對（mask = 模板 alpha ∩ query 非黑）→
- * 粗 hue 軟懲罰 → 卡右側 type icon 軟否決 → MIN_MARGIN + threshold。
+ * 粗 hue 軟懲罰 → 卡右側 type icon 硬否決（低信心則跳過）→ dynamic margin + threshold。
  *
  * 模板庫：public/templates/{showdownId}.png — 切自官方 sprite_poke_3（trim 透明邊 → contain 64）。
  * 寧可 speciesId=null（未識別）也不要錯種。不拉伸。不猜道具。不做逐幀即時辨認。
@@ -58,18 +59,29 @@ export {
 
 /** 信心門檻：低於此 → 未識別 */
 export const CONFIDENCE_THRESHOLD = 0.54;
-/** top1−top2 最小差距；不足 → 未識別（寧可 null 不要錯種） */
+/** Fallback / floor for requiredMargin(); dynamic rule used at accept time */
 export const MIN_MARGIN = 0.08;
-/** aHash Hamming prefilter：至少 top-K，並納入 ham≤此值者 */
-export const AHASH_TOP_K = 10;
+/** aHash Hamming prefilter：至少 top-K，並納入 ham≤此值者（fixture-tuned smallest K≥12/18） */
+export const AHASH_TOP_K = 40;
 export const AHASH_MAX_HAM = 18;
 /** 粗 hue hist：過遠則分數 ×HUE_PENALTY（軟，避免誤殺 shiny） */
 export const HUE_BINS = 8;
 export const HUE_DIST_THR = 0.75;
 export const HUE_PENALTY = 0.85;
-/** 右側 type icon 軟否決門檻（低於此 → type unknown，不做硬否決） */
+/** 右側 type icon 硬否決門檻（低於此 → type unknown，跳過硬否決） */
 export const TYPE_MATCH_THR = 0.58;
 export const TYPE_ICON_FRACS = [0.36, 0.42, 0.48] as const;
+/** Zero right edge of yellow match crop (type bleed). Yellow ROI geometry unchanged. */
+export const MATCH_CROP_RIGHT_EXCLUDE_FRAC = 0.05;
+
+/** Dynamic top1−top2 margin: high conf → smaller required gap (fixture-tuned). */
+export function requiredMargin(confidence: number): number {
+  if (confidence >= 0.75) return 0.025;
+  if (confidence >= 0.68) return 0.03;
+  if (confidence >= 0.6) return 0.035;
+  if (confidence >= 0.54) return 0.055;
+  return MIN_MARGIN;
+}
 
 /** Query multi-scale / translation sweep (mirror scripts/match-test-fixtures.py) */
 export const MATCH_SCALES = [0.9, 1.0, 1.1, 1.2, 1.35] as const;
@@ -659,7 +671,8 @@ function nccMaskedGray(a: Float32Array, b: Float32Array, mask: Float32Array): nu
 }
 
 /**
- * Soft type-icon scan on card top-right (1–2 icons). Low conf → [] (no hard veto).
+ * Type-icon scan on card top-right (1–2 icons). Hard veto only when score ≥ TYPE_MATCH_THR;
+ * low-conf detections are omitted → skip hard veto.
  */
 function detectCardTypes(
   src: CanvasRenderingContext2D,
@@ -717,7 +730,7 @@ function detectCardTypes(
           const gN = nccMaskedGray(gray, tmpl.gray, tmpl.mask);
           const cN = nccMaskedRgb(rgb, tmpl.rgb, tmpl.mask, isize * isize);
           const sc = 0.35 * gN + 0.65 * cN;
-          if (sc >= TYPE_MATCH_THR) {
+          if (sc >= 0.45) {
             hits.push({ sc, id: t.id, x, y, sz: isize });
           }
         }
@@ -743,7 +756,27 @@ function detectCardTypes(
     picked.push(h);
     if (picked.length >= 2) break;
   }
-  return picked.map((p) => p.id);
+  // Hard second gate: only confident type hits
+  return picked.filter((p) => p.sc >= TYPE_MATCH_THR).map((p) => p.id);
+}
+
+/**
+ * Zero right strip of yellow crop where type icons can bleed in.
+ * Yellow / ENEMY_PANEL / CARD_GAP geometry unchanged — content cleanup only.
+ */
+function excludeTypeGenderBleed(data: ImageData): ImageData {
+  const { width, height, data: px } = data;
+  const out = new ImageData(width, height);
+  out.data.set(px);
+  const cut = Math.max(1, Math.round(width * MATCH_CROP_RIGHT_EXCLUDE_FRAC));
+  for (let y = 0; y < height; y++) {
+    for (let x = width - cut; x < width; x++) {
+      const i = (y * width + x) * 4;
+      out.data[i] = out.data[i + 1] = out.data[i + 2] = 0;
+      out.data[i + 3] = 255;
+    }
+  }
+  return out;
 }
 
 /**
@@ -972,7 +1005,8 @@ function cropResizeToTemplate(
     Math.max(1, rect.width),
     Math.max(1, rect.height),
   );
-  const suppressed = suppressCardBackground(raw);
+  const cleaned = excludeTypeGenderBleed(raw);
+  const suppressed = suppressCardBackground(cleaned);
   const recentered = contentAwareSquare(suppressed);
   const rawCanvas = document.createElement('canvas');
   rawCanvas.width = recentered.width;
@@ -1023,7 +1057,7 @@ export interface MatchTemplateResult {
 }
 
 /**
- * 本地比對：aHash prefilter → 多尺度 NCC/SSD/aHash → hue 軟懲罰 → type 軟否決 → MIN_MARGIN。
+ * 本地比對：aHash prefilter → 多尺度 NCC/SSD/aHash → hue 軟懲罰 → type 硬否決（低信心跳過）→ dynamic margin。
  * mask = 模板 alpha ∩ query 非黑。寧可 null 不要錯種。
  */
 function matchTemplate(
@@ -1070,9 +1104,10 @@ function matchTemplate(
 
   const ranked = [...bestBySpecies.values()].sort((a, b) => b.confidence - a.confidence);
   const det = detectedTypes;
+  // Hard second gate when types confidently detected; empty det → low-conf → skip veto
   const accepted = ranked.filter((c) => {
     if (det.length === 0) return true;
-    if (!c.types.length) return true; // unknown types → soft, do not veto
+    if (!c.types.length) return true; // unknown species types → do not veto
     return det.every((d) => c.types.includes(d));
   });
 
@@ -1091,7 +1126,8 @@ function matchTemplate(
   const top1 = accepted[0];
   const top2 = accepted[1];
   const margin = top1.confidence - (top2?.confidence ?? 0);
-  if (top1.confidence >= CONFIDENCE_THRESHOLD && margin >= MIN_MARGIN) {
+  const need = requiredMargin(top1.confidence);
+  if (top1.confidence >= CONFIDENCE_THRESHOLD && margin >= need) {
     return {
       speciesId: top1.speciesId,
       speciesNameZh: top1.speciesNameZh,

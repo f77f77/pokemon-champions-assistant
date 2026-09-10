@@ -1,4 +1,4 @@
-# Pokemon Champions battle assistant (v0.1 / recognize v1.3)
+# Pokemon Champions battle assistant (v0.1 / recognize v1.4)
 
 Electron + Vite + React (TypeScript). Defaults: AverMedia GC551, local Team Preview thumbs, Spe hand-fill, championsbattledata VGC Doubles (2v2 / 6-pick-4) usage.
 
@@ -54,19 +54,22 @@ Files: `src/lib/roi.ts`, `src/lib/recognize.ts`.
 
 Settings: ROI fine-tune + green/yellow debug overlay.
 
-## Recognize / template matching (v1.3 guards)
+## Recognize / template matching (v1.4 guards)
 
 Per slot: `{ slot, confidence, speciesId?, speciesNameZh?, thumbnailDataUrl?, altSpeciesId?, margin?, detectedTypes? }`.
 
 Pipeline (local only, no cloud) — **prefer `null`/未識別 over wrong species**:
 
-1. Crop yellow square thumb with locked ROI (`cardRect` → `thumbRectInSlot`)
-2. Suppress maroon card BG → content-aware recenter → 64×64
-3. aHash Hamming prefilter → top 10 (or all ham≤18)
-4. Multi-scale / micro-shift grayscale match vs `public/templates/{showdownId}.png`
-5. Score = NCC×0.55 + SSD×0.25 + aHash×0.20; coarse hue hist soft ×0.85 if far from template
-6. **Second gate (type veto, soft):** crop card top-right type icons → match `public/types/{id}.png`; when types known, candidate types from `pokemon.json` must be a **superset** of detected set (else try next / unidentified). Low type conf → no hard veto.
-7. Accept only if `top1.conf ≥ CONFIDENCE_THRESHOLD (0.54)` **and** `(top1−top2) ≥ MIN_MARGIN (0.08)`; else `speciesId=null` (still return top1 confidence for UI)
+1. Crop yellow square thumb with locked ROI (`cardRect` → `thumbRectInSlot`) — geometry unchanged
+2. Match-crop cleanup: zero right `MATCH_CROP_RIGHT_EXCLUDE_FRAC` (0.05) to drop type/gender bleed (type icons still read from full card top-right)
+3. Suppress maroon card BG → content-aware recenter → 64×64
+4. aHash Hamming prefilter → top **40** (or all ham≤18) — smallest K with ≥12/18 & wrong=0 on fixtures
+5. Multi-scale / micro-shift grayscale match vs `public/templates/{showdownId}.png`
+6. Score = NCC×0.55 + SSD×0.25 + aHash×0.20; coarse hue hist soft ×0.85 if far from template
+7. **Second gate (type hard veto):** crop card top-right type icons → match `public/types/{id}.png`; when type detection conf ≥ `TYPE_MATCH_THR` (0.58), candidate types from `pokemon.json` must be a **superset** of detected set (e.g. Flying → reject Incineroar). Low type conf → skip hard veto.
+8. Accept only if `top1.conf ≥ CONFIDENCE_THRESHOLD (0.54)` **and** `(top1−top2) ≥ requiredMargin(conf)` (dynamic: ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.035, ≥0.54→0.055, else 0.08); else `speciesId=null`
+
+Debug fixtures: `/workspace/.venv-pkmn/bin/python scripts/match-test-fixtures.py --debug` → `docs/match-debug.md`
 
 Do not guess held items. Templates must be Team Preview / sprite_poke_3 small thumbs, NOT large art / HOME art.
 

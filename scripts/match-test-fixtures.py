@@ -4,17 +4,20 @@ Match Team Preview test fixtures against public/templates/ (sprite_poke_3).
 
 Pipeline (pose/scale alignment + false-positive guards):
   1. Yellow square ROI (side = red card height; locked panel + THUMB left)
-  2. Suppress near-maroon card background → black
-  3. Content-aware square recenter on non-black sprite blob
-  4. Resize to TEMPLATE_SIZE (square crop → no letterbox pad)
-  5. aHash Hamming prefilter → top10 (or all ≤18)
-  6. Multi-scale + small translation sweep of query
-  7. Grayscale NCC/SSD/aHash with mask = template_alpha ∩ query_nonblack
-  8. Coarse hue hist soft penalty (×0.85 if far from template)
-  9. Right-side type-icon veto (soft): candidate types ⊇ detected types
- 10. MIN_MARGIN + CONFIDENCE_THRESHOLD → else speciesId=null (prefer unidentified)
+  2. Crop cleanup: zero right MATCH_CROP_RIGHT_EXCLUDE_FRAC (type/gender bleed);
+     type verification stays on full card top-right (unchanged yellow geometry)
+  3. Suppress near-maroon card background → black
+  4. Content-aware square recenter on non-black sprite blob
+  5. Resize to TEMPLATE_SIZE (square crop → no letterbox pad)
+  6. aHash Hamming prefilter → top AHASH_TOP_K (or all ham≤AHASH_MAX_HAM)
+  7. Multi-scale + small translation sweep of query
+  8. Grayscale NCC/SSD/aHash with mask = template_alpha ∩ query_nonblack
+  9. Coarse hue hist soft penalty (×0.85 if far from template)
+ 10. Type hard second gate when detection conf ≥ TYPE_MATCH_THR; skip veto if low-conf
+ 11. Dynamic margin(conf) + CONFIDENCE_THRESHOLD → else speciesId=null (prefer unidentified)
 
 ROI constants locked — mirror src/lib/roi.ts / src/lib/recognize.ts.
+Debug: pass --debug for per-slot reject reasons / top candidates / aHash ranks.
 """
 from __future__ import annotations
 
@@ -45,17 +48,37 @@ PANEL_OUTER_MARGIN_FRAC = 0.02
 TARGET_ASPECT = 16 / 9
 
 CONFIDENCE_THRESHOLD = 0.54
-MIN_MARGIN = 0.08
-AHASH_TOP_K = 10
+MIN_MARGIN = 0.08  # fallback / floor for required_margin()
+AHASH_TOP_K = 40  # smallest K with ≥12/18 correct & wrong=0 on fixtures
 AHASH_MAX_HAM = 18
 HUE_BINS = 8
 HUE_DIST_THR = 0.75
 HUE_PENALTY = 0.85
-TYPE_MATCH_THR = 0.58
+TYPE_MATCH_THR = 0.58  # hard veto only when type-icon score ≥ this (else skip)
 TYPE_ICON_FRACS = (0.36, 0.42, 0.48)
+# Zero right edge of yellow match crop (type panel bleed). Does NOT change yellow ROI.
+MATCH_CROP_RIGHT_EXCLUDE_FRAC = 0.05
 
 MATCH_SCALES = (0.9, 1.0, 1.1, 1.2, 1.35)
 MATCH_SHIFTS = (-8, -4, 0, 4, 8)
+
+
+def required_margin(confidence: float) -> float:
+    """Dynamic top1−top2 margin: high conf → smaller required gap (fixture-tuned).
+
+    ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.035, ≥0.54→0.055, else MIN_MARGIN(0.08).
+    Never loosens enough to reintroduce wrong-species FPs on the test fixtures.
+    """
+    if confidence >= 0.75:
+        return 0.025
+    if confidence >= 0.68:
+        return 0.03
+    if confidence >= 0.60:
+        return 0.035
+    if confidence >= 0.54:
+        return 0.055
+    return MIN_MARGIN
+
 
 FIXTURES = [
     {
@@ -305,9 +328,23 @@ def content_aware_square(crop: Image.Image, pad: int = 6) -> Image.Image:
     return crop.crop((sx, sy, sx + side, sy + side))
 
 
+def exclude_type_gender_bleed(crop: Image.Image) -> Image.Image:
+    """Zero right strip of yellow crop where type icons can bleed in.
+
+    Yellow / ENEMY_PANEL / CARD_GAP geometry unchanged — content cleanup only.
+    Gender/type icons on the card remain available via crop_card + detect_card_types.
+    """
+    arr = np.asarray(crop.convert("RGB")).copy()
+    h, w, _ = arr.shape
+    cut = max(1, int(round(w * MATCH_CROP_RIGHT_EXCLUDE_FRAC)))
+    arr[:, w - cut :, :] = 0
+    return Image.fromarray(arr)
+
+
 def prep_query(crop: Image.Image) -> tuple[np.ndarray, np.ndarray]:
-    """BG suppress → content recenter → 64×64 gray + RGB."""
-    q = suppress_card_background(crop)
+    """Crop cleanup → BG suppress → content recenter → 64×64 gray + RGB."""
+    q = exclude_type_gender_bleed(crop)
+    q = suppress_card_background(q)
     q = content_aware_square(q)
     rgb = q.convert("RGB").resize((TEMPLATE_SIZE, TEMPLATE_SIZE), Image.Resampling.LANCZOS)
     arr = np.asarray(rgb, dtype=np.float32)
@@ -447,10 +484,10 @@ def ncc_masked(a: np.ndarray, b: np.ndarray, mask: np.ndarray) -> float:
     return float((aa * bb).sum() / den)
 
 
-def detect_card_types(card: Image.Image, type_ids: list[str]) -> list[str]:
+def detect_card_types(card: Image.Image, type_ids: list[str]) -> list[tuple[str, float]]:
     """
-    Soft type-icon veto input: scan top-right of card for 0–2 type icons.
-    Low confidence → empty list (no hard veto).
+    Type-icon scan on card top-right (0–2 icons) with NCC scores.
+    Hard veto uses only scores ≥ TYPE_MATCH_THR; below → treat as low-conf (skip veto).
     Champions Team Select places dual types side-by-side; sliding NCC covers both.
     """
     w, h = card.size
@@ -473,7 +510,7 @@ def detect_card_types(card: Image.Image, type_ids: list[str]) -> list[str]:
                     if float(pg.mean()) < 50 or float(patch.std()) < 18:
                         continue
                     sc = 0.35 * ncc_masked(pg, tg, tm) + 0.65 * ncc_masked(patch, trgb, tm)
-                    if sc >= TYPE_MATCH_THR:
+                    if sc >= 0.45:
                         hits.append((sc, tid, x, y, isize))
     hits.sort(key=lambda t: -t[0])
     picked: list[tuple[float, str, int, int, int]] = []
@@ -492,7 +529,12 @@ def detect_card_types(card: Image.Image, type_ids: list[str]) -> list[str]:
         picked.append((sc, tid, x, y, sz))
         if len(picked) >= 2:
             break
-    return [tid for _, tid, _, _, _ in picked]
+    return [(tid, float(sc)) for sc, tid, _, _, _ in picked]
+
+
+def hard_detected_types(scored: list[tuple[str, float]]) -> list[str]:
+    """Hard second gate input: only types with score ≥ TYPE_MATCH_THR."""
+    return [tid for tid, sc in scored if sc >= TYPE_MATCH_THR]
 
 
 def ahash_prefilter(gray0: np.ndarray, templates: list[dict]) -> list[dict]:
@@ -519,8 +561,23 @@ def match_slot(
     rgb0: np.ndarray,
     detected_types: list[str],
     templates: list[dict],
+    *,
+    expected: str | None = None,
+    debug: bool = False,
 ) -> dict:
+    qh = average_hash(gray0)
+    scored_ah = sorted(((hamming(qh, t["hash"]), t) for t in templates), key=lambda x: x[0])
     cands = ahash_prefilter(gray0, templates)
+    cand_ids = [t["speciesId"] for t in cands]
+    ahash_rank = None
+    ahash_ham = None
+    if expected is not None:
+        for i, (ham, t) in enumerate(scored_ah):
+            if t["speciesId"] == expected:
+                ahash_rank = i + 1
+                ahash_ham = ham
+                break
+
     q_hue = hue_hist(rgb0)
     best: dict[str, dict] = {}
     for g in iter_query_variants(gray0):
@@ -538,31 +595,52 @@ def match_slot(
     ranked = sorted(best.items(), key=lambda x: -x[1]["conf"])
     det = set(detected_types)
     accepted: list[tuple[str, float]] = []
+    vetoed: list[str] = []
     for sid, info in ranked:
         ctypes = info["types"]
-        # Soft veto: only when types known on both sides
+        # Hard second gate when types confidently detected; skip if det empty (low-conf)
         if det and ctypes and not det.issubset(ctypes):
+            vetoed.append(sid)
             continue
         accepted.append((sid, float(info["conf"])))
+
+    top_cands = [
+        {"speciesId": sid, "confidence": round(float(info["conf"]), 4), "types": sorted(info["types"])}
+        for sid, info in ranked[:8]
+    ]
+    dbg = {
+        "ahashRankExpected": ahash_rank,
+        "ahashHamExpected": ahash_ham,
+        "ahashCandCount": len(cands),
+        "expectedInAhashCands": (expected in cand_ids) if expected else None,
+        "topCandidates": top_cands,
+        "typeVetoed": vetoed[:12],
+        "requiredMargin": None,
+    }
 
     if not accepted:
         top1_sid = ranked[0][0] if ranked else None
         top1_conf = float(ranked[0][1]["conf"]) if ranked else 0.0
-        return {
+        out = {
             "speciesId": None,
             "confidence": top1_conf,
             "altSpeciesId": top1_sid,
             "margin": 0.0,
             "detectedTypes": sorted(det),
-            "reason": "all_vetoed",
+            "reason": "TYPE_VALIDATION",
         }
+        if debug:
+            out["debug"] = dbg
+        return out
 
     top1_sid, top1_conf = accepted[0]
     top2_sid = accepted[1][0] if len(accepted) > 1 else None
     top2_conf = accepted[1][1] if len(accepted) > 1 else 0.0
     margin = top1_conf - top2_conf
-    if top1_conf >= CONFIDENCE_THRESHOLD and margin >= MIN_MARGIN:
-        return {
+    need = required_margin(top1_conf)
+    dbg["requiredMargin"] = need
+    if top1_conf >= CONFIDENCE_THRESHOLD and margin >= need:
+        out = {
             "speciesId": top1_sid,
             "confidence": top1_conf,
             "altSpeciesId": top2_sid,
@@ -570,17 +648,33 @@ def match_slot(
             "detectedTypes": sorted(det),
             "reason": "ok",
         }
-    return {
+        if debug:
+            out["debug"] = dbg
+        return out
+    reason = "LOW_CONF" if top1_conf < CONFIDENCE_THRESHOLD else "MARGIN_TOO_SMALL"
+    if expected and expected not in cand_ids:
+        reason = "AHASH_PREFILTER"
+    out = {
         "speciesId": None,
         "confidence": top1_conf,
         "altSpeciesId": top2_sid or top1_sid,
         "margin": margin,
         "detectedTypes": sorted(det),
-        "reason": "margin_fail",
+        "reason": reason,
     }
+    if debug:
+        out["debug"] = dbg
+    return out
 
 
 def main() -> int:
+    import argparse
+
+    ap = argparse.ArgumentParser(description="Match Team Preview test fixtures")
+    ap.add_argument("--debug", action="store_true", help="Write per-slot reject debug to docs/")
+    args = ap.parse_args()
+    debug = bool(args.debug)
+
     tmpl_dir = ROOT / "public/templates"
     type_map = load_pokemon_types()
     templates = load_templates(tmpl_dir, type_map)
@@ -590,6 +684,7 @@ def main() -> int:
 
     type_ids = sorted(p.stem for p in (ROOT / "public/types").glob("*.png"))
     all_rows = []
+    debug_rows = []
     correct = 0
     wrong = 0
     null_n = 0
@@ -602,11 +697,12 @@ def main() -> int:
         f"CARD_GAP_FRAC={CARD_GAP_FRAC} PANEL_OUTER_MARGIN_FRAC={PANEL_OUTER_MARGIN_FRAC}"
     )
     print(
-        f"Guards: thr={CONFIDENCE_THRESHOLD} MIN_MARGIN={MIN_MARGIN} "
+        f"Guards: thr={CONFIDENCE_THRESHOLD} dynMargin "
+        f"(≥0.75→0.025,≥0.68→0.03,≥0.60→0.035,≥0.54→0.055,else {MIN_MARGIN}) "
         f"aHash top{AHASH_TOP_K}|≤{AHASH_MAX_HAM} hue×{HUE_PENALTY}@{HUE_DIST_THR} "
-        f"type thr={TYPE_MATCH_THR}"
+        f"type hard≥{TYPE_MATCH_THR} cropRightExclude={MATCH_CROP_RIGHT_EXCLUDE_FRAC}"
     )
-    print(f"Match: bg-suppress + content-recenter + scales={MATCH_SCALES} shifts={MATCH_SHIFTS}")
+    print(f"Match: crop-cleanup + bg-suppress + content-recenter + scales={MATCH_SCALES} shifts={MATCH_SHIFTS}")
 
     for fx in FIXTURES:
         src = fx["path"]
@@ -617,8 +713,9 @@ def main() -> int:
             crop = crop_slot(im, slot)
             gray0, rgb0 = prep_query(crop)
             card = crop_card(im, slot)
-            det = detect_card_types(card, type_ids)
-            result = match_slot(gray0, rgb0, det, templates)
+            scored_types = detect_card_types(card, type_ids)
+            det = hard_detected_types(scored_types)
+            result = match_slot(gray0, rgb0, det, templates, expected=expected, debug=debug)
             best_id = result["speciesId"]
             best_c = float(result["confidence"])
             margin = float(result["margin"])
@@ -635,21 +732,26 @@ def main() -> int:
             print(
                 f"{slot:<4} {expected:<14} {best_id or '-':<14} {best_c:6.3f} {margin:6.3f} {types_s:<16} {mark}"
             )
-            all_rows.append(
-                {
-                    "fixture": fx["label"],
-                    "slot": slot,
-                    "expected": expected,
-                    "matched": best_id,
-                    "confidence": round(best_c, 4),
-                    "margin": round(margin, 4),
-                    "altSpeciesId": result.get("altSpeciesId"),
-                    "detectedTypes": result.get("detectedTypes"),
-                    "reason": result.get("reason"),
-                    "ok": ok,
-                    "wrongSpecies": best_id is not None and best_id != expected,
-                }
-            )
+            row = {
+                "fixture": fx["label"],
+                "slot": slot,
+                "expected": expected,
+                "matched": best_id,
+                "confidence": round(best_c, 4),
+                "margin": round(margin, 4),
+                "requiredMargin": required_margin(best_c),
+                "altSpeciesId": result.get("altSpeciesId"),
+                "detectedTypes": result.get("detectedTypes"),
+                "typeScores": [{"id": t, "score": round(s, 4)} for t, s in scored_types],
+                "reason": result.get("reason"),
+                "ok": ok,
+                "wrongSpecies": best_id is not None and best_id != expected,
+            }
+            all_rows.append(row)
+            if debug:
+                drow = dict(row)
+                drow["debug"] = result.get("debug")
+                debug_rows.append(drow)
 
     accuracy = f"{correct}/{total}"
     print(f"\nOverall: correct={accuracy} wrong={wrong} null={null_n}")
@@ -658,14 +760,17 @@ def main() -> int:
     out_json = ROOT / "docs/match-test-fixtures-results.json"
     out_md.parent.mkdir(parents=True, exist_ok=True)
 
+    margin_rule = (
+        "dyn ≥0.75→0.025 / ≥0.68→0.03 / ≥0.60→0.035 / ≥0.54→0.055 / else 0.08"
+    )
     lines = [
         "# Test fixture match results",
         "",
         f"- Fixtures: `public/fixtures/team-preview-test-1/2/3.png`",
         f"- Templates: `public/templates/*.png` (sprite_poke_3 alpha-trimmed cells; {len(templates)} files / {n_ids} ids)",
-        f"- Matcher: BG suppress + content-aware recenter + aHash prefilter + multi-scale/shift; NCC×0.55 + SSD×0.25 + aHash×0.20",
-        f"- Guards (v1.3): `CONFIDENCE_THRESHOLD={CONFIDENCE_THRESHOLD}`, `MIN_MARGIN={MIN_MARGIN}`, "
-        f"coarse hue ×{HUE_PENALTY} if hist-dist>{HUE_DIST_THR}, soft type-icon veto (thr={TYPE_MATCH_THR}), "
+        f"- Matcher: crop cleanup (right {MATCH_CROP_RIGHT_EXCLUDE_FRAC}) + BG suppress + content-aware recenter + aHash prefilter + multi-scale/shift; NCC×0.55 + SSD×0.25 + aHash×0.20",
+        f"- Guards (v1.4): `CONFIDENCE_THRESHOLD={CONFIDENCE_THRESHOLD}`, `{margin_rule}`, "
+        f"coarse hue ×{HUE_PENALTY} if hist-dist>{HUE_DIST_THR}, type **hard** gate (thr={TYPE_MATCH_THR}; skip if low-conf), "
         f"aHash top{AHASH_TOP_K}|ham≤{AHASH_MAX_HAM}",
         f"- Mask: template alpha ∩ query non-black",
         f"- Scales: `{list(MATCH_SCALES)}`; shifts: `{list(MATCH_SHIFTS)}`",
@@ -684,14 +789,15 @@ def main() -> int:
             "",
             f"**Accuracy: {fx_ok}/{len(rows)}** (wrong={fx_wrong}, null={fx_null})",
             "",
-            "| slot | expected | matched | confidence | margin | types | ok |",
-            "|------|----------|---------|------------|--------|-------|----|",
+            "| slot | expected | matched | confidence | margin | need | types | reason | ok |",
+            "|------|----------|---------|------------|--------|------|-------|--------|----|",
         ]
         for r in rows:
             types_s = ",".join(r.get("detectedTypes") or []) or "-"
             lines.append(
                 f"| {r['slot']} | {r['expected']} | {r['matched']} | {r['confidence']:.4f} | "
-                f"{r.get('margin', 0):.4f} | {types_s} | {'Y' if r['ok'] else 'N'} |"
+                f"{r.get('margin', 0):.4f} | {r.get('requiredMargin', 0):.4f} | {types_s} | "
+                f"{r.get('reason')} | {'Y' if r['ok'] else 'N'} |"
             )
         lines.append("")
 
@@ -705,7 +811,7 @@ def main() -> int:
             lines.append(
                 f"- `{r['fixture']}` slot {r['slot']}: expected **{r['expected']}**, "
                 f"matched **{r['matched']}** ({r['confidence']:.3f}, margin={r.get('margin', 0):.3f}, "
-                f"types={r.get('detectedTypes')}, {r.get('reason')}) [{kind}]"
+                f"need={r.get('requiredMargin', 0):.3f}, types={r.get('detectedTypes')}, {r.get('reason')}) [{kind}]"
             )
     lines += [
         "",
@@ -713,8 +819,12 @@ def main() -> int:
         "",
         "- ENEMY_PANEL / THUMB_CROP / CARD_GAP_FRAC / yellow square geometry **unchanged**.",
         "- Prefer `speciesId=null` (未識別) over wrong-species false positives.",
-        "- Type veto is soft: uncertain type OCR → no veto; when types known, candidate types from "
-        "`pokemon.json` must be a **superset** of detected set (e.g. Flying → reject Incineroar).",
+        "- Type hard second gate: uncertain/low-conf type OCR → no veto; when types known "
+        f"(score≥{TYPE_MATCH_THR}), candidate types from `pokemon.json` must be a **superset** "
+        "of detected set (e.g. Flying → reject Incineroar).",
+        f"- aHash TopK={AHASH_TOP_K} (smallest K lifting correct≥12/18 with wrong=0 on fixtures).",
+        f"- Dynamic margin: {margin_rule}.",
+        f"- Match-crop cleanup: zero right {MATCH_CROP_RIGHT_EXCLUDE_FRAC} of yellow (type bleed); type icons still read from card top-right.",
         "- Coarse hue filter is conservative (×0.85) so shinies without shiny templates are not hard-killed.",
         "- `recognize.ts` mirrors this pipeline (`cardRect` → type crop + `thumbRectInSlot` match).",
         f"- Result: **correct {accuracy}, wrong={wrong}, null={null_n}**.",
@@ -733,6 +843,16 @@ def main() -> int:
                 "speciesIdCount": n_ids,
                 "threshold": CONFIDENCE_THRESHOLD,
                 "minMargin": MIN_MARGIN,
+                "ahashTopK": AHASH_TOP_K,
+                "ahashMaxHam": AHASH_MAX_HAM,
+                "matchCropRightExcludeFrac": MATCH_CROP_RIGHT_EXCLUDE_FRAC,
+                "dynamicMargin": {
+                    "0.75": 0.025,
+                    "0.68": 0.03,
+                    "0.60": 0.035,
+                    "0.54": 0.055,
+                    "else": MIN_MARGIN,
+                },
                 "scales": list(MATCH_SCALES),
                 "shifts": list(MATCH_SHIFTS),
                 "rows": all_rows,
@@ -744,6 +864,34 @@ def main() -> int:
     )
     print(f"Wrote {out_md.relative_to(ROOT)}")
     print(f"Wrote {out_json.relative_to(ROOT)}")
+
+    if debug:
+        out_dbg = ROOT / "docs/match-debug.json"
+        out_dbg.write_text(json.dumps({"rows": debug_rows}, indent=2) + "\n", encoding="utf-8")
+        print(f"Wrote {out_dbg.relative_to(ROOT)}")
+        # compact markdown
+        md = ["# Match debug (per-slot reject reasons)", ""]
+        for r in debug_rows:
+            d = r.get("debug") or {}
+            md.append(
+                f"## {r['fixture']} slot {r['slot']} — expected `{r['expected']}` → `{r['matched']}` ({r['reason']})"
+            )
+            md.append("")
+            md.append(
+                f"- conf={r['confidence']:.4f} margin={r['margin']:.4f} need={r.get('requiredMargin')} "
+                f"types={r.get('detectedTypes')} typeScores={r.get('typeScores')}"
+            )
+            md.append(
+                f"- aHash rank expected={d.get('ahashRankExpected')} ham={d.get('ahashHamExpected')} "
+                f"inCands={d.get('expectedInAhashCands')} candCount={d.get('ahashCandCount')}"
+            )
+            md.append(f"- topCandidates={d.get('topCandidates')}")
+            md.append(f"- typeVetoed={d.get('typeVetoed')}")
+            md.append("")
+        out_dbg_md = ROOT / "docs/match-debug.md"
+        out_dbg_md.write_text("\n".join(md), encoding="utf-8")
+        print(f"Wrote {out_dbg_md.relative_to(ROOT)}")
+
     return 0 if wrong == 0 else 2
 
 

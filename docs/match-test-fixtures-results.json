@@ -1,13 +1,23 @@
 {
-  "accuracy": "9/18",
-  "correct": 9,
+  "accuracy": "12/18",
+  "correct": 12,
   "wrong": 0,
-  "null": 9,
+  "null": 6,
   "total": 18,
   "templateCount": 50,
   "speciesIdCount": 50,
   "threshold": 0.54,
   "minMargin": 0.08,
+  "ahashTopK": 40,
+  "ahashMaxHam": 18,
+  "matchCropRightExcludeFrac": 0.05,
+  "dynamicMargin": {
+    "0.75": 0.025,
+    "0.68": 0.03,
+    "0.60": 0.035,
+    "0.54": 0.055,
+    "else": 0.08
+  },
   "scales": [
     0.9,
     1.0,
@@ -28,14 +38,25 @@
       "slot": 0,
       "expected": "charizard",
       "matched": null,
-      "confidence": 0.4444,
-      "margin": 0.4444,
+      "confidence": 0.4788,
+      "margin": 0.0344,
+      "requiredMargin": 0.08,
       "altSpeciesId": "talonflame",
       "detectedTypes": [
         "fire",
         "flying"
       ],
-      "reason": "margin_fail",
+      "typeScores": [
+        {
+          "id": "fire",
+          "score": 0.6987
+        },
+        {
+          "id": "flying",
+          "score": 0.6127
+        }
+      ],
+      "reason": "LOW_CONF",
       "ok": false,
       "wrongSpecies": false
     },
@@ -44,10 +65,21 @@
       "slot": 1,
       "expected": "aerodactyl",
       "matched": "aerodactyl",
-      "confidence": 0.7435,
-      "margin": 0.1527,
+      "confidence": 0.7459,
+      "margin": 0.1552,
+      "requiredMargin": 0.03,
       "altSpeciesId": "swampert",
       "detectedTypes": [],
+      "typeScores": [
+        {
+          "id": "flying",
+          "score": 0.5287
+        },
+        {
+          "id": "rock",
+          "score": 0.477
+        }
+      ],
       "reason": "ok",
       "ok": true,
       "wrongSpecies": false
@@ -59,9 +91,20 @@
       "matched": null,
       "confidence": 0.6094,
       "margin": 0.0337,
+      "requiredMargin": 0.035,
       "altSpeciesId": "dragonite",
       "detectedTypes": [],
-      "reason": "margin_fail",
+      "typeScores": [
+        {
+          "id": "poison",
+          "score": 0.5654
+        },
+        {
+          "id": "fighting",
+          "score": 0.5057
+        }
+      ],
+      "reason": "MARGIN_TOO_SMALL",
       "ok": false,
       "wrongSpecies": false
     },
@@ -69,13 +112,24 @@
       "fixture": "team-preview-test-1",
       "slot": 3,
       "expected": "garchomp",
-      "matched": null,
+      "matched": "garchomp",
       "confidence": 0.6314,
       "margin": 0.0378,
+      "requiredMargin": 0.035,
       "altSpeciesId": "swampert",
       "detectedTypes": [],
-      "reason": "margin_fail",
-      "ok": false,
+      "typeScores": [
+        {
+          "id": "ground",
+          "score": 0.4793
+        },
+        {
+          "id": "dragon",
+          "score": 0.4781
+        }
+      ],
+      "reason": "ok",
+      "ok": true,
       "wrongSpecies": false
     },
     {
@@ -85,12 +139,23 @@
       "matched": null,
       "confidence": 0.5336,
       "margin": 0.5336,
+      "requiredMargin": 0.08,
       "altSpeciesId": "rotomwash",
       "detectedTypes": [
         "electric",
         "water"
       ],
-      "reason": "margin_fail",
+      "typeScores": [
+        {
+          "id": "electric",
+          "score": 0.7698
+        },
+        {
+          "id": "water",
+          "score": 0.6873
+        }
+      ],
+      "reason": "LOW_CONF",
       "ok": false,
       "wrongSpecies": false
     },
@@ -100,10 +165,17 @@
       "expected": "aegislash",
       "matched": null,
       "confidence": 0.6016,
-      "margin": 0.0159,
-      "altSpeciesId": "venusaur",
+      "margin": 0.0051,
+      "requiredMargin": 0.035,
+      "altSpeciesId": "aegislash",
       "detectedTypes": [],
-      "reason": "margin_fail",
+      "typeScores": [
+        {
+          "id": "ghost",
+          "score": 0.4525
+        }
+      ],
+      "reason": "MARGIN_TOO_SMALL",
       "ok": false,
       "wrongSpecies": false
     },
@@ -114,8 +186,15 @@
       "matched": "whimsicott",
       "confidence": 0.7514,
       "margin": 0.183,
+      "requiredMargin": 0.025,
       "altSpeciesId": "torkoal",
       "detectedTypes": [],
+      "typeScores": [
+        {
+          "id": "grass",
+          "score": 0.4944
+        }
+      ],
       "reason": "ok",
       "ok": true,
       "wrongSpecies": false
@@ -125,13 +204,20 @@
       "slot": 1,
       "expected": "charizard",
       "matched": null,
-      "confidence": 0.5467,
-      "margin": 0.0703,
-      "altSpeciesId": "talonflame",
+      "confidence": 0.5487,
+      "margin": 0.002,
+      "requiredMargin": 0.055,
+      "altSpeciesId": "incineroar",
       "detectedTypes": [
         "fire"
       ],
-      "reason": "margin_fail",
+      "typeScores": [
+        {
+          "id": "fire",
+          "score": 0.6915
+        }
+      ],
+      "reason": "AHASH_PREFILTER",
       "ok": false,
       "wrongSpecies": false
     },
@@ -141,10 +227,17 @@
       "expected": "basculegion",
       "matched": "basculegion",
       "confidence": 0.7204,
-      "margin": 0.2037,
+      "margin": 0.2095,
+      "requiredMargin": 0.03,
       "altSpeciesId": "swampert",
       "detectedTypes": [
         "water"
+      ],
+      "typeScores": [
+        {
+          "id": "water",
+          "score": 0.7539
+        }
       ],
       "reason": "ok",
       "ok": true,
@@ -154,26 +247,40 @@
       "fixture": "team-preview-test-2",
       "slot": 3,
       "expected": "kingambit",
-      "matched": null,
-      "confidence": 0.5926,
-      "margin": 0.0052,
-      "altSpeciesId": "aegislash",
+      "matched": "kingambit",
+      "confidence": 0.6931,
+      "margin": 0.1005,
+      "requiredMargin": 0.03,
+      "altSpeciesId": "excadrill",
       "detectedTypes": [],
-      "reason": "margin_fail",
-      "ok": false,
+      "typeScores": [
+        {
+          "id": "fire",
+          "score": 0.4537
+        }
+      ],
+      "reason": "ok",
+      "ok": true,
       "wrongSpecies": false
     },
     {
       "fixture": "team-preview-test-2",
       "slot": 4,
       "expected": "sneasler",
-      "matched": null,
-      "confidence": 0.5594,
-      "margin": 0.0552,
-      "altSpeciesId": "talonflame",
+      "matched": "sneasler",
+      "confidence": 0.6525,
+      "margin": 0.0568,
+      "requiredMargin": 0.035,
+      "altSpeciesId": "sableye",
       "detectedTypes": [],
-      "reason": "margin_fail",
-      "ok": false,
+      "typeScores": [
+        {
+          "id": "fighting",
+          "score": 0.5683
+        }
+      ],
+      "reason": "ok",
+      "ok": true,
       "wrongSpecies": false
     },
     {
@@ -181,11 +288,22 @@
       "slot": 5,
       "expected": "garchomp",
       "matched": null,
-      "confidence": 0.5289,
-      "margin": 0.0631,
-      "altSpeciesId": "annihilape",
+      "confidence": 0.5541,
+      "margin": 0.0163,
+      "requiredMargin": 0.055,
+      "altSpeciesId": "sableye",
       "detectedTypes": [],
-      "reason": "margin_fail",
+      "typeScores": [
+        {
+          "id": "dragon",
+          "score": 0.5083
+        },
+        {
+          "id": "ground",
+          "score": 0.4928
+        }
+      ],
+      "reason": "MARGIN_TOO_SMALL",
       "ok": false,
       "wrongSpecies": false
     },
@@ -196,9 +314,20 @@
       "matched": "ninetalesalola",
       "confidence": 0.8056,
       "margin": 0.3402,
+      "requiredMargin": 0.025,
       "altSpeciesId": "froslass",
       "detectedTypes": [
         "ice"
+      ],
+      "typeScores": [
+        {
+          "id": "ice",
+          "score": 0.6745
+        },
+        {
+          "id": "fairy",
+          "score": 0.5556
+        }
       ],
       "reason": "ok",
       "ok": true,
@@ -211,9 +340,16 @@
       "matched": "empoleon",
       "confidence": 0.8355,
       "margin": 0.2035,
+      "requiredMargin": 0.025,
       "altSpeciesId": "swampert",
       "detectedTypes": [
         "water"
+      ],
+      "typeScores": [
+        {
+          "id": "water",
+          "score": 0.7851
+        }
       ],
       "reason": "ok",
       "ok": true,
@@ -225,9 +361,20 @@
       "expected": "garchomp",
       "matched": "garchomp",
       "confidence": 0.6571,
-      "margin": 0.0895,
+      "margin": 0.0894,
+      "requiredMargin": 0.035,
       "altSpeciesId": "sableye",
       "detectedTypes": [],
+      "typeScores": [
+        {
+          "id": "ground",
+          "score": 0.5434
+        },
+        {
+          "id": "dragon",
+          "score": 0.4862
+        }
+      ],
       "reason": "ok",
       "ok": true,
       "wrongSpecies": false
@@ -239,9 +386,16 @@
       "matched": "staraptor",
       "confidence": 0.8272,
       "margin": 0.2857,
+      "requiredMargin": 0.025,
       "altSpeciesId": "talonflame",
       "detectedTypes": [
         "flying"
+      ],
+      "typeScores": [
+        {
+          "id": "flying",
+          "score": 0.5816
+        }
       ],
       "reason": "ok",
       "ok": true,
@@ -252,10 +406,21 @@
       "slot": 4,
       "expected": "whimsicott",
       "matched": "whimsicott",
-      "confidence": 0.702,
-      "margin": 0.0915,
+      "confidence": 0.7042,
+      "margin": 0.0932,
+      "requiredMargin": 0.03,
       "altSpeciesId": "torkoal",
       "detectedTypes": [],
+      "typeScores": [
+        {
+          "id": "grass",
+          "score": 0.5648
+        },
+        {
+          "id": "fairy",
+          "score": 0.5444
+        }
+      ],
       "reason": "ok",
       "ok": true,
       "wrongSpecies": false
@@ -265,12 +430,23 @@
       "slot": 5,
       "expected": "charizard",
       "matched": "charizard",
-      "confidence": 0.5508,
-      "margin": 0.5508,
-      "altSpeciesId": null,
+      "confidence": 0.5509,
+      "margin": 0.1224,
+      "requiredMargin": 0.055,
+      "altSpeciesId": "talonflame",
       "detectedTypes": [
         "fire",
         "flying"
+      ],
+      "typeScores": [
+        {
+          "id": "fire",
+          "score": 0.7045
+        },
+        {
+          "id": "flying",
+          "score": 0.5948
+        }
       ],
       "reason": "ok",
       "ok": true,

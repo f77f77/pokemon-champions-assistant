@@ -1,0 +1,127 @@
+# Match debug (per-slot reject reasons)
+
+## team-preview-test-1 slot 0 — expected `charizard` → `None` (LOW_CONF)
+
+- conf=0.4788 margin=0.0344 need=0.08 types=['fire', 'flying'] typeScores=[{'id': 'fire', 'score': 0.6987}, {'id': 'flying', 'score': 0.6127}]
+- aHash rank expected=37 ham=22 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'incineroar', 'confidence': 0.6282, 'types': ['dark', 'fire']}, {'speciesId': 'raichu', 'confidence': 0.5681, 'types': ['electric']}, {'speciesId': 'milotic', 'confidence': 0.5652, 'types': ['water']}, {'speciesId': 'dragonite', 'confidence': 0.5527, 'types': ['dragon', 'flying']}, {'speciesId': 'aegislash', 'confidence': 0.5374, 'types': ['ghost', 'steel']}, {'speciesId': 'farigiraf', 'confidence': 0.5373, 'types': ['normal', 'psychic']}, {'speciesId': 'torkoal', 'confidence': 0.5309, 'types': ['fire']}, {'speciesId': 'excadrill', 'confidence': 0.5291, 'types': ['ground', 'steel']}]
+- typeVetoed=['incineroar', 'raichu', 'milotic', 'dragonite', 'aegislash', 'farigiraf', 'torkoal', 'excadrill', 'glimmora', 'politoed', 'empoleon', 'delphox']
+
+## team-preview-test-1 slot 1 — expected `aerodactyl` → `aerodactyl` (ok)
+
+- conf=0.7459 margin=0.1552 need=0.03 types=[] typeScores=[{'id': 'flying', 'score': 0.5287}, {'id': 'rock', 'score': 0.477}]
+- aHash rank expected=1 ham=4 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'aerodactyl', 'confidence': 0.7459, 'types': ['flying', 'rock']}, {'speciesId': 'swampert', 'confidence': 0.5908, 'types': ['ground', 'water']}, {'speciesId': 'primarina', 'confidence': 0.5321, 'types': ['fairy', 'water']}, {'speciesId': 'incineroar', 'confidence': 0.5204, 'types': ['dark', 'fire']}, {'speciesId': 'aegislash', 'confidence': 0.5134, 'types': ['ghost', 'steel']}, {'speciesId': 'charizard', 'confidence': 0.5076, 'types': ['fire', 'flying']}, {'speciesId': 'venusaur', 'confidence': 0.501, 'types': ['grass', 'poison']}, {'speciesId': 'gengar', 'confidence': 0.4945, 'types': ['ghost', 'poison']}]
+- typeVetoed=[]
+
+## team-preview-test-1 slot 2 — expected `meowscarada` → `None` (MARGIN_TOO_SMALL)
+
+- conf=0.6094 margin=0.0337 need=0.035 types=[] typeScores=[{'id': 'poison', 'score': 0.5654}, {'id': 'fighting', 'score': 0.5057}]
+- aHash rank expected=1 ham=12 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'talonflame', 'confidence': 0.6094, 'types': ['fire', 'flying']}, {'speciesId': 'dragonite', 'confidence': 0.5757, 'types': ['dragon', 'flying']}, {'speciesId': 'farigiraf', 'confidence': 0.5555, 'types': ['normal', 'psychic']}, {'speciesId': 'torkoal', 'confidence': 0.5463, 'types': ['fire']}, {'speciesId': 'politoed', 'confidence': 0.5383, 'types': ['water']}, {'speciesId': 'primarina', 'confidence': 0.5336, 'types': ['fairy', 'water']}, {'speciesId': 'tsareena', 'confidence': 0.53, 'types': ['grass']}, {'speciesId': 'delphox', 'confidence': 0.5291, 'types': ['fire', 'psychic']}]
+- typeVetoed=[]
+
+## team-preview-test-1 slot 3 — expected `garchomp` → `garchomp` (ok)
+
+- conf=0.6314 margin=0.0378 need=0.035 types=[] typeScores=[{'id': 'ground', 'score': 0.4793}, {'id': 'dragon', 'score': 0.4781}]
+- aHash rank expected=17 ham=17 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'garchomp', 'confidence': 0.6314, 'types': ['dragon', 'ground']}, {'speciesId': 'swampert', 'confidence': 0.5936, 'types': ['ground', 'water']}, {'speciesId': 'sableye', 'confidence': 0.5874, 'types': ['dark', 'ghost']}, {'speciesId': 'gengar', 'confidence': 0.5762, 'types': ['ghost', 'poison']}, {'speciesId': 'venusaur', 'confidence': 0.5526, 'types': ['grass', 'poison']}, {'speciesId': 'talonflame', 'confidence': 0.5467, 'types': ['fire', 'flying']}, {'speciesId': 'kommoo', 'confidence': 0.5427, 'types': ['dragon', 'fighting']}, {'speciesId': 'annihilape', 'confidence': 0.5401, 'types': ['fighting', 'ghost']}]
+- typeVetoed=[]
+
+## team-preview-test-1 slot 4 — expected `rotomwash` → `None` (LOW_CONF)
+
+- conf=0.5336 margin=0.5336 need=0.08 types=['electric', 'water'] typeScores=[{'id': 'electric', 'score': 0.7698}, {'id': 'water', 'score': 0.6873}]
+- aHash rank expected=3 ham=9 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'scizor', 'confidence': 0.5542, 'types': ['bug', 'steel']}, {'speciesId': 'basculegion', 'confidence': 0.5516, 'types': ['ghost', 'water']}, {'speciesId': 'venusaur', 'confidence': 0.5352, 'types': ['grass', 'poison']}, {'speciesId': 'sinistcha', 'confidence': 0.5342, 'types': ['ghost', 'grass']}, {'speciesId': 'rotomwash', 'confidence': 0.5336, 'types': ['electric', 'water']}, {'speciesId': 'tsareena', 'confidence': 0.525, 'types': ['grass']}, {'speciesId': 'mawile', 'confidence': 0.5225, 'types': ['fairy', 'steel']}, {'speciesId': 'sableye', 'confidence': 0.5137, 'types': ['dark', 'ghost']}]
+- typeVetoed=['scizor', 'basculegion', 'venusaur', 'sinistcha', 'tsareena', 'mawile', 'sableye', 'excadrill', 'incineroar', 'talonflame', 'sneasler', 'froslass']
+
+## team-preview-test-1 slot 5 — expected `aegislash` → `None` (MARGIN_TOO_SMALL)
+
+- conf=0.6016 margin=0.0051 need=0.035 types=[] typeScores=[{'id': 'ghost', 'score': 0.4525}]
+- aHash rank expected=26 ham=19 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'talonflame', 'confidence': 0.6016, 'types': ['fire', 'flying']}, {'speciesId': 'aegislash', 'confidence': 0.5965, 'types': ['ghost', 'steel']}, {'speciesId': 'venusaur', 'confidence': 0.5931, 'types': ['grass', 'poison']}, {'speciesId': 'politoed', 'confidence': 0.5898, 'types': ['water']}, {'speciesId': 'swampert', 'confidence': 0.5607, 'types': ['ground', 'water']}, {'speciesId': 'meowscarada', 'confidence': 0.5589, 'types': ['dark', 'grass']}, {'speciesId': 'basculegion', 'confidence': 0.5565, 'types': ['ghost', 'water']}, {'speciesId': 'kommoo', 'confidence': 0.5557, 'types': ['dragon', 'fighting']}]
+- typeVetoed=[]
+
+## team-preview-test-2 slot 0 — expected `whimsicott` → `whimsicott` (ok)
+
+- conf=0.7514 margin=0.1830 need=0.025 types=[] typeScores=[{'id': 'grass', 'score': 0.4944}]
+- aHash rank expected=3 ham=9 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'whimsicott', 'confidence': 0.7514, 'types': ['fairy', 'grass']}, {'speciesId': 'torkoal', 'confidence': 0.5684, 'types': ['fire']}, {'speciesId': 'talonflame', 'confidence': 0.5369, 'types': ['fire', 'flying']}, {'speciesId': 'pelipper', 'confidence': 0.5238, 'types': ['flying', 'water']}, {'speciesId': 'politoed', 'confidence': 0.5065, 'types': ['water']}, {'speciesId': 'rotomwash', 'confidence': 0.4975, 'types': ['electric', 'water']}, {'speciesId': 'dragonite', 'confidence': 0.4927, 'types': ['dragon', 'flying']}, {'speciesId': 'blastoise', 'confidence': 0.4906, 'types': ['water']}]
+- typeVetoed=[]
+
+## team-preview-test-2 slot 1 — expected `charizard` → `None` (AHASH_PREFILTER)
+
+- conf=0.5487 margin=0.0020 need=0.055 types=['fire'] typeScores=[{'id': 'fire', 'score': 0.6915}]
+- aHash rank expected=46 ham=23 inCands=False candCount=40
+- topCandidates=[{'speciesId': 'dragonite', 'confidence': 0.5947, 'types': ['dragon', 'flying']}, {'speciesId': 'swampert', 'confidence': 0.5809, 'types': ['ground', 'water']}, {'speciesId': 'farigiraf', 'confidence': 0.5556, 'types': ['normal', 'psychic']}, {'speciesId': 'milotic', 'confidence': 0.5538, 'types': ['water']}, {'speciesId': 'empoleon', 'confidence': 0.5526, 'types': ['steel', 'water']}, {'speciesId': 'blaziken', 'confidence': 0.5487, 'types': ['fighting', 'fire']}, {'speciesId': 'incineroar', 'confidence': 0.5467, 'types': ['dark', 'fire']}, {'speciesId': 'primarina', 'confidence': 0.5434, 'types': ['fairy', 'water']}]
+- typeVetoed=['dragonite', 'swampert', 'farigiraf', 'milotic', 'empoleon', 'primarina', 'excadrill', 'mawile', 'basculegion', 'rotomwash', 'venusaur', 'sinistcha']
+
+## team-preview-test-2 slot 2 — expected `basculegion` → `basculegion` (ok)
+
+- conf=0.7204 margin=0.2095 need=0.03 types=['water'] typeScores=[{'id': 'water', 'score': 0.7539}]
+- aHash rank expected=8 ham=13 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'basculegion', 'confidence': 0.7204, 'types': ['ghost', 'water']}, {'speciesId': 'venusaur', 'confidence': 0.5837, 'types': ['grass', 'poison']}, {'speciesId': 'incineroar', 'confidence': 0.5305, 'types': ['dark', 'fire']}, {'speciesId': 'mawile', 'confidence': 0.5271, 'types': ['fairy', 'steel']}, {'speciesId': 'scizor', 'confidence': 0.5229, 'types': ['bug', 'steel']}, {'speciesId': 'swampert', 'confidence': 0.5109, 'types': ['ground', 'water']}, {'speciesId': 'tyranitar', 'confidence': 0.5098, 'types': ['dark', 'rock']}, {'speciesId': 'meowscarada', 'confidence': 0.5088, 'types': ['dark', 'grass']}]
+- typeVetoed=['venusaur', 'incineroar', 'mawile', 'scizor', 'tyranitar', 'meowscarada', 'aegislash', 'aerodactyl', 'sneasler', 'kingambit', 'archaludon', 'tsareena']
+
+## team-preview-test-2 slot 3 — expected `kingambit` → `kingambit` (ok)
+
+- conf=0.6931 margin=0.1005 need=0.03 types=[] typeScores=[{'id': 'fire', 'score': 0.4537}]
+- aHash rank expected=39 ham=23 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'kingambit', 'confidence': 0.6931, 'types': ['dark', 'steel']}, {'speciesId': 'excadrill', 'confidence': 0.5926, 'types': ['ground', 'steel']}, {'speciesId': 'aegislash', 'confidence': 0.5874, 'types': ['ghost', 'steel']}, {'speciesId': 'delphox', 'confidence': 0.5536, 'types': ['fire', 'psychic']}, {'speciesId': 'kommoo', 'confidence': 0.5484, 'types': ['dragon', 'fighting']}, {'speciesId': 'talonflame', 'confidence': 0.5377, 'types': ['fire', 'flying']}, {'speciesId': 'rotomwash', 'confidence': 0.5344, 'types': ['electric', 'water']}, {'speciesId': 'torkoal', 'confidence': 0.5179, 'types': ['fire']}]
+- typeVetoed=[]
+
+## team-preview-test-2 slot 4 — expected `sneasler` → `sneasler` (ok)
+
+- conf=0.6525 margin=0.0568 need=0.035 types=[] typeScores=[{'id': 'fighting', 'score': 0.5683}]
+- aHash rank expected=23 ham=21 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'sneasler', 'confidence': 0.6525, 'types': ['fighting', 'poison']}, {'speciesId': 'sableye', 'confidence': 0.5957, 'types': ['dark', 'ghost']}, {'speciesId': 'swampert', 'confidence': 0.5594, 'types': ['ground', 'water']}, {'speciesId': 'aerodactyl', 'confidence': 0.556, 'types': ['flying', 'rock']}, {'speciesId': 'tsareena', 'confidence': 0.5449, 'types': ['grass']}, {'speciesId': 'incineroar', 'confidence': 0.5359, 'types': ['dark', 'fire']}, {'speciesId': 'gengar', 'confidence': 0.5347, 'types': ['ghost', 'poison']}, {'speciesId': 'kingambit', 'confidence': 0.5327, 'types': ['dark', 'steel']}]
+- typeVetoed=[]
+
+## team-preview-test-2 slot 5 — expected `garchomp` → `None` (MARGIN_TOO_SMALL)
+
+- conf=0.5541 margin=0.0163 need=0.055 types=[] typeScores=[{'id': 'dragon', 'score': 0.5083}, {'id': 'ground', 'score': 0.4928}]
+- aHash rank expected=30 ham=26 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'garchomp', 'confidence': 0.5541, 'types': ['dragon', 'ground']}, {'speciesId': 'sableye', 'confidence': 0.5379, 'types': ['dark', 'ghost']}, {'speciesId': 'corviknight', 'confidence': 0.5072, 'types': ['flying', 'steel']}, {'speciesId': 'basculegion', 'confidence': 0.4891, 'types': ['ghost', 'water']}, {'speciesId': 'kingambit', 'confidence': 0.4786, 'types': ['dark', 'steel']}, {'speciesId': 'gengar', 'confidence': 0.4778, 'types': ['ghost', 'poison']}, {'speciesId': 'sneasler', 'confidence': 0.4777, 'types': ['fighting', 'poison']}, {'speciesId': 'sinistcha', 'confidence': 0.4677, 'types': ['ghost', 'grass']}]
+- typeVetoed=[]
+
+## team-preview-test-3 slot 0 — expected `ninetalesalola` → `ninetalesalola` (ok)
+
+- conf=0.8056 margin=0.3402 need=0.025 types=['ice'] typeScores=[{'id': 'ice', 'score': 0.6745}, {'id': 'fairy', 'score': 0.5556}]
+- aHash rank expected=13 ham=15 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'ninetalesalola', 'confidence': 0.8056, 'types': ['fairy', 'ice']}, {'speciesId': 'talonflame', 'confidence': 0.5852, 'types': ['fire', 'flying']}, {'speciesId': 'pelipper', 'confidence': 0.5561, 'types': ['flying', 'water']}, {'speciesId': 'torkoal', 'confidence': 0.5331, 'types': ['fire']}, {'speciesId': 'venusaur', 'confidence': 0.5301, 'types': ['grass', 'poison']}, {'speciesId': 'rotomwash', 'confidence': 0.523, 'types': ['electric', 'water']}, {'speciesId': 'annihilape', 'confidence': 0.5111, 'types': ['fighting', 'ghost']}, {'speciesId': 'blastoise', 'confidence': 0.4988, 'types': ['water']}]
+- typeVetoed=['talonflame', 'pelipper', 'torkoal', 'venusaur', 'rotomwash', 'annihilape', 'blastoise', 'empoleon', 'archaludon', 'swampert', 'gengar', 'scovillain']
+
+## team-preview-test-3 slot 1 — expected `empoleon` → `empoleon` (ok)
+
+- conf=0.8355 margin=0.2035 need=0.025 types=['water'] typeScores=[{'id': 'water', 'score': 0.7851}]
+- aHash rank expected=10 ham=11 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'empoleon', 'confidence': 0.8355, 'types': ['steel', 'water']}, {'speciesId': 'talonflame', 'confidence': 0.6422, 'types': ['fire', 'flying']}, {'speciesId': 'swampert', 'confidence': 0.632, 'types': ['ground', 'water']}, {'speciesId': 'gengar', 'confidence': 0.6055, 'types': ['ghost', 'poison']}, {'speciesId': 'gardevoir', 'confidence': 0.5905, 'types': ['fairy', 'psychic']}, {'speciesId': 'aegislash', 'confidence': 0.5889, 'types': ['ghost', 'steel']}, {'speciesId': 'raichu', 'confidence': 0.5839, 'types': ['electric']}, {'speciesId': 'kangaskhan', 'confidence': 0.5761, 'types': ['normal']}]
+- typeVetoed=['talonflame', 'gengar', 'gardevoir', 'aegislash', 'raichu', 'kangaskhan', 'charizard', 'corviknight', 'aerodactyl', 'staraptor', 'dragonite', 'excadrill']
+
+## team-preview-test-3 slot 2 — expected `garchomp` → `garchomp` (ok)
+
+- conf=0.6571 margin=0.0894 need=0.035 types=[] typeScores=[{'id': 'ground', 'score': 0.5434}, {'id': 'dragon', 'score': 0.4862}]
+- aHash rank expected=15 ham=16 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'garchomp', 'confidence': 0.6571, 'types': ['dragon', 'ground']}, {'speciesId': 'sableye', 'confidence': 0.5677, 'types': ['dark', 'ghost']}, {'speciesId': 'corviknight', 'confidence': 0.5443, 'types': ['flying', 'steel']}, {'speciesId': 'gengar', 'confidence': 0.5316, 'types': ['ghost', 'poison']}, {'speciesId': 'annihilape', 'confidence': 0.5092, 'types': ['fighting', 'ghost']}, {'speciesId': 'excadrill', 'confidence': 0.5013, 'types': ['ground', 'steel']}, {'speciesId': 'scizor', 'confidence': 0.4995, 'types': ['bug', 'steel']}, {'speciesId': 'swampert', 'confidence': 0.4848, 'types': ['ground', 'water']}]
+- typeVetoed=[]
+
+## team-preview-test-3 slot 3 — expected `staraptor` → `staraptor` (ok)
+
+- conf=0.8272 margin=0.2857 need=0.025 types=['flying'] typeScores=[{'id': 'flying', 'score': 0.5816}]
+- aHash rank expected=7 ham=14 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'staraptor', 'confidence': 0.8272, 'types': ['flying', 'normal']}, {'speciesId': 'excadrill', 'confidence': 0.578, 'types': ['ground', 'steel']}, {'speciesId': 'tsareena', 'confidence': 0.5702, 'types': ['grass']}, {'speciesId': 'mawile', 'confidence': 0.5519, 'types': ['fairy', 'steel']}, {'speciesId': 'farigiraf', 'confidence': 0.5499, 'types': ['normal', 'psychic']}, {'speciesId': 'talonflame', 'confidence': 0.5415, 'types': ['fire', 'flying']}, {'speciesId': 'raichu', 'confidence': 0.5385, 'types': ['electric']}, {'speciesId': 'empoleon', 'confidence': 0.5339, 'types': ['steel', 'water']}]
+- typeVetoed=['excadrill', 'tsareena', 'mawile', 'farigiraf', 'raichu', 'empoleon', 'kangaskhan', 'garchomp', 'rotomwash', 'arcaninehisui', 'torkoal', 'milotic']
+
+## team-preview-test-3 slot 4 — expected `whimsicott` → `whimsicott` (ok)
+
+- conf=0.7042 margin=0.0932 need=0.03 types=[] typeScores=[{'id': 'grass', 'score': 0.5648}, {'id': 'fairy', 'score': 0.5444}]
+- aHash rank expected=21 ham=14 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'whimsicott', 'confidence': 0.7042, 'types': ['fairy', 'grass']}, {'speciesId': 'torkoal', 'confidence': 0.6109, 'types': ['fire']}, {'speciesId': 'pelipper', 'confidence': 0.5336, 'types': ['flying', 'water']}, {'speciesId': 'arcaninehisui', 'confidence': 0.526, 'types': ['fire', 'rock']}, {'speciesId': 'tsareena', 'confidence': 0.5203, 'types': ['grass']}, {'speciesId': 'politoed', 'confidence': 0.5185, 'types': ['water']}, {'speciesId': 'mawile', 'confidence': 0.5183, 'types': ['fairy', 'steel']}, {'speciesId': 'talonflame', 'confidence': 0.5136, 'types': ['fire', 'flying']}]
+- typeVetoed=[]
+
+## team-preview-test-3 slot 5 — expected `charizard` → `charizard` (ok)
+
+- conf=0.5509 margin=0.1224 need=0.055 types=['fire', 'flying'] typeScores=[{'id': 'fire', 'score': 0.7045}, {'id': 'flying', 'score': 0.5948}]
+- aHash rank expected=1 ham=15 inCands=True candCount=40
+- topCandidates=[{'speciesId': 'charizard', 'confidence': 0.5509, 'types': ['fire', 'flying']}, {'speciesId': 'primarina', 'confidence': 0.5415, 'types': ['fairy', 'water']}, {'speciesId': 'incineroar', 'confidence': 0.5316, 'types': ['dark', 'fire']}, {'speciesId': 'dragonite', 'confidence': 0.5291, 'types': ['dragon', 'flying']}, {'speciesId': 'farigiraf', 'confidence': 0.5153, 'types': ['normal', 'psychic']}, {'speciesId': 'empoleon', 'confidence': 0.4948, 'types': ['steel', 'water']}, {'speciesId': 'swampert', 'confidence': 0.4756, 'types': ['ground', 'water']}, {'speciesId': 'rotomwash', 'confidence': 0.4703, 'types': ['electric', 'water']}]
+- typeVetoed=['primarina', 'incineroar', 'dragonite', 'farigiraf', 'empoleon', 'swampert', 'rotomwash', 'blaziken', 'kingambit', 'kangaskhan', 'sinistcha', 'excadrill']
