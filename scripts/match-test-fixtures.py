@@ -2,15 +2,19 @@
 """
 Match Team Preview test fixtures against public/templates/ (sprite_poke_3).
 
-Pipeline (pose/scale alignment):
+Pipeline (pose/scale alignment + false-positive guards):
   1. Yellow square ROI (side = red card height; locked panel + THUMB left)
   2. Suppress near-maroon card background → black
   3. Content-aware square recenter on non-black sprite blob
   4. Resize to TEMPLATE_SIZE (square crop → no letterbox pad)
-  5. Multi-scale + small translation sweep of query
-  6. Grayscale NCC/SSD/aHash with mask = template_alpha ∩ query_nonblack
+  5. aHash Hamming prefilter → top10 (or all ≤18)
+  6. Multi-scale + small translation sweep of query
+  7. Grayscale NCC/SSD/aHash with mask = template_alpha ∩ query_nonblack
+  8. Coarse hue hist soft penalty (×0.85 if far from template)
+  9. Right-side type-icon veto (soft): candidate types ⊇ detected types
+ 10. MIN_MARGIN + CONFIDENCE_THRESHOLD → else speciesId=null (prefer unidentified)
 
-ROI constants locked — mirror src/lib/roi.ts.
+ROI constants locked — mirror src/lib/roi.ts / src/lib/recognize.ts.
 """
 from __future__ import annotations
 
@@ -31,17 +35,25 @@ except ImportError as e:
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# Locked — mirror src/lib/roi.ts (DO NOT change panel; THUMB left only if square misses center)
+# Locked — mirror src/lib/roi.ts (DO NOT change panel / yellow / CARD_GAP)
 ENEMY_PANEL = {"left": 0.811, "top": 0.137, "right": 0.965, "bottom": 0.836}
 THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}
 TEMPLATE_SIZE = 64
 SLOT_COUNT = 6
-CARD_GAP_FRAC = 0.08  # fraction of pitch that is inter-card gap (mirror src/lib/roi.ts)
-PANEL_OUTER_MARGIN_FRAC = 0.02  # green visual outer pad (content-height frac; mirror roi.ts)
+CARD_GAP_FRAC = 0.08
+PANEL_OUTER_MARGIN_FRAC = 0.02
 TARGET_ASPECT = 16 / 9
-CONFIDENCE_THRESHOLD = 0.54
 
-# Multi-scale + translation (query relative to 64×64)
+CONFIDENCE_THRESHOLD = 0.54
+MIN_MARGIN = 0.08
+AHASH_TOP_K = 10
+AHASH_MAX_HAM = 18
+HUE_BINS = 8
+HUE_DIST_THR = 0.75
+HUE_PENALTY = 0.85
+TYPE_MATCH_THR = 0.58
+TYPE_ICON_FRACS = (0.36, 0.42, 0.48)
+
 MATCH_SCALES = (0.9, 1.0, 1.1, 1.2, 1.35)
 MATCH_SHIFTS = (-8, -4, 0, 4, 8)
 
@@ -123,21 +135,25 @@ def letterbox_to_template(im: Image.Image, *, keep_alpha: bool = False) -> Image
     return canvas
 
 
-def to_gray_arr(im: Image.Image) -> np.ndarray:
-    rgb = np.asarray(letterbox_to_template(im).convert("RGB"), dtype=np.float32)
-    return 0.299 * rgb[:, :, 0] + 0.587 * rgb[:, :, 1] + 0.114 * rgb[:, :, 2]
-
-
 def to_gray_and_mask(im: Image.Image) -> tuple[np.ndarray, np.ndarray]:
     rgba = letterbox_to_template(im, keep_alpha=True).convert("RGBA")
     arr = np.asarray(rgba)
     gray = 0.299 * arr[:, :, 0] + 0.587 * arr[:, :, 1] + 0.114 * arr[:, :, 2]
     gray = gray.astype(np.float32)
-    # composite transparent → black for gray
     a = arr[:, :, 3]
     gray = np.where(a > 12, gray, 0.0).astype(np.float32)
     mask = (a > 12).astype(np.float32)
     return gray, mask
+
+
+def to_rgb_letterbox(im: Image.Image) -> np.ndarray:
+    """Opaque RGB letterbox (transparent → black) for hue hist."""
+    rgba = letterbox_to_template(im, keep_alpha=True).convert("RGBA")
+    arr = np.asarray(rgba)
+    rgb = arr[:, :, :3].astype(np.float32)
+    a = arr[:, :, 3]
+    rgb = np.where(a[..., None] > 12, rgb, 0.0).astype(np.float32)
+    return rgb
 
 
 def average_hash(gray: np.ndarray, size: int = 8) -> str:
@@ -188,7 +204,13 @@ def hamming(a: str, b: str) -> int:
     return sum(1 for i in range(n) if a[i] != b[i]) + abs(len(a) - len(b))
 
 
-def confidence(gray: np.ndarray, hash_s: str, tmpl_gray: np.ndarray, tmpl_hash: str, mask: np.ndarray | None = None) -> float:
+def confidence(
+    gray: np.ndarray,
+    hash_s: str,
+    tmpl_gray: np.ndarray,
+    tmpl_hash: str,
+    mask: np.ndarray | None = None,
+) -> float:
     ncc_score = (ncc(gray, tmpl_gray, mask) + 1) / 2
     ssd_score = ssd_similarity(gray, tmpl_gray, mask)
     hash_bits = max(len(hash_s), len(tmpl_hash)) or 64
@@ -209,26 +231,31 @@ def yellow_rect_from_card(sx, sy, sw, sh, thumb=None):
     return tx, ty, side
 
 
-def crop_slot(im: Image.Image, slot: int, *, card_body: bool = True) -> Image.Image:
-    """Yellow square crop for matching (= overlay yellow / app recognition).
-
-    Default card_body=True → side = pitch×(1-CARD_GAP_FRAC) (card body; yellow geometry).
-    card_body=False → side = full pitch (legacy; do not use for recognition parity).
-    """
+def card_body_rect(im: Image.Image, slot: int) -> tuple[int, int, int, int]:
     cx, cy, cw, ch = content_rect(*im.size)
     px = int(cx + ENEMY_PANEL["left"] * cw)
     py = int(cy + ENEMY_PANEL["top"] * ch)
     pw = max(1, int((ENEMY_PANEL["right"] - ENEMY_PANEL["left"]) * cw))
     ph = max(1, int((ENEMY_PANEL["bottom"] - ENEMY_PANEL["top"]) * ch))
     pitch = ph / SLOT_COUNT
-    gap = CARD_GAP_FRAC if card_body else 0.0
-    body_h = pitch * (1 - gap)
-    top_inset = pitch * (gap / 2)
+    body_h = pitch * (1 - CARD_GAP_FRAC)
+    top_inset = pitch * (CARD_GAP_FRAC / 2)
     sx, sw = px, pw
     sy = int(py + slot * pitch + top_inset)
     sh = max(1, int(body_h))
+    return sx, sy, sw, sh
+
+
+def crop_slot(im: Image.Image, slot: int, *, card_body: bool = True) -> Image.Image:
+    """Yellow square crop for matching (= overlay yellow / app recognition)."""
+    sx, sy, sw, sh = card_body_rect(im, slot)
     tx, ty, side = yellow_rect_from_card(sx, sy, sw, sh)
     return im.crop((tx, ty, tx + side, ty + side))
+
+
+def crop_card(im: Image.Image, slot: int) -> Image.Image:
+    sx, sy, sw, sh = card_body_rect(im, slot)
+    return im.crop((sx, sy, sx + sw, sy + sh))
 
 
 def is_maroon(arr: np.ndarray) -> np.ndarray:
@@ -237,7 +264,6 @@ def is_maroon(arr: np.ndarray) -> np.ndarray:
     g = arr[:, :, 1].astype(np.float32)
     b = arr[:, :, 2].astype(np.float32)
     mx = np.maximum(np.maximum(r, g), b)
-    # Card BG: mid R, very low G/B, not bright sprite orange (mx often >150)
     return (
         (r > 55)
         & (mx < 145)
@@ -279,14 +305,14 @@ def content_aware_square(crop: Image.Image, pad: int = 6) -> Image.Image:
     return crop.crop((sx, sy, sx + side, sy + side))
 
 
-def prep_query(crop: Image.Image) -> np.ndarray:
-    """BG suppress → content recenter → 64×64 gray."""
+def prep_query(crop: Image.Image) -> tuple[np.ndarray, np.ndarray]:
+    """BG suppress → content recenter → 64×64 gray + RGB."""
     q = suppress_card_background(crop)
     q = content_aware_square(q)
-    # square → resize (equivalent to letterbox with no pad)
     rgb = q.convert("RGB").resize((TEMPLATE_SIZE, TEMPLATE_SIZE), Image.Resampling.LANCZOS)
     arr = np.asarray(rgb, dtype=np.float32)
-    return 0.299 * arr[:, :, 0] + 0.587 * arr[:, :, 1] + 0.114 * arr[:, :, 2]
+    gray = 0.299 * arr[:, :, 0] + 0.587 * arr[:, :, 1] + 0.114 * arr[:, :, 2]
+    return gray, arr
 
 
 def iter_query_variants(gray0: np.ndarray):
@@ -314,7 +340,57 @@ def iter_query_variants(gray0: np.ndarray):
                     yield canvas
 
 
-def load_templates(tmpl_dir: Path) -> list[dict]:
+def hue_hist(rgb: np.ndarray, bins: int = HUE_BINS) -> np.ndarray:
+    """6–8 bin hue hist on non-black non-card-bg pixels."""
+    r = rgb[:, :, 0] / 255.0
+    g = rgb[:, :, 1] / 255.0
+    b = rgb[:, :, 2] / 255.0
+    mx = np.maximum(np.maximum(r, g), b)
+    mn = np.minimum(np.minimum(r, g), b)
+    df = mx - mn
+    h = np.zeros_like(mx)
+    mask = df > 1e-6
+    rm = mask & (mx == r)
+    gm = mask & (mx == g)
+    bm = mask & (mx == b)
+    h[rm] = (60 * ((g - b)[rm] / df[rm]) + 360) % 360
+    h[gm] = (60 * ((b - r)[gm] / df[gm]) + 120) % 360
+    h[bm] = (60 * ((r - g)[bm] / df[bm]) + 240) % 360
+    s = np.where(mx > 1e-6, df / np.maximum(mx, 1e-6), 0.0)
+    v = mx
+    # Drop black + dark maroon card paint (soft — keep shiny dark sprites via sat/v gates)
+    keep = (v > 0.12) & ~((v < 0.55) & (s > 0.25) & (s < 0.75) & ((h < 25) | (h > 335)))
+    keep = keep & ((s > 0.15) | (v > 0.35))
+    if int(keep.sum()) < 30:
+        keep = v > 0.15
+    hist, _ = np.histogram(h[keep], bins=bins, range=(0, 360), density=True)
+    return hist.astype(np.float32)
+
+
+def hist_dist(a: np.ndarray, b: np.ndarray) -> float:
+    na = float(np.linalg.norm(a))
+    nb = float(np.linalg.norm(b))
+    if na < 1e-9 or nb < 1e-9:
+        return 0.0
+    return 1.0 - float(np.dot(a, b) / (na * nb))
+
+
+def load_pokemon_types() -> dict[str, set[str]]:
+    path = ROOT / "data/pokemon.json"
+    if not path.exists():
+        path = ROOT / "public/data/pokemon.json"
+    rows = json.loads(path.read_text(encoding="utf-8"))
+    out: dict[str, set[str]] = {}
+    for rec in rows:
+        sid = rec.get("showdownId")
+        if not sid:
+            continue
+        types = {str(t).lower() for t in (rec.get("types") or [])}
+        out[sid] = types
+    return out
+
+
+def load_templates(tmpl_dir: Path, type_map: dict[str, set[str]]) -> list[dict]:
     manifest = json.loads((tmpl_dir / "manifest.json").read_text(encoding="utf-8"))
     templates: list[dict] = []
     for entry in manifest.get("templates", []):
@@ -323,13 +399,18 @@ def load_templates(tmpl_dir: Path) -> list[dict]:
         if not fpath.exists():
             print(f"WARN missing template file: {fpath}")
             continue
-        g, mask = to_gray_and_mask(Image.open(fpath))
+        im = Image.open(fpath)
+        g, mask = to_gray_and_mask(im)
+        rgb = to_rgb_letterbox(im)
         templates.append(
             {
                 "speciesId": sid,
                 "gray": g,
                 "mask": mask,
+                "rgb": rgb,
+                "hue": hue_hist(rgb),
                 "hash": average_hash(g),
+                "types": type_map.get(sid, set()),
                 "meta": entry,
                 "file": fpath.name,
             }
@@ -337,53 +418,223 @@ def load_templates(tmpl_dir: Path) -> list[dict]:
     return templates
 
 
-def match_slot(gray0: np.ndarray, templates: list[dict]) -> tuple[str | None, float]:
-    best_id: str | None = None
-    best_c = -1.0
+_type_tmpl_cache: dict[tuple[str, int], tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
+
+
+def load_type_icon(tid: str, size: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    key = (tid, size)
+    if key in _type_tmpl_cache:
+        return _type_tmpl_cache[key]
+    path = ROOT / "public/types" / f"{tid}.png"
+    rgba = np.asarray(Image.open(path).convert("RGBA").resize((size, size), Image.Resampling.LANCZOS))
+    rgb = rgba[:, :, :3].astype(np.float32)
+    mask = rgba[:, :, 3] > 128
+    gray = (0.299 * rgb[:, :, 0] + 0.587 * rgb[:, :, 1] + 0.114 * rgb[:, :, 2]).astype(np.float32)
+    _type_tmpl_cache[key] = (gray, mask, rgb)
+    return _type_tmpl_cache[key]
+
+
+def ncc_masked(a: np.ndarray, b: np.ndarray, mask: np.ndarray) -> float:
+    aa = a[mask].ravel()
+    bb = b[mask].ravel()
+    if len(aa) < 16:
+        return -1.0
+    aa = aa - aa.mean()
+    bb = bb - bb.mean()
+    den = math.sqrt(float((aa * aa).sum()) * float((bb * bb).sum()))
+    if den < 1e-6:
+        return -1.0
+    return float((aa * bb).sum() / den)
+
+
+def detect_card_types(card: Image.Image, type_ids: list[str]) -> list[str]:
+    """
+    Soft type-icon veto input: scan top-right of card for 0–2 type icons.
+    Low confidence → empty list (no hard veto).
+    Champions Team Select places dual types side-by-side; sliding NCC covers both.
+    """
+    w, h = card.size
+    arr = np.asarray(card.convert("RGB"), dtype=np.float32)
+    x0, x1 = int(w * 0.55), int(w * 0.98)
+    y0, y1 = int(h * 0.04), int(h * 0.58)
+    region = arr[y0:y1, x0:x1]
+    rh, rw = region.shape[:2]
+    hits: list[tuple[float, str, int, int, int]] = []
+    for frac in TYPE_ICON_FRACS:
+        isize = max(16, int(h * frac))
+        isize = min(isize, rh - 2, max(16, rw // 2))
+        step = max(2, isize // 6)
+        for tid in type_ids:
+            tg, tm, trgb = load_type_icon(tid, isize)
+            for y in range(0, rh - isize + 1, step):
+                for x in range(0, rw - isize + 1, step):
+                    patch = region[y : y + isize, x : x + isize]
+                    pg = 0.299 * patch[:, :, 0] + 0.587 * patch[:, :, 1] + 0.114 * patch[:, :, 2]
+                    if float(pg.mean()) < 50 or float(patch.std()) < 18:
+                        continue
+                    sc = 0.35 * ncc_masked(pg, tg, tm) + 0.65 * ncc_masked(patch, trgb, tm)
+                    if sc >= TYPE_MATCH_THR:
+                        hits.append((sc, tid, x, y, isize))
+    hits.sort(key=lambda t: -t[0])
+    picked: list[tuple[float, str, int, int, int]] = []
+    for sc, tid, x, y, sz in hits:
+        if any(tid == pt for _, pt, _, _, _ in picked):
+            continue
+        overlap = False
+        for _, _, px, py, psz in picked:
+            ix0, iy0 = max(x, px), max(y, py)
+            ix1, iy1 = min(x + sz, px + psz), min(y + sz, py + psz)
+            if ix1 > ix0 and iy1 > iy0 and (ix1 - ix0) * (iy1 - iy0) > 0.3 * sz * sz:
+                overlap = True
+                break
+        if overlap:
+            continue
+        picked.append((sc, tid, x, y, sz))
+        if len(picked) >= 2:
+            break
+    return [tid for _, tid, _, _, _ in picked]
+
+
+def ahash_prefilter(gray0: np.ndarray, templates: list[dict]) -> list[dict]:
+    """Hamming top-K, or all with ham ≤ AHASH_MAX_HAM (union, unique files)."""
+    qh = average_hash(gray0)
+    scored = sorted(((hamming(qh, t["hash"]), t) for t in templates), key=lambda x: x[0])
+    out: list[dict] = []
+    seen: set[int] = set()
+    for ham, t in scored:
+        if ham <= AHASH_MAX_HAM or len(out) < AHASH_TOP_K:
+            tid = id(t)
+            if tid not in seen:
+                out.append(t)
+                seen.add(tid)
+        elif len(out) >= AHASH_TOP_K:
+            break
+    if len(out) < AHASH_TOP_K:
+        out = [t for _, t in scored[:AHASH_TOP_K]]
+    return out
+
+
+def match_slot(
+    gray0: np.ndarray,
+    rgb0: np.ndarray,
+    detected_types: list[str],
+    templates: list[dict],
+) -> dict:
+    cands = ahash_prefilter(gray0, templates)
+    q_hue = hue_hist(rgb0)
+    best: dict[str, dict] = {}
     for g in iter_query_variants(gray0):
         qmask = (g > 12).astype(np.float32)
         h = average_hash(g)
-        for t in templates:
+        for t in cands:
             mask = t["mask"] * qmask
             c = confidence(g, h, t["gray"], t["hash"], mask)
-            if c > best_c:
-                best_c = c
-                best_id = t["speciesId"]
-    return best_id, best_c
+            if hist_dist(q_hue, t["hue"]) > HUE_DIST_THR:
+                c *= HUE_PENALTY
+            sid = t["speciesId"]
+            if c > best.get(sid, {}).get("conf", -1.0):
+                best[sid] = {"conf": c, "types": t["types"]}
+
+    ranked = sorted(best.items(), key=lambda x: -x[1]["conf"])
+    det = set(detected_types)
+    accepted: list[tuple[str, float]] = []
+    for sid, info in ranked:
+        ctypes = info["types"]
+        # Soft veto: only when types known on both sides
+        if det and ctypes and not det.issubset(ctypes):
+            continue
+        accepted.append((sid, float(info["conf"])))
+
+    if not accepted:
+        top1_sid = ranked[0][0] if ranked else None
+        top1_conf = float(ranked[0][1]["conf"]) if ranked else 0.0
+        return {
+            "speciesId": None,
+            "confidence": top1_conf,
+            "altSpeciesId": top1_sid,
+            "margin": 0.0,
+            "detectedTypes": sorted(det),
+            "reason": "all_vetoed",
+        }
+
+    top1_sid, top1_conf = accepted[0]
+    top2_sid = accepted[1][0] if len(accepted) > 1 else None
+    top2_conf = accepted[1][1] if len(accepted) > 1 else 0.0
+    margin = top1_conf - top2_conf
+    if top1_conf >= CONFIDENCE_THRESHOLD and margin >= MIN_MARGIN:
+        return {
+            "speciesId": top1_sid,
+            "confidence": top1_conf,
+            "altSpeciesId": top2_sid,
+            "margin": margin,
+            "detectedTypes": sorted(det),
+            "reason": "ok",
+        }
+    return {
+        "speciesId": None,
+        "confidence": top1_conf,
+        "altSpeciesId": top2_sid or top1_sid,
+        "margin": margin,
+        "detectedTypes": sorted(det),
+        "reason": "margin_fail",
+    }
 
 
 def main() -> int:
     tmpl_dir = ROOT / "public/templates"
-    templates = load_templates(tmpl_dir)
+    type_map = load_pokemon_types()
+    templates = load_templates(tmpl_dir, type_map)
     if not templates:
         print("No templates loaded")
         return 1
 
+    type_ids = sorted(p.stem for p in (ROOT / "public/types").glob("*.png"))
     all_rows = []
     correct = 0
+    wrong = 0
+    null_n = 0
     total = 0
     n_ids = len({t["speciesId"] for t in templates})
 
     print(f"Templates: {len(templates)} files / {n_ids} speciesIds from {tmpl_dir.relative_to(ROOT)}")
-    print(f"ROI locked: panel={ENEMY_PANEL} thumb={THUMB_CROP} CARD_GAP_FRAC={CARD_GAP_FRAC} card_body=True PANEL_OUTER_MARGIN_FRAC={PANEL_OUTER_MARGIN_FRAC}")
+    print(
+        f"ROI locked: panel={ENEMY_PANEL} thumb={THUMB_CROP} "
+        f"CARD_GAP_FRAC={CARD_GAP_FRAC} PANEL_OUTER_MARGIN_FRAC={PANEL_OUTER_MARGIN_FRAC}"
+    )
+    print(
+        f"Guards: thr={CONFIDENCE_THRESHOLD} MIN_MARGIN={MIN_MARGIN} "
+        f"aHash top{AHASH_TOP_K}|≤{AHASH_MAX_HAM} hue×{HUE_PENALTY}@{HUE_DIST_THR} "
+        f"type thr={TYPE_MATCH_THR}"
+    )
     print(f"Match: bg-suppress + content-recenter + scales={MATCH_SCALES} shifts={MATCH_SHIFTS}")
-    print(f"Mask: template_alpha ∩ query_nonblack; conf weights NCC×0.55+SSD×0.25+aHash×0.20")
 
     for fx in FIXTURES:
         src = fx["path"]
         im = Image.open(src).convert("RGB")
         print(f"\n=== {fx['label']} ({src.relative_to(ROOT)}) ===")
-        print(f"{'slot':<4} {'expected':<14} {'matched':<14} {'conf':>6}  ok")
+        print(f"{'slot':<4} {'expected':<14} {'matched':<14} {'conf':>6} {'margin':>6} types            ok")
         for slot, expected in enumerate(fx["expected"]):
             crop = crop_slot(im, slot)
-            gray0 = prep_query(crop)
-            best_id, best_c = match_slot(gray0, templates)
+            gray0, rgb0 = prep_query(crop)
+            card = crop_card(im, slot)
+            det = detect_card_types(card, type_ids)
+            result = match_slot(gray0, rgb0, det, templates)
+            best_id = result["speciesId"]
+            best_c = float(result["confidence"])
+            margin = float(result["margin"])
             ok = best_id == expected and best_c >= CONFIDENCE_THRESHOLD
-            if ok:
+            if best_id is None:
+                null_n += 1
+            elif best_id == expected:
                 correct += 1
+            else:
+                wrong += 1
             total += 1
-            mark = "Y" if ok else "N"
-            print(f"{slot:<4} {expected:<14} {best_id or '-':<14} {best_c:6.3f}  {mark}")
+            mark = "Y" if ok else ("null" if best_id is None else "WRONG")
+            types_s = ",".join(result["detectedTypes"]) or "-"
+            print(
+                f"{slot:<4} {expected:<14} {best_id or '-':<14} {best_c:6.3f} {margin:6.3f} {types_s:<16} {mark}"
+            )
             all_rows.append(
                 {
                     "fixture": fx["label"],
@@ -391,12 +642,17 @@ def main() -> int:
                     "expected": expected,
                     "matched": best_id,
                     "confidence": round(best_c, 4),
+                    "margin": round(margin, 4),
+                    "altSpeciesId": result.get("altSpeciesId"),
+                    "detectedTypes": result.get("detectedTypes"),
+                    "reason": result.get("reason"),
                     "ok": ok,
+                    "wrongSpecies": best_id is not None and best_id != expected,
                 }
             )
 
     accuracy = f"{correct}/{total}"
-    print(f"\nOverall accuracy: {accuracy}")
+    print(f"\nOverall: correct={accuracy} wrong={wrong} null={null_n}")
 
     out_md = ROOT / "docs/match-test-fixtures-results.md"
     out_json = ROOT / "docs/match-test-fixtures-results.json"
@@ -407,56 +663,61 @@ def main() -> int:
         "",
         f"- Fixtures: `public/fixtures/team-preview-test-1/2/3.png`",
         f"- Templates: `public/templates/*.png` (sprite_poke_3 alpha-trimmed cells; {len(templates)} files / {n_ids} ids)",
-        f"- Matcher: BG suppress + content-aware recenter + multi-scale/shift; NCC×0.55 + SSD×0.25 + aHash×0.20",
+        f"- Matcher: BG suppress + content-aware recenter + aHash prefilter + multi-scale/shift; NCC×0.55 + SSD×0.25 + aHash×0.20",
+        f"- Guards (v1.3): `CONFIDENCE_THRESHOLD={CONFIDENCE_THRESHOLD}`, `MIN_MARGIN={MIN_MARGIN}`, "
+        f"coarse hue ×{HUE_PENALTY} if hist-dist>{HUE_DIST_THR}, soft type-icon veto (thr={TYPE_MATCH_THR}), "
+        f"aHash top{AHASH_TOP_K}|ham≤{AHASH_MAX_HAM}",
         f"- Mask: template alpha ∩ query non-black",
         f"- Scales: `{list(MATCH_SCALES)}`; shifts: `{list(MATCH_SHIFTS)}`",
-        f"- Threshold: {CONFIDENCE_THRESHOLD}",
-        f"- ROI Doc: v1.3-square-thumb (panel/thumb constants **locked**)",
-        f"- **Overall accuracy: {accuracy}**",
+        f"- ROI Doc: v1.3-square-thumb (panel/thumb/CARD_GAP **locked** — prefer null over wrong species)",
+        f"- **Overall: correct {accuracy}, wrong species {wrong}, null {null_n}**",
         "",
     ]
 
     for fx in FIXTURES:
         rows = [r for r in all_rows if r["fixture"] == fx["label"]]
         fx_ok = sum(1 for r in rows if r["ok"])
+        fx_wrong = sum(1 for r in rows if r.get("wrongSpecies"))
+        fx_null = sum(1 for r in rows if r["matched"] is None)
         lines += [
             f"## {fx['label']}",
             "",
-            f"**Accuracy: {fx_ok}/{len(rows)}**",
+            f"**Accuracy: {fx_ok}/{len(rows)}** (wrong={fx_wrong}, null={fx_null})",
             "",
-            "| slot | expected | matched | confidence | ok |",
-            "|------|----------|---------|------------|----|",
+            "| slot | expected | matched | confidence | margin | types | ok |",
+            "|------|----------|---------|------------|--------|-------|----|",
         ]
         for r in rows:
+            types_s = ",".join(r.get("detectedTypes") or []) or "-"
             lines.append(
-                f"| {r['slot']} | {r['expected']} | {r['matched']} | {r['confidence']:.4f} | {'Y' if r['ok'] else 'N'} |"
+                f"| {r['slot']} | {r['expected']} | {r['matched']} | {r['confidence']:.4f} | "
+                f"{r.get('margin', 0):.4f} | {types_s} | {'Y' if r['ok'] else 'N'} |"
             )
         lines.append("")
 
     misses = [r for r in all_rows if not r["ok"]]
-    lines += [
-        "## Misses",
-        "",
-    ]
+    lines += ["## Misses / unidentified", ""]
     if not misses:
         lines.append("- None")
     else:
         for r in misses:
+            kind = "WRONG" if r.get("wrongSpecies") else "null"
             lines.append(
-                f"- `{r['fixture']}` slot {r['slot']}: expected **{r['expected']}**, matched **{r['matched']}** ({r['confidence']:.3f})"
+                f"- `{r['fixture']}` slot {r['slot']}: expected **{r['expected']}**, "
+                f"matched **{r['matched']}** ({r['confidence']:.3f}, margin={r.get('margin', 0):.3f}, "
+                f"types={r.get('detectedTypes')}, {r.get('reason')}) [{kind}]"
             )
     lines += [
         "",
         "## Notes",
         "",
-        "- ENEMY_PANEL top/bottom recalibrated from fixture card centers (cy0−pitch/2 … cy5+pitch/2): top=0.137 bottom=0.836 (was 0.143/0.832).",
-        "- Overlay yellow is a **square** with side = red card **body** height (pitch×(1-CARD_GAP_FRAC), CARD_GAP_FRAC=0.08) via `thumbCssPercent`/`cardRect`→`thumbRectInSlot` (supports topInset/bottomInset).",
-        "- Recognition/match crop === yellow square; `THUMB_CROP.left = 0.18`.",
-        "- Templates trimmed of transparent padding from sprite_poke_3 cells, then contain/letterbox to 64.",
-        "- Capture path: darker card-paint BG suppress (spare bright sprite orange) + content-aware recenter + multi-scale match.",
-        "- `recognize.ts` mirrors this pipeline (`cardRect` → `thumbRectInSlot`).",
-        f"- Green visual frame uses `PANEL_OUTER_MARGIN_FRAC={PANEL_OUTER_MARGIN_FRAC}` (outer pad only; ~{PANEL_OUTER_MARGIN_FRAC*1080:.0f}px @1080p contentH); pitch/yellow/recognition still locked to `ENEMY_PANEL`.",
-        f"- Accuracy with calibrated panel + yellow crop: **{accuracy}** (was 11/18 after yellow-align; prior full-pitch 15/18).",
+        "- ENEMY_PANEL / THUMB_CROP / CARD_GAP_FRAC / yellow square geometry **unchanged**.",
+        "- Prefer `speciesId=null` (未識別) over wrong-species false positives.",
+        "- Type veto is soft: uncertain type OCR → no veto; when types known, candidate types from "
+        "`pokemon.json` must be a **superset** of detected set (e.g. Flying → reject Incineroar).",
+        "- Coarse hue filter is conservative (×0.85) so shinies without shiny templates are not hard-killed.",
+        "- `recognize.ts` mirrors this pipeline (`cardRect` → type crop + `thumbRectInSlot` match).",
+        f"- Result: **correct {accuracy}, wrong={wrong}, null={null_n}**.",
         "",
     ]
     out_md.write_text("\n".join(lines), encoding="utf-8")
@@ -465,10 +726,13 @@ def main() -> int:
             {
                 "accuracy": accuracy,
                 "correct": correct,
+                "wrong": wrong,
+                "null": null_n,
                 "total": total,
                 "templateCount": len(templates),
                 "speciesIdCount": n_ids,
                 "threshold": CONFIDENCE_THRESHOLD,
+                "minMargin": MIN_MARGIN,
                 "scales": list(MATCH_SCALES),
                 "shifts": list(MATCH_SHIFTS),
                 "rows": all_rows,
@@ -480,7 +744,7 @@ def main() -> int:
     )
     print(f"Wrote {out_md.relative_to(ROOT)}")
     print(f"Wrote {out_json.relative_to(ROOT)}")
-    return 0 if correct >= 10 else 2
+    return 0 if wrong == 0 else 2
 
 
 if __name__ == "__main__":

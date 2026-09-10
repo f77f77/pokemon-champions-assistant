@@ -1,4 +1,4 @@
-# Pokemon Champions battle assistant (v0.1)
+# Pokemon Champions battle assistant (v0.1 / recognize v1.3)
 
 Electron + Vite + React (TypeScript). Defaults: AverMedia GC551, local Team Preview thumbs, Spe hand-fill, championsbattledata VGC Doubles (2v2 / 6-pick-4) usage.
 
@@ -18,7 +18,7 @@ npm run typecheck
 Without GC551:
 
 - Use static select-screen load button (or drag-drop onto the 16:9 preview)
-- Use test-fixture button to load built-in `public/fixtures/team-preview.png` (figure 2)
+- Use test-fixture button to cycle `public/fixtures/team-preview-test-{1,2,3}.png`
 
 Same contentRect → ROI → thumb → recognize pipeline + green/yellow debug overlay. Still image overrides the preview until you re-open the camera.
 
@@ -36,42 +36,39 @@ Same contentRect → ROI → thumb → recognize pipeline + green/yellow debug o
 
 Busy label uses Traditional Chinese recognizing-state text.
 
-## ROI (VGC spec — Doc v1.2, LOCKED)
+## ROI (VGC spec — Doc v1.3-square-thumb, LOCKED)
 
-Coordinates relative to letterboxed 16:9 contentRect (computeContentRect).
+Coordinates relative to letterboxed 16:9 contentRect (`computeContentRect`).
+**Do not change** `ENEMY_PANEL` / yellow square / `CARD_GAP_FRAC` / panel geometry.
 
 | Constant | Value | Notes |
-
 |----------|-------|-------|
+| ENEMY_PANEL_DEFAULT | (0.811,0.137)-(0.965,0.836) | Enemy panel (fixture-calibrated) |
+| CARD_GAP_FRAC | 0.08 | Inter-card gap; red card body = pitch×(1−gap) |
+| THUMB_CROP.left | 0.18 | Yellow **square** left edge (side = card body height) |
+| PANEL_OUTER_MARGIN_FRAC | 0.02 | Green visual pad only (does not shift yellow/recognition) |
+| TEMPLATE_SIZE | 64 | Contain/letterbox before match (never stretch) |
+| ROI_FINE_TUNE_MAX | ±2% | Settings sliders |
 
-| ENEMY_PANEL_DEFAULT | (0.811,0.143)-(0.965,0.832) | Enemy panel |
-
-| SLOT_COUNT | 6 equal vertical slots | |
-
-| THUMB_CROP | horizontal 20%-55%; top inset 25% / bottom 5% | Per-slot thumb |
-
-| TEMPLATE_SIZE | 64 | Resize before match |
-
-| ROI_FINE_TUNE_MAX | +/-2% | Settings sliders |
-
-
-Files: src/lib/roi.ts, src/lib/recognize.ts.
+Files: `src/lib/roi.ts`, `src/lib/recognize.ts`.
 
 Settings: ROI fine-tune + green/yellow debug overlay.
 
-## Recognize / template matching
+## Recognize / template matching (v1.3 guards)
 
-Per slot: { slot, confidence, speciesId?, speciesNameZh?, thumbnailDataUrl? }.
+Per slot: `{ slot, confidence, speciesId?, speciesNameZh?, thumbnailDataUrl?, altSpeciesId?, margin?, detectedTypes? }`.
 
-Pipeline (local only, no cloud):
+Pipeline (local only, no cloud) — **prefer `null`/未識別 over wrong species**:
 
-1. Crop thumb with locked ROI (Doc v1.2)
-2. Resize to 64x64
-3. Match against `public/templates/{showdownId}.png`
-4. Score = weighted NCC (0.55) + SSD similarity (0.25) + aHash (0.20)
-5. confidence < 0.55 -> speciesId null -> UI unidentified label
+1. Crop yellow square thumb with locked ROI (`cardRect` → `thumbRectInSlot`)
+2. Suppress maroon card BG → content-aware recenter → 64×64
+3. aHash Hamming prefilter → top 10 (or all ham≤18)
+4. Multi-scale / micro-shift grayscale match vs `public/templates/{showdownId}.png`
+5. Score = NCC×0.55 + SSD×0.25 + aHash×0.20; coarse hue hist soft ×0.85 if far from template
+6. **Second gate (type veto, soft):** crop card top-right type icons → match `public/types/{id}.png`; when types known, candidate types from `pokemon.json` must be a **superset** of detected set (else try next / unidentified). Low type conf → no hard veto.
+7. Accept only if `top1.conf ≥ CONFIDENCE_THRESHOLD (0.54)` **and** `(top1−top2) ≥ MIN_MARGIN (0.08)`; else `speciesId=null` (still return top1 confidence for UI)
 
-Do not guess held items. Templates must be Team Preview small thumbs, NOT large art / HOME art.
+Do not guess held items. Templates must be Team Preview / sprite_poke_3 small thumbs, NOT large art / HOME art.
 
 ### Seed library (figure 2 crops via locked ROI)
 
@@ -103,7 +100,10 @@ When VGC provides an authorized Team Preview source screenshot:
 
 Acceptance:
 - 圖二 fixture → `python scripts/match-seed-templates.py` (~6/6)
-- test-1 + test-2 → `python scripts/match-test-fixtures.py` (12/12 enemy slots)
+- test fixtures → `/workspace/.venv-pkmn/bin/python scripts/match-test-fixtures.py`
+  - **wrong species count = 0** (null/未識別 OK; never return a wrong id)
+  - test-2 / test-3: keep 6/6 or only become unidentified — no new wrong species
+  - Results: `docs/match-test-fixtures-results.md`
 
 ## Type / Tera icons
 
@@ -138,8 +138,8 @@ node scripts/fetch-cbd-templates.mjs --ids=noivern,lycanroc
 Offline match:
 
 ```bash
-python scripts/match-seed-templates.py          # 圖二 ~6/6
-python scripts/match-test-fixtures.py           # test-1+2 → docs/match-test-fixtures-results.md
+python scripts/match-seed-templates.py                        # 圖二 ~6/6
+/workspace/.venv-pkmn/bin/python scripts/match-test-fixtures.py  # test-1/2/3 → docs/match-test-fixtures-results.md
 ```
 
 Results: `docs/match-seed-results.md`

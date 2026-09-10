@@ -3,17 +3,18 @@
  *
  * 流程：抓一幀 → contentRect（去黑邊）→ 敵方面板 ROI → 6 pitch → 紅卡本體（留 gap）→
  * 每格黃框正方形（邊長=紅卡本體高，左側精靈）→ 抑制紅卡底 → content-aware 重對齊 →
- * 64×64 多尺度／微位移灰階比對（mask = 模板 alpha ∩ query 非黑）。
+ * aHash prefilter → 64×64 多尺度／微位移灰階比對（mask = 模板 alpha ∩ query 非黑）→
+ * 粗 hue 軟懲罰 → 卡右側 type icon 軟否決 → MIN_MARGIN + threshold。
  *
  * 模板庫：public/templates/{showdownId}.png — 切自官方 sprite_poke_3（trim 透明邊 → contain 64）。
- * Manifest source: sprite_poke_3。灰階特徵 only（NCC/SSD/aHash）；不拉伸。
- * 低信心 → speciesId/speciesNameZh = null（UI「未識別」）。不猜道具。
- * 不做逐幀即時辨認。
+ * 寧可 speciesId=null（未識別）也不要錯種。不拉伸。不猜道具。不做逐幀即時辨認。
+ * ROI 黃框 / ENEMY_PANEL / CARD_GAP_FRAC 鎖定（見 roi.ts）。
  */
 
 import type { RecognizeResult } from '../types';
 import { grabFrame } from './videoSource';
 import { findSpecies } from './species';
+import { typeToId, type TypeIconId } from './typeIcons';
 import {
   SLOT_COUNT,
   TEMPLATE_SIZE,
@@ -57,6 +58,18 @@ export {
 
 /** 信心門檻：低於此 → 未識別 */
 export const CONFIDENCE_THRESHOLD = 0.54;
+/** top1−top2 最小差距；不足 → 未識別（寧可 null 不要錯種） */
+export const MIN_MARGIN = 0.08;
+/** aHash Hamming prefilter：至少 top-K，並納入 ham≤此值者 */
+export const AHASH_TOP_K = 10;
+export const AHASH_MAX_HAM = 18;
+/** 粗 hue hist：過遠則分數 ×HUE_PENALTY（軟，避免誤殺 shiny） */
+export const HUE_BINS = 8;
+export const HUE_DIST_THR = 0.75;
+export const HUE_PENALTY = 0.85;
+/** 右側 type icon 軟否決門檻（低於此 → type unknown，不做硬否決） */
+export const TYPE_MATCH_THR = 0.58;
+export const TYPE_ICON_FRACS = [0.36, 0.42, 0.48] as const;
 
 /** Query multi-scale / translation sweep (mirror scripts/match-test-fixtures.py) */
 export const MATCH_SCALES = [0.9, 1.0, 1.1, 1.2, 1.35] as const;
@@ -83,8 +96,18 @@ export interface ThumbTemplate {
   gray: Float32Array;
   /** Alpha mask 0/1（sprite_poke_3 透明底忽略）；缺省視為全 1 */
   mask?: Float32Array;
+  /** 粗 hue hist（HUE_BINS）；透明→黑後計算 */
+  hue: Float32Array;
+  /** English type ids from pokemon.json / SPECIES_DB（type veto） */
+  types: string[];
   /** 可選：原圖 data URL（除錯） */
   dataUrl?: string;
+}
+
+interface TypeIconTemplate {
+  id: TypeIconId;
+  /** Pre-rasterized at multiple sizes lazily */
+  cache: Map<number, { gray: Float32Array; rgb: Float32Array; mask: Float32Array; size: number }>;
 }
 
 /**
@@ -120,6 +143,29 @@ const SEED_META: Record<string, string> = {
 export let PREVIEW_THUMB_TEMPLATES: ThumbTemplate[] = [];
 
 let loadPromise: Promise<ThumbTemplate[]> | null = null;
+let typeIconsPromise: Promise<TypeIconTemplate[]> | null = null;
+let TYPE_ICON_TEMPLATES: TypeIconTemplate[] = [];
+
+const TYPE_ICON_IDS: TypeIconId[] = [
+  'normal', 'fire', 'water', 'grass', 'electric', 'ice', 'fighting', 'poison',
+  'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy',
+];
+
+function typesBaseUrl(): string {
+  const base = import.meta.env.BASE_URL || '/';
+  return base.endsWith('/') ? `${base}types/` : `${base}/types/`;
+}
+
+function speciesTypeIds(speciesId: string): string[] {
+  const sp = findSpecies(speciesId);
+  if (!sp?.types?.length) return [];
+  const out: string[] = [];
+  for (const t of sp.types) {
+    const id = typeToId(t);
+    if (id && !out.includes(id)) out.push(id);
+  }
+  return out;
+}
 
 function templatesBaseUrl(): string {
   const base = import.meta.env.BASE_URL || '/';
@@ -155,6 +201,126 @@ function hamming(a: string, b: string): number {
   let d = 0;
   for (let i = 0; i < n; i++) if (a[i] !== b[i]) d++;
   return d + Math.abs(a.length - b.length);
+}
+
+/** RGB ImageData → HUE_BINS hist on non-black / non-card-bg pixels */
+function hueHistFromImageData(data: ImageData, bins = HUE_BINS): Float32Array {
+  const { width, height, data: px } = data;
+  const hues: number[] = [];
+  for (let i = 0; i < px.length; i += 4) {
+    const r = px[i] / 255;
+    const g = px[i + 1] / 255;
+    const b = px[i + 2] / 255;
+    const mx = Math.max(r, g, b);
+    const mn = Math.min(r, g, b);
+    const df = mx - mn;
+    let h = 0;
+    if (df > 1e-6) {
+      if (mx === r) h = (60 * ((g - b) / df) + 360) % 360;
+      else if (mx === g) h = (60 * ((b - r) / df) + 120) % 360;
+      else h = (60 * ((r - g) / df) + 240) % 360;
+    }
+    const s = mx > 1e-6 ? df / mx : 0;
+    const v = mx;
+    const maroon =
+      v < 0.55 && s > 0.25 && s < 0.75 && (h < 25 || h > 335);
+    if (v <= 0.12 || maroon) continue;
+    if (!(s > 0.15 || v > 0.35)) continue;
+    hues.push(h);
+  }
+  if (hues.length < 30) {
+    hues.length = 0;
+    for (let i = 0; i < px.length; i += 4) {
+      const v = Math.max(px[i], px[i + 1], px[i + 2]) / 255;
+      if (v <= 0.15) continue;
+      const r = px[i] / 255;
+      const g = px[i + 1] / 255;
+      const b = px[i + 2] / 255;
+      const mx = Math.max(r, g, b);
+      const mn = Math.min(r, g, b);
+      const df = mx - mn;
+      let h = 0;
+      if (df > 1e-6) {
+        if (mx === r) h = (60 * ((g - b) / df) + 360) % 360;
+        else if (mx === g) h = (60 * ((b - r) / df) + 120) % 360;
+        else h = (60 * ((r - g) / df) + 240) % 360;
+      }
+      hues.push(h);
+    }
+  }
+  const hist = new Float32Array(bins);
+  if (hues.length === 0) return hist;
+  const binW = 360 / bins;
+  for (const h of hues) {
+    let bi = Math.floor(h / binW);
+    if (bi >= bins) bi = bins - 1;
+    hist[bi] += 1;
+  }
+  // density
+  for (let i = 0; i < bins; i++) hist[i] /= hues.length * binW;
+  return hist;
+}
+
+function hueHistFromRgbFloat(rgb: Float32Array, bins = HUE_BINS): Float32Array {
+  // rgb interleaved length TEMPLATE_SIZE² * 3
+  const n = Math.floor(rgb.length / 3);
+  const hues: number[] = [];
+  for (let j = 0; j < n; j++) {
+    const r = rgb[j * 3] / 255;
+    const g = rgb[j * 3 + 1] / 255;
+    const b = rgb[j * 3 + 2] / 255;
+    const mx = Math.max(r, g, b);
+    const mn = Math.min(r, g, b);
+    const df = mx - mn;
+    let h = 0;
+    if (df > 1e-6) {
+      if (mx === r) h = (60 * ((g - b) / df) + 360) % 360;
+      else if (mx === g) h = (60 * ((b - r) / df) + 120) % 360;
+      else h = (60 * ((r - g) / df) + 240) % 360;
+    }
+    const s = mx > 1e-6 ? df / mx : 0;
+    const v = mx;
+    const maroon = v < 0.55 && s > 0.25 && s < 0.75 && (h < 25 || h > 335);
+    if (v <= 0.12 || maroon) continue;
+    if (!(s > 0.15 || v > 0.35)) continue;
+    hues.push(h);
+  }
+  const hist = new Float32Array(bins);
+  if (hues.length === 0) return hist;
+  const binW = 360 / bins;
+  for (const h of hues) {
+    let bi = Math.floor(h / binW);
+    if (bi >= bins) bi = bins - 1;
+    hist[bi] += 1;
+  }
+  for (let i = 0; i < bins; i++) hist[i] /= hues.length * binW;
+  return hist;
+}
+
+function histDist(a: Float32Array, b: Float32Array): number {
+  let dot = 0;
+  let na = 0;
+  let nb = 0;
+  const n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i++) {
+    dot += a[i] * b[i];
+    na += a[i] * a[i];
+    nb += b[i] * b[i];
+  }
+  const den = Math.sqrt(na) * Math.sqrt(nb);
+  if (den < 1e-9) return 0;
+  return 1 - dot / den;
+}
+
+function toRgbFloat(data: ImageData): Float32Array {
+  const { data: px } = data;
+  const out = new Float32Array((px.length / 4) * 3);
+  for (let i = 0, j = 0; i < px.length; i += 4, j += 3) {
+    out[j] = px[i];
+    out[j + 1] = px[i + 1];
+    out[j + 2] = px[i + 2];
+  }
+  return out;
 }
 
 /** 正規化互相關 ∈ [-1,1]；可選 mask（>0 的像素才計入） */
@@ -355,6 +521,8 @@ export async function loadPreviewThumbTemplates(
         aHash: averageHash(imageData),
         gray: toGray(imageData),
         mask,
+        hue: hueHistFromImageData(imageData),
+        types: speciesTypeIds(speciesId),
       });
     }
     PREVIEW_THUMB_TEMPLATES = loaded;
@@ -366,6 +534,216 @@ export async function loadPreviewThumbTemplates(
   } finally {
     /* keep loadPromise for reuse */
   }
+}
+
+async function loadTypeIconTemplates(force = false): Promise<TypeIconTemplate[]> {
+  if (!force && TYPE_ICON_TEMPLATES.length > 0) return TYPE_ICON_TEMPLATES;
+  if (!force && typeIconsPromise) return typeIconsPromise;
+  typeIconsPromise = (async () => {
+    const loaded: TypeIconTemplate[] = [];
+    for (const id of TYPE_ICON_IDS) {
+      loaded.push({ id, cache: new Map() });
+    }
+    // Warm default 32px from PNG (SVG fallback via browser decode of png)
+    await Promise.all(
+      loaded.map(async (t) => {
+        try {
+          const res = await fetch(`${typesBaseUrl()}${t.id}.png`);
+          if (!res.ok) return;
+          const blob = await res.blob();
+          const bmp = await createImageBitmap(blob);
+          const c = document.createElement('canvas');
+          c.width = 32;
+          c.height = 32;
+          const ctx = c.getContext('2d', { willReadFrequently: true })!;
+          ctx.clearRect(0, 0, 32, 32);
+          ctx.drawImage(bmp, 0, 0, 32, 32);
+          bmp.close();
+          const imageData = ctx.getImageData(0, 0, 32, 32);
+          t.cache.set(32, {
+            size: 32,
+            gray: toGray(imageData),
+            rgb: toRgbFloat(imageData),
+            mask: alphaMaskFromImageData(imageData, 128),
+          });
+        } catch {
+          /* ignore missing icon */
+        }
+      }),
+    );
+    TYPE_ICON_TEMPLATES = loaded;
+    return loaded;
+  })();
+  return typeIconsPromise;
+}
+
+function typeIconAtSize(t: TypeIconTemplate, size: number): {
+  gray: Float32Array;
+  rgb: Float32Array;
+  mask: Float32Array;
+  size: number;
+} | null {
+  const hit = t.cache.get(size);
+  if (hit) return hit;
+  const base = t.cache.get(32);
+  if (!base) return null;
+  // Nearest-neighbor upsample/downsample from 32 for other sizes
+  const c = document.createElement('canvas');
+  c.width = 32;
+  c.height = 32;
+  const ctx = c.getContext('2d', { willReadFrequently: true })!;
+  const img = ctx.createImageData(32, 32);
+  for (let i = 0, j = 0; i < 32 * 32; i++, j += 4) {
+    img.data[j] = base.rgb[i * 3];
+    img.data[j + 1] = base.rgb[i * 3 + 1];
+    img.data[j + 2] = base.rgb[i * 3 + 2];
+    img.data[j + 3] = base.mask[i] > 0 ? 255 : 0;
+  }
+  ctx.putImageData(img, 0, 0);
+  const out = document.createElement('canvas');
+  out.width = size;
+  out.height = size;
+  const octx = out.getContext('2d', { willReadFrequently: true })!;
+  octx.imageSmoothingEnabled = true;
+  octx.clearRect(0, 0, size, size);
+  octx.drawImage(c, 0, 0, 32, 32, 0, 0, size, size);
+  const imageData = octx.getImageData(0, 0, size, size);
+  const entry = {
+    size,
+    gray: toGray(imageData),
+    rgb: toRgbFloat(imageData),
+    mask: alphaMaskFromImageData(imageData, 128),
+  };
+  t.cache.set(size, entry);
+  return entry;
+}
+
+function nccMaskedRgb(
+  aRgb: Float32Array,
+  bRgb: Float32Array,
+  mask: Float32Array,
+  nPix: number,
+): number {
+  let count = 0;
+  let meanA = 0;
+  let meanB = 0;
+  for (let i = 0; i < nPix; i++) {
+    if (mask[i] <= 0) continue;
+    meanA += aRgb[i * 3] + aRgb[i * 3 + 1] + aRgb[i * 3 + 2];
+    meanB += bRgb[i * 3] + bRgb[i * 3 + 1] + bRgb[i * 3 + 2];
+    count += 3;
+  }
+  if (count < 24) return 0;
+  meanA /= count;
+  meanB /= count;
+  let num = 0;
+  let denA = 0;
+  let denB = 0;
+  for (let i = 0; i < nPix; i++) {
+    if (mask[i] <= 0) continue;
+    for (let c = 0; c < 3; c++) {
+      const da = aRgb[i * 3 + c] - meanA;
+      const db = bRgb[i * 3 + c] - meanB;
+      num += da * db;
+      denA += da * da;
+      denB += db * db;
+    }
+  }
+  const den = Math.sqrt(denA * denB);
+  if (den < 1e-6) return 0;
+  return num / den;
+}
+
+function nccMaskedGray(a: Float32Array, b: Float32Array, mask: Float32Array): number {
+  return ncc(a, b, mask);
+}
+
+/**
+ * Soft type-icon scan on card top-right (1–2 icons). Low conf → [] (no hard veto).
+ */
+function detectCardTypes(
+  src: CanvasRenderingContext2D,
+  card: { x: number; y: number; width: number; height: number },
+): string[] {
+  if (TYPE_ICON_TEMPLATES.length === 0) return [];
+  const x0 = Math.floor(card.x + card.width * 0.55);
+  const x1 = Math.floor(card.x + card.width * 0.98);
+  const y0 = Math.floor(card.y + card.height * 0.04);
+  const y1 = Math.floor(card.y + card.height * 0.58);
+  const rw = Math.max(1, x1 - x0);
+  const rh = Math.max(1, y1 - y0);
+  let region: ImageData;
+  try {
+    region = src.getImageData(x0, y0, rw, rh);
+  } catch {
+    return [];
+  }
+  type Hit = { sc: number; id: string; x: number; y: number; sz: number };
+  const hits: Hit[] = [];
+  for (const frac of TYPE_ICON_FRACS) {
+    let isize = Math.max(16, Math.floor(card.height * frac));
+    isize = Math.min(isize, rh - 2, Math.max(16, Math.floor(rw / 2)));
+    const step = Math.max(2, Math.floor(isize / 6));
+    for (const t of TYPE_ICON_TEMPLATES) {
+      const tmpl = typeIconAtSize(t, isize);
+      if (!tmpl) continue;
+      for (let y = 0; y <= rh - isize; y += step) {
+        for (let x = 0; x <= rw - isize; x += step) {
+          // extract patch
+          const gray = new Float32Array(isize * isize);
+          const rgb = new Float32Array(isize * isize * 3);
+          let sum = 0;
+          let sumSq = 0;
+          for (let py = 0; py < isize; py++) {
+            for (let px = 0; px < isize; px++) {
+              const si = ((y + py) * rw + (x + px)) * 4;
+              const r = region.data[si];
+              const g = region.data[si + 1];
+              const b = region.data[si + 2];
+              const gi = py * isize + px;
+              const gv = 0.299 * r + 0.587 * g + 0.114 * b;
+              gray[gi] = gv;
+              rgb[gi * 3] = r;
+              rgb[gi * 3 + 1] = g;
+              rgb[gi * 3 + 2] = b;
+              sum += gv;
+              sumSq += gv * gv;
+            }
+          }
+          const mean = sum / (isize * isize);
+          if (mean < 50) continue;
+          const variance = sumSq / (isize * isize) - mean * mean;
+          if (variance < 18 * 18) continue;
+          const gN = nccMaskedGray(gray, tmpl.gray, tmpl.mask);
+          const cN = nccMaskedRgb(rgb, tmpl.rgb, tmpl.mask, isize * isize);
+          const sc = 0.35 * gN + 0.65 * cN;
+          if (sc >= TYPE_MATCH_THR) {
+            hits.push({ sc, id: t.id, x, y, sz: isize });
+          }
+        }
+      }
+    }
+  }
+  hits.sort((a, b) => b.sc - a.sc);
+  const picked: Hit[] = [];
+  for (const h of hits) {
+    if (picked.some((p) => p.id === h.id)) continue;
+    let overlap = false;
+    for (const p of picked) {
+      const ix0 = Math.max(h.x, p.x);
+      const iy0 = Math.max(h.y, p.y);
+      const ix1 = Math.min(h.x + h.sz, p.x + p.sz);
+      const iy1 = Math.min(h.y + h.sz, p.y + p.sz);
+      if (ix1 > ix0 && iy1 > iy0 && (ix1 - ix0) * (iy1 - iy0) > 0.3 * h.sz * h.sz) {
+        overlap = true;
+        break;
+      }
+    }
+    if (overlap) continue;
+    picked.push(h);
+    if (picked.length >= 2) break;
+  }
+  return picked.map((p) => p.id);
 }
 
 /**
@@ -572,14 +950,21 @@ function* iterQueryVariants(gray0: Float32Array): Generator<Float32Array> {
 function cropResizeToTemplate(
   src: CanvasRenderingContext2D,
   rect: { x: number; y: number; width: number; height: number },
-): { imageData: ImageData; dataUrl: string; gray: Float32Array } {
+): { imageData: ImageData; dataUrl: string; gray: Float32Array; rgb: Float32Array; hue: Float32Array } {
   const tmp = document.createElement('canvas');
   tmp.width = TEMPLATE_SIZE;
   tmp.height = TEMPLATE_SIZE;
   const tctx = tmp.getContext('2d');
   if (!tctx) {
     const empty = src.createImageData(TEMPLATE_SIZE, TEMPLATE_SIZE);
-    return { imageData: empty, dataUrl: '', gray: toGray(empty) };
+    const rgb = toRgbFloat(empty);
+    return {
+      imageData: empty,
+      dataUrl: '',
+      gray: toGray(empty),
+      rgb,
+      hue: hueHistFromRgbFloat(rgb),
+    };
   }
   const raw = src.getImageData(
     Math.max(0, rect.x),
@@ -596,57 +981,134 @@ function cropResizeToTemplate(
   // Square → drawContained is identity scale letterbox (fills 64)
   drawContained(tctx, rawCanvas, recentered.width, recentered.height);
   const imageData = tctx.getImageData(0, 0, TEMPLATE_SIZE, TEMPLATE_SIZE);
+  const rgb = toRgbFloat(imageData);
   return {
     imageData,
     dataUrl: tmp.toDataURL('image/png'),
     gray: grayFromImageData(imageData),
+    rgb,
+    hue: hueHistFromRgbFloat(rgb),
   };
 }
 
-/**
- * 本地比對：多尺度／微位移 + 灰階 NCC（主）+ SSD + aHash（輔）。
- * mask = 模板 alpha ∩ query 非黑。confidence ∈ [0,1]。
- */
-function matchTemplate(hash: string, gray: Float32Array): {
+function ahashPrefilter(queryHash: string, templates: ThumbTemplate[]): ThumbTemplate[] {
+  const scored = templates
+    .map((t) => ({ ham: hamming(queryHash, t.aHash), t }))
+    .sort((a, b) => a.ham - b.ham);
+  const out: ThumbTemplate[] = [];
+  const seen = new Set<ThumbTemplate>();
+  for (const { ham, t } of scored) {
+    if (ham <= AHASH_MAX_HAM || out.length < AHASH_TOP_K) {
+      if (!seen.has(t)) {
+        out.push(t);
+        seen.add(t);
+      }
+    } else if (out.length >= AHASH_TOP_K) {
+      break;
+    }
+  }
+  if (out.length < AHASH_TOP_K) {
+    return scored.slice(0, AHASH_TOP_K).map((s) => s.t);
+  }
+  return out;
+}
+
+export interface MatchTemplateResult {
   speciesId: string | null;
   speciesNameZh: string | null;
   confidence: number;
-} {
+  altSpeciesId?: string | null;
+  margin?: number;
+  detectedTypes?: string[];
+}
+
+/**
+ * 本地比對：aHash prefilter → 多尺度 NCC/SSD/aHash → hue 軟懲罰 → type 軟否決 → MIN_MARGIN。
+ * mask = 模板 alpha ∩ query 非黑。寧可 null 不要錯種。
+ */
+function matchTemplate(
+  hash: string,
+  gray: Float32Array,
+  queryHue: Float32Array,
+  detectedTypes: string[] = [],
+): MatchTemplateResult {
   if (PREVIEW_THUMB_TEMPLATES.length === 0) {
     const confidence = 0.12 + (hash.split('1').length % 7) * 0.01;
-    return { speciesId: null, speciesNameZh: null, confidence };
+    return { speciesId: null, speciesNameZh: null, confidence, detectedTypes };
   }
 
-  let best = {
-    speciesId: null as string | null,
-    speciesNameZh: null as string | null,
-    confidence: 0,
-  };
+  const cands = ahashPrefilter(hash, PREVIEW_THUMB_TEMPLATES);
+  const bestBySpecies = new Map<
+    string,
+    { speciesId: string; speciesNameZh: string; confidence: number; types: string[] }
+  >();
 
   for (const g of iterQueryVariants(gray)) {
     const qMask = queryNonblackMask(g);
     const h = averageHashGray(g);
-    for (const t of PREVIEW_THUMB_TEMPLATES) {
+    for (const t of cands) {
       const mask = intersectMask(t.mask, qMask);
       const nccScore = (ncc(g, t.gray, mask) + 1) / 2;
       const ssdScore = ssdSimilarity(g, t.gray, mask);
       const hashBits = Math.max(h.length, t.aHash.length) || 64;
       const hashScore = Math.max(0, 1 - hamming(h, t.aHash) / (hashBits * 0.35));
-      const confidence = Math.min(1, nccScore * 0.55 + ssdScore * 0.25 + hashScore * 0.2);
-      if (confidence > best.confidence) {
-        best = {
+      let confidence = Math.min(1, nccScore * 0.55 + ssdScore * 0.25 + hashScore * 0.2);
+      if (histDist(queryHue, t.hue) > HUE_DIST_THR) {
+        confidence *= HUE_PENALTY;
+      }
+      const prev = bestBySpecies.get(t.speciesId);
+      if (!prev || confidence > prev.confidence) {
+        bestBySpecies.set(t.speciesId, {
           speciesId: t.speciesId,
           speciesNameZh: t.speciesNameZh,
           confidence,
-        };
+          types: t.types,
+        });
       }
     }
   }
 
-  if (best.confidence < CONFIDENCE_THRESHOLD) {
-    return { speciesId: null, speciesNameZh: null, confidence: best.confidence };
+  const ranked = [...bestBySpecies.values()].sort((a, b) => b.confidence - a.confidence);
+  const det = detectedTypes;
+  const accepted = ranked.filter((c) => {
+    if (det.length === 0) return true;
+    if (!c.types.length) return true; // unknown types → soft, do not veto
+    return det.every((d) => c.types.includes(d));
+  });
+
+  if (accepted.length === 0) {
+    const top = ranked[0];
+    return {
+      speciesId: null,
+      speciesNameZh: null,
+      confidence: top?.confidence ?? 0,
+      altSpeciesId: top?.speciesId ?? null,
+      margin: 0,
+      detectedTypes: det,
+    };
   }
-  return best;
+
+  const top1 = accepted[0];
+  const top2 = accepted[1];
+  const margin = top1.confidence - (top2?.confidence ?? 0);
+  if (top1.confidence >= CONFIDENCE_THRESHOLD && margin >= MIN_MARGIN) {
+    return {
+      speciesId: top1.speciesId,
+      speciesNameZh: top1.speciesNameZh,
+      confidence: top1.confidence,
+      altSpeciesId: top2?.speciesId ?? null,
+      margin,
+      detectedTypes: det,
+    };
+  }
+  return {
+    speciesId: null,
+    speciesNameZh: null,
+    confidence: top1.confidence,
+    altSpeciesId: top2?.speciesId ?? top1.speciesId,
+    margin,
+    detectedTypes: det,
+  };
 }
 
 function emptyResults(reasonConfidence = 0): RecognizeResult[] {
@@ -667,7 +1129,7 @@ export async function recognizeEnemyTeamFromCanvas(
   tune: RoiFineTune = DEFAULT_FINE_TUNE,
 ): Promise<RecognizeResult[]> {
   try {
-    await loadPreviewThumbTemplates();
+    await Promise.all([loadPreviewThumbTemplates(), loadTypeIconTemplates()]);
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx || !canvas.width || !canvas.height) return emptyResults();
 
@@ -680,11 +1142,13 @@ export async function recognizeEnemyTeamFromCanvas(
       try {
         // Recognition crop === overlay yellow: card body height (CARD_GAP_FRAC),
         // then square thumb via thumbRectInSlot (same geometry as thumbCssPercent).
+        // Type veto uses full red card body (top-right icons) — panel geometry unchanged.
         const card = cardRect(panelPx, slot);
+        const detectedTypes = detectCardTypes(ctx, card);
         const tRect = thumbRectInSlot(card);
-        const { imageData, dataUrl, gray } = cropResizeToTemplate(ctx, tRect);
+        const { imageData, dataUrl, gray, hue } = cropResizeToTemplate(ctx, tRect);
         const hash = averageHash(imageData);
-        const matched = matchTemplate(hash, gray);
+        const matched = matchTemplate(hash, gray, hue, detectedTypes);
         let speciesId = matched.speciesId;
         let speciesNameZh = matched.speciesNameZh;
         if (speciesId) {
@@ -702,6 +1166,9 @@ export async function recognizeEnemyTeamFromCanvas(
           species: speciesId,
           thumbnailDataUrl: dataUrl || undefined,
           hash,
+          altSpeciesId: matched.altSpeciesId,
+          margin: matched.margin,
+          detectedTypes: matched.detectedTypes,
         });
       } catch {
         results.push({

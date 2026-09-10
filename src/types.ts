@@ -59,13 +59,19 @@ export interface PokemonSet {
 export interface RecognizeResult {
   slot: number;
   confidence: number;
-  /** 種族 key；低信心為 null → UI 顯示「未識別」 */
+  /** 種族 key；低信心／低 margin／type veto → null → UI「未識別」 */
   speciesId?: string | null;
   speciesNameZh?: string | null;
   /** @deprecated 相容舊欄位；等同 speciesId */
   species?: string | null;
   thumbnailDataUrl?: string;
   hash?: string;
+  /** Debug: runner-up species after gates */
+  altSpeciesId?: string | null;
+  /** Debug: top1.conf - top2.conf among accepted candidates */
+  margin?: number;
+  /** Debug: soft-detected type icon ids from card top-right */
+  detectedTypes?: string[];
 }
 
 export const EMPTY_STATS: Stats = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
