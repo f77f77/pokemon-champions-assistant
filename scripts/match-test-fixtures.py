@@ -32,17 +32,17 @@ except ImportError as e:
 ROOT = Path(__file__).resolve().parents[1]
 
 # Locked — mirror src/lib/roi.ts (DO NOT change panel; THUMB left only if square misses center)
-ENEMY_PANEL = {"left": 0.811, "top": 0.143, "right": 0.965, "bottom": 0.832}
+ENEMY_PANEL = {"left": 0.811, "top": 0.137, "right": 0.965, "bottom": 0.836}
 THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}
 TEMPLATE_SIZE = 64
 SLOT_COUNT = 6
 CARD_GAP_FRAC = 0.08  # fraction of pitch that is inter-card gap (mirror src/lib/roi.ts)
 PANEL_OUTER_MARGIN_FRAC = 0.02  # green visual outer pad (content-height frac; mirror roi.ts)
 TARGET_ASPECT = 16 / 9
-CONFIDENCE_THRESHOLD = 0.55
+CONFIDENCE_THRESHOLD = 0.54
 
 # Multi-scale + translation (query relative to 64×64)
-MATCH_SCALES = (0.8, 0.95, 1.1, 1.25, 1.4)
+MATCH_SCALES = (0.9, 1.0, 1.1, 1.2, 1.35)
 MATCH_SHIFTS = (-8, -4, 0, 4, 8)
 
 FIXTURES = [
@@ -196,6 +196,19 @@ def confidence(gray: np.ndarray, hash_s: str, tmpl_gray: np.ndarray, tmpl_hash: 
     return min(1.0, ncc_score * 0.55 + ssd_score * 0.25 + hash_score * 0.2)
 
 
+def yellow_rect_from_card(sx, sy, sw, sh, thumb=None):
+    """Yellow square inside red card body (mirrors thumbRectInSlot)."""
+    thumb = thumb or THUMB_CROP
+    top_in = max(0.0, min(0.2, float(thumb.get("topInset", 0.0)))) * sh
+    bot_in = max(0.0, min(0.2, float(thumb.get("bottomInset", 0.0)))) * sh
+    side = max(1, int(sh - top_in - bot_in))
+    tx = int(sx + sw * float(thumb["left"]))
+    max_x = sx + max(0, sw - side)
+    tx = min(max(sx, tx), max_x)
+    ty = int(sy + top_in)
+    return tx, ty, side
+
+
 def crop_slot(im: Image.Image, slot: int, *, card_body: bool = True) -> Image.Image:
     """Yellow square crop for matching (= overlay yellow / app recognition).
 
@@ -214,19 +227,27 @@ def crop_slot(im: Image.Image, slot: int, *, card_body: bool = True) -> Image.Im
     sx, sw = px, pw
     sy = int(py + slot * pitch + top_inset)
     sh = max(1, int(body_h))
-    side = sh
-    tx = int(sx + sw * THUMB_CROP["left"])
-    max_x = sx + max(0, sw - side)
-    tx = min(max(sx, tx), max_x)
-    ty = sy
+    tx, ty, side = yellow_rect_from_card(sx, sy, sw, sh)
     return im.crop((tx, ty, tx + side, ty + side))
 
 
 def is_maroon(arr: np.ndarray) -> np.ndarray:
+    """Dark flat red-card paint only — spare bright orange/red sprite pixels."""
     r = arr[:, :, 0].astype(np.float32)
     g = arr[:, :, 1].astype(np.float32)
     b = arr[:, :, 2].astype(np.float32)
-    return (r > 70) & (r > g * 1.5) & (r > b * 1.3) & (g < 100) & (b < 110)
+    mx = np.maximum(np.maximum(r, g), b)
+    # Card BG: mid R, very low G/B, not bright sprite orange (mx often >150)
+    return (
+        (r > 55)
+        & (mx < 145)
+        & (g < 78)
+        & (b < 88)
+        & (r > g * 1.45)
+        & (r > b * 1.3)
+        & ((r - g) > 22)
+        & ((r + g + b) < 300)
+    )
 
 
 def suppress_card_background(crop: Image.Image) -> Image.Image:
@@ -428,13 +449,14 @@ def main() -> int:
         "",
         "## Notes",
         "",
-        "- Overlay yellow is a **square** with side = red card **body** height (pitch×(1-CARD_GAP_FRAC), CARD_GAP_FRAC=0.08) via `thumbCssPercent`/`cardRect`.",
-        "- Recognition/match crop === yellow square (`card_body=True`; side=pitch×(1-CARD_GAP_FRAC) via `cardRect`→`thumbRectInSlot`); `THUMB_CROP.left = 0.18`.",
+        "- ENEMY_PANEL top/bottom recalibrated from fixture card centers (cy0−pitch/2 … cy5+pitch/2): top=0.137 bottom=0.836 (was 0.143/0.832).",
+        "- Overlay yellow is a **square** with side = red card **body** height (pitch×(1-CARD_GAP_FRAC), CARD_GAP_FRAC=0.08) via `thumbCssPercent`/`cardRect`→`thumbRectInSlot` (supports topInset/bottomInset).",
+        "- Recognition/match crop === yellow square; `THUMB_CROP.left = 0.18`.",
         "- Templates trimmed of transparent padding from sprite_poke_3 cells, then contain/letterbox to 64.",
-        "- Capture path suppresses maroon card BG and recenters on the sprite blob before multi-scale match.",
+        "- Capture path: darker card-paint BG suppress (spare bright sprite orange) + content-aware recenter + multi-scale match.",
         "- `recognize.ts` mirrors this pipeline (`cardRect` → `thumbRectInSlot`).",
         f"- Green visual frame uses `PANEL_OUTER_MARGIN_FRAC={PANEL_OUTER_MARGIN_FRAC}` (outer pad only; ~{PANEL_OUTER_MARGIN_FRAC*1080:.0f}px @1080p contentH); pitch/yellow/recognition still locked to `ENEMY_PANEL`.",
-        f"- Accuracy with yellow-aligned crop: **{accuracy}** (prior full-pitch `card_body=False` was **15/18**).",
+        f"- Accuracy with calibrated panel + yellow crop: **{accuracy}** (was 11/18 after yellow-align; prior full-pitch 15/18).",
         "",
     ]
     out_md.write_text("\n".join(lines), encoding="utf-8")

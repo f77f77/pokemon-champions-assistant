@@ -28,11 +28,24 @@ except ImportError as e:
 ROOT = Path(__file__).resolve().parents[1]
 
 # Locked — mirror src/lib/roi.ts
-ENEMY_PANEL = {"left": 0.811, "top": 0.143, "right": 0.965, "bottom": 0.832}
-THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}  # square: side=slotH; left offset
+ENEMY_PANEL = {"left": 0.811, "top": 0.137, "right": 0.965, "bottom": 0.836}
+THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}  # square inset inside card body
 TEMPLATE_SIZE = 64
 SLOT_COUNT = 6
 CARD_GAP_FRAC = 0.08  # fraction of pitch that is inter-card gap (mirror src/lib/roi.ts)
+
+def yellow_rect_from_card(sx, sy, sw, sh, thumb=None):
+    """Yellow square inside red card body (mirrors thumbRectInSlot)."""
+    thumb = thumb or THUMB_CROP
+    top_in = max(0.0, min(0.2, float(thumb.get("topInset", 0.0)))) * sh
+    bot_in = max(0.0, min(0.2, float(thumb.get("bottomInset", 0.0)))) * sh
+    side = max(1, int(sh - top_in - bot_in))
+    tx = int(sx + sw * float(thumb["left"]))
+    max_x = sx + max(0, sw - side)
+    tx = min(max(sx, tx), max_x)
+    ty = int(sy + top_in)
+    return tx, ty, side
+
 PANEL_OUTER_MARGIN_FRAC = 0.02  # green visual outer pad (content-height frac; mirror roi.ts)
 TARGET_ASPECT = 16 / 9
 
@@ -150,11 +163,7 @@ def main(argv: list[str] | None = None) -> None:
         sx, sw = px, pw
         sy = int(py + slot * pitch + top_inset)
         sh = max(1, int(body_h))
-        side = sh  # square = card body height (yellow / recognition)
-        tx = int(sx + sw * THUMB_CROP["left"])
-        max_x = sx + max(0, sw - side)
-        tx = min(max(sx, tx), max_x)
-        ty = sy
+        tx, ty, side = yellow_rect_from_card(sx, sy, sw, sh)
         tw = th = side
         crop = letterbox_to_template(im.crop((tx, ty, tx + tw, ty + th)))
         sid = meta["speciesId"]

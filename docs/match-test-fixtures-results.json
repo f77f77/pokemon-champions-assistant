@@ -1,16 +1,16 @@
 {
-  "accuracy": "11/18",
-  "correct": 11,
+  "accuracy": "15/18",
+  "correct": 15,
   "total": 18,
   "templateCount": 50,
   "speciesIdCount": 50,
-  "threshold": 0.55,
+  "threshold": 0.54,
   "scales": [
-    0.8,
-    0.95,
+    0.9,
+    1.0,
     1.1,
-    1.25,
-    1.4
+    1.2,
+    1.35
   ],
   "shifts": [
     -8,
@@ -24,8 +24,8 @@
       "fixture": "team-preview-test-1",
       "slot": 0,
       "expected": "charizard",
-      "matched": "empoleon",
-      "confidence": 0.659,
+      "matched": "incineroar",
+      "confidence": 0.6282,
       "ok": false
     },
     {
@@ -33,15 +33,15 @@
       "slot": 1,
       "expected": "aerodactyl",
       "matched": "aerodactyl",
-      "confidence": 0.7786,
+      "confidence": 0.7435,
       "ok": true
     },
     {
       "fixture": "team-preview-test-1",
       "slot": 2,
       "expected": "meowscarada",
-      "matched": "sneasler",
-      "confidence": 0.7173,
+      "matched": "talonflame",
+      "confidence": 0.6094,
       "ok": false
     },
     {
@@ -49,23 +49,23 @@
       "slot": 3,
       "expected": "garchomp",
       "matched": "garchomp",
-      "confidence": 0.6079,
+      "confidence": 0.6314,
       "ok": true
     },
     {
       "fixture": "team-preview-test-1",
       "slot": 4,
       "expected": "rotomwash",
-      "matched": "excadrill",
-      "confidence": 0.6095,
-      "ok": false
+      "matched": "rotomwash",
+      "confidence": 0.6278,
+      "ok": true
     },
     {
       "fixture": "team-preview-test-1",
       "slot": 5,
       "expected": "aegislash",
       "matched": "swampert",
-      "confidence": 0.6611,
+      "confidence": 0.6596,
       "ok": false
     },
     {
@@ -73,7 +73,7 @@
       "slot": 0,
       "expected": "whimsicott",
       "matched": "whimsicott",
-      "confidence": 0.6669,
+      "confidence": 0.7514,
       "ok": true
     },
     {
@@ -81,7 +81,7 @@
       "slot": 1,
       "expected": "charizard",
       "matched": "charizard",
-      "confidence": 0.6927,
+      "confidence": 0.6267,
       "ok": true
     },
     {
@@ -89,7 +89,7 @@
       "slot": 2,
       "expected": "basculegion",
       "matched": "basculegion",
-      "confidence": 0.7119,
+      "confidence": 0.7204,
       "ok": true
     },
     {
@@ -97,7 +97,7 @@
       "slot": 3,
       "expected": "kingambit",
       "matched": "kingambit",
-      "confidence": 0.7198,
+      "confidence": 0.6931,
       "ok": true
     },
     {
@@ -105,23 +105,23 @@
       "slot": 4,
       "expected": "sneasler",
       "matched": "sneasler",
-      "confidence": 0.7418,
+      "confidence": 0.6525,
       "ok": true
     },
     {
       "fixture": "team-preview-test-2",
       "slot": 5,
       "expected": "garchomp",
-      "matched": "swampert",
-      "confidence": 0.5964,
-      "ok": false
+      "matched": "garchomp",
+      "confidence": 0.5453,
+      "ok": true
     },
     {
       "fixture": "team-preview-test-3",
       "slot": 0,
       "expected": "ninetalesalola",
       "matched": "ninetalesalola",
-      "confidence": 0.7772,
+      "confidence": 0.8056,
       "ok": true
     },
     {
@@ -129,23 +129,23 @@
       "slot": 1,
       "expected": "empoleon",
       "matched": "empoleon",
-      "confidence": 0.808,
+      "confidence": 0.8355,
       "ok": true
     },
     {
       "fixture": "team-preview-test-3",
       "slot": 2,
       "expected": "garchomp",
-      "matched": "corviknight",
-      "confidence": 0.6092,
-      "ok": false
+      "matched": "garchomp",
+      "confidence": 0.6571,
+      "ok": true
     },
     {
       "fixture": "team-preview-test-3",
       "slot": 3,
       "expected": "staraptor",
       "matched": "staraptor",
-      "confidence": 0.7977,
+      "confidence": 0.8272,
       "ok": true
     },
     {
@@ -153,16 +153,16 @@
       "slot": 4,
       "expected": "whimsicott",
       "matched": "whimsicott",
-      "confidence": 0.6633,
+      "confidence": 0.702,
       "ok": true
     },
     {
       "fixture": "team-preview-test-3",
       "slot": 5,
       "expected": "charizard",
-      "matched": "glimmora",
-      "confidence": 0.6179,
-      "ok": false
+      "matched": "charizard",
+      "confidence": 0.5508,
+      "ok": true
     }
   ]
 }

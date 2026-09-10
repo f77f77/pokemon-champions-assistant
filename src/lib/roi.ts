@@ -2,7 +2,7 @@
  * Team Preview 敵方縮圖 ROI（對齊 VGC 助手規格）。
  *
  * 座標系一律相對「去黑邊後的 16:9 內容區」(contentRect)，不是整幀。
- * 預設敵方面板（內層 card pitch）：(left,top)=(0.811,0.143) → (right,bottom)=(0.965,0.832)
+ * 預設敵方面板（內層 card pitch）：(left,top)=(0.811,0.137) → (right,bottom)=(0.965,0.836)
  * 再均分成 6 等距 pitch；紅卡本體 = pitch×(1-CARD_GAP_FRAC)（上下留 gap）；
  * 黃框為正方形：邊長 = 紅卡本體高度，水平置於左側精靈區（黃框之間可見 gap）。
  * 綠框為視覺外框：相對內層 pitch 上下再外擴 PANEL_OUTER_MARGIN_FRAC（不影響黃框／辨認）。
@@ -16,9 +16,11 @@ export const TARGET_ASPECT = 16 / 9;
 /** 敵方面板預設（相對 contentRect 的 0–1） */
 export const ENEMY_PANEL_DEFAULT = {
   left: 0.811,
-  top: 0.143,
+  /** Calibrated from fixture card centers (cy0 - pitch/2). */
+  top: 0.137,
   right: 0.965,
-  bottom: 0.832,
+  /** Calibrated from fixture card centers (cy5 + pitch/2). */
+  bottom: 0.836,
 } as const;
 
 /**
@@ -28,12 +30,15 @@ export const ENEMY_PANEL_DEFAULT = {
 export const THUMB_CROP = {
   /** 正方形左緣（相對 card 寬）— 覆蓋左側精靈，避開右側類型圖示 */
   left: 0.18,
-  /** @deprecated 正方形寬由 card 高度推得；保留欄位供腳本同步顯示 */
+  /** @deprecated 正方形寬由 inset 後邊長推得；保留欄位供腳本同步顯示 */
   right: 0.18 + 0.42,
-  /** @deprecated 黃框頂貼齊紅卡本體頂 */
-  topInset: 0,
-  /** @deprecated 黃框底貼齊紅卡本體底 */
-  bottomInset: 0,
+  /**
+   * Yellow inset inside red card body (fraction of card body height).
+   * 0 = flush with card body (body already inset from pitch by CARD_GAP_FRAC/2).
+   * Non-zero keeps yellow square: side = bodyH × (1 - topInset - bottomInset).
+   */
+  topInset: 0.0,
+  bottomInset: 0.0,
 } as const;
 
 export const SLOT_COUNT = 6;
@@ -42,6 +47,7 @@ export const SLOT_COUNT = 6;
  * Fraction of each pitch that is inter-card gap (split half above + half below card body).
  * ~7–9% of pitch from VGC screenshots; 0.08 ≈ mid of measured range.
  */
+/** Inter-card gap as fraction of pitch (fixture-tuned with panel centers). */
 export const CARD_GAP_FRAC = 0.08;
 
 /**
@@ -190,13 +196,16 @@ export function cardRect(
  * 傳入 cardRect（或等高矩形）；回傳整幀像素座標（不超出 card 右緣）。
  */
 export function thumbRectInSlot(card: PixelRect): PixelRect {
-  const side = Math.max(1, card.height);
+  const topInset = Math.max(0, Math.min(0.2, THUMB_CROP.topInset)) * card.height;
+  const bottomInset = Math.max(0, Math.min(0.2, THUMB_CROP.bottomInset)) * card.height;
+  const side = Math.max(1, Math.floor(card.height - topInset - bottomInset));
   let x = card.x + card.width * THUMB_CROP.left;
   const maxX = card.x + Math.max(0, card.width - side);
   x = Math.min(Math.max(card.x, x), maxX);
+  const y = card.y + topInset;
   return {
     x: Math.floor(x),
-    y: Math.floor(card.y),
+    y: Math.floor(y),
     width: Math.floor(side),
     height: Math.floor(side),
   };
@@ -282,15 +291,17 @@ export function thumbCssPercent(
   const bodyH = pitch * (1 - gap);
   const topInset = pitch * (gap / 2);
   const cardTop = panel.top + slot * pitch + topInset;
+  const yInset = Math.max(0, Math.min(0.2, THUMB_CROP.topInset));
+  const yInsetBot = Math.max(0, Math.min(0.2, THUMB_CROP.bottomInset));
   // Visual square on 16:9 content: height% of contentH == width% of contentW in pixels
-  const heightFrac = bodyH;
-  const widthFrac = bodyH / TARGET_ASPECT;
+  const heightFrac = bodyH * (1 - yInset - yInsetBot);
+  const widthFrac = heightFrac / TARGET_ASPECT;
   let left = panel.left + panelW * THUMB_CROP.left;
   const maxLeft = panel.left + panelW - widthFrac;
   left = Math.min(Math.max(panel.left, left), maxLeft);
   return {
     left: left * 100,
-    top: cardTop * 100,
+    top: (cardTop + bodyH * yInset) * 100,
     width: widthFrac * 100,
     height: heightFrac * 100,
   };

@@ -56,10 +56,10 @@ export {
 } from './roi';
 
 /** 信心門檻：低於此 → 未識別 */
-export const CONFIDENCE_THRESHOLD = 0.55;
+export const CONFIDENCE_THRESHOLD = 0.54;
 
 /** Query multi-scale / translation sweep (mirror scripts/match-test-fixtures.py) */
-export const MATCH_SCALES = [0.8, 0.95, 1.1, 1.25, 1.4] as const;
+export const MATCH_SCALES = [0.9, 1.0, 1.1, 1.2, 1.35] as const;
 export const MATCH_SHIFTS = [-8, -4, 0, 4, 8] as const;
 
 /** @deprecated 舊 ROI 形狀；請改用 ENEMY_PANEL_DEFAULT + resolveEnemyPanel */
@@ -379,7 +379,17 @@ function suppressCardBackground(data: ImageData): ImageData {
     const r = px[i];
     const g = px[i + 1];
     const b = px[i + 2];
-    const maroon = r > 70 && r > g * 1.5 && r > b * 1.3 && g < 100 && b < 110;
+    const mx = Math.max(r, g, b);
+    // Dark flat card paint only — spare bright orange/red sprite pixels.
+    const maroon =
+      r > 55 &&
+      mx < 145 &&
+      g < 78 &&
+      b < 88 &&
+      r > g * 1.45 &&
+      r > b * 1.3 &&
+      r - g > 22 &&
+      r + g + b < 300;
     if (maroon) {
       op[i] = op[i + 1] = op[i + 2] = 0;
       op[i + 3] = 255;

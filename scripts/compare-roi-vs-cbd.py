@@ -21,8 +21,8 @@ except ImportError as e:
 ROOT = Path(__file__).resolve().parents[1]
 
 # Locked — mirror src/lib/roi.ts (DO NOT change)
-ENEMY_PANEL = {"left": 0.811, "top": 0.143, "right": 0.965, "bottom": 0.832}
-THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}  # square: side=slotH; left offset
+ENEMY_PANEL = {"left": 0.811, "top": 0.137, "right": 0.965, "bottom": 0.836}
+THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}  # square inset inside card body
 TEMPLATE_SIZE = 64
 SLOT_COUNT = 6
 CARD_GAP_FRAC = 0.08  # fraction of pitch that is inter-card gap (mirror src/lib/roi.ts)
@@ -159,6 +159,19 @@ def confidence(gray: list[float], hash_s: str, tmpl_gray: list[float], tmpl_hash
     return min(1.0, ncc_score * 0.55 + ssd_score * 0.25 + hash_score * 0.2)
 
 
+def yellow_rect_from_card(sx, sy, sw, sh, thumb=None):
+    """Yellow square inside red card body (mirrors thumbRectInSlot)."""
+    thumb = thumb or THUMB_CROP
+    top_in = max(0.0, min(0.2, float(thumb.get("topInset", 0.0)))) * sh
+    bot_in = max(0.0, min(0.2, float(thumb.get("bottomInset", 0.0)))) * sh
+    side = max(1, int(sh - top_in - bot_in))
+    tx = int(sx + sw * float(thumb["left"]))
+    max_x = sx + max(0, sw - side)
+    tx = min(max(sx, tx), max_x)
+    ty = int(sy + top_in)
+    return tx, ty, side
+
+
 def crop_slot(im: Image.Image, slot: int, *, card_body: bool = True) -> Image.Image:
     """Yellow square crop for matching (= overlay yellow / app recognition).
 
@@ -177,11 +190,7 @@ def crop_slot(im: Image.Image, slot: int, *, card_body: bool = True) -> Image.Im
     sx, sw = px, pw
     sy = int(py + slot * pitch + top_inset)
     sh = max(1, int(body_h))
-    side = sh
-    tx = int(sx + sw * THUMB_CROP["left"])
-    max_x = sx + max(0, sw - side)
-    tx = min(max(sx, tx), max_x)
-    ty = sy
+    tx, ty, side = yellow_rect_from_card(sx, sy, sw, sh)
     return im.crop((tx, ty, tx + side, ty + side))
 
 
