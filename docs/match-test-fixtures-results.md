@@ -56,7 +56,8 @@
 
 ## Notes
 
-- Yellow ROI remains a **square** with side = red card height (`THUMB_CROP.left = 0.18`).
+- Overlay yellow is a **square** with side = red card **body** height (pitch×(1-CARD_GAP_FRAC), CARD_GAP_FRAC=0.08) via `thumbCssPercent`/`cardRect`.
+- Recognition/match crop uses **full pitch** square (side=pitch; `card_body=False`) — card-body shrink regresses fixtures; `THUMB_CROP.left = 0.18`.
 - Templates trimmed of transparent padding from sprite_poke_3 cells, then contain/letterbox to 64.
 - Capture path suppresses maroon card BG and recenters on the sprite blob before multi-scale match.
 - `recognize.ts` mirrors this pipeline.

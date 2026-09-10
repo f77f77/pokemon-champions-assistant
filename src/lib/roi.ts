@@ -3,7 +3,8 @@
  *
  * 座標系一律相對「去黑邊後的 16:9 內容區」(contentRect)，不是整幀。
  * 預設敵方面板：(left,top)=(0.811,0.143) → (right,bottom)=(0.965,0.832)
- * 再均分成 6 格；每格黃框為正方形：邊長 = 紅卡（slot）高度，水平置於左側精靈區。
+ * 再均分成 6 等距 pitch；紅卡本體 = pitch×(1-CARD_GAP_FRAC)（上下留 gap）；
+ * 黃框為正方形：邊長 = 紅卡本體高度，水平置於左側精靈區（黃框之間可見 gap）。
  * 辨認裁切後 contain/letterbox 進 TEMPLATE_SIZE（不拉伸）；模板來自 sprite_poke_3 切格。
  *
  * 微調：Settings 可對面板四邊做 ±2%（相對內容寬／高）偏移。
@@ -20,21 +21,27 @@ export const ENEMY_PANEL_DEFAULT = {
 } as const;
 
 /**
- * 黃框：正方形，邊長 = 紅卡（slot）高度；left = 正方形左緣相對 slot 寬的偏移（精靈在左）。
+ * 黃框：正方形，邊長 = 紅卡本體高度；left = 正方形左緣相對 card/pitch 寬的偏移（精靈在左）。
  * right / topInset / bottomInset 僅供文件與舊腳本對照 — 幾何由 thumbRectInSlot 以正方形計算。
  */
 export const THUMB_CROP = {
-  /** 正方形左緣（相對 slot 寬）— 覆蓋左側精靈，避開右側類型圖示 */
+  /** 正方形左緣（相對 card 寬）— 覆蓋左側精靈，避開右側類型圖示 */
   left: 0.18,
-  /** @deprecated 正方形寬由 slot 高度推得；保留欄位供腳本同步顯示 */
+  /** @deprecated 正方形寬由 card 高度推得；保留欄位供腳本同步顯示 */
   right: 0.18 + 0.42,
-  /** @deprecated 黃框頂貼齊紅卡頂 */
+  /** @deprecated 黃框頂貼齊紅卡本體頂 */
   topInset: 0,
-  /** @deprecated 黃框底貼齊紅卡底 */
+  /** @deprecated 黃框底貼齊紅卡本體底 */
   bottomInset: 0,
 } as const;
 
 export const SLOT_COUNT = 6;
+
+/**
+ * Fraction of each pitch that is inter-card gap (split half above + half below card body).
+ * ~7–9% of pitch from VGC screenshots; 0.08 ≈ mid of measured range.
+ */
+export const CARD_GAP_FRAC = 0.08;
 
 /** 模板比對前縮放邊長（Team Preview 小縮圖，非大圖／HOME） */
 export const TEMPLATE_SIZE = 64;
@@ -137,7 +144,7 @@ export function panelToFrameRect(content: ContentRect, panel: PanelRectNorm): Pi
   };
 }
 
-/** 第 slot 格（0–5）的整幀像素矩形（六等分垂直） */
+/** 第 slot 格（0–5）的整幀像素矩形（六等分 pitch；綠框可用） */
 export function slotRect(panelPx: PixelRect, slot: number, slots: number = SLOT_COUNT): PixelRect {
   const slotH = panelPx.height / slots;
   return {
@@ -149,17 +156,39 @@ export function slotRect(panelPx: PixelRect, slot: number, slots: number = SLOT_
 }
 
 /**
- * 單格內黃框：正方形，邊長 = 紅卡（slot）高度，左緣 = slot.x + left×slot.width。
- * 回傳整幀像素座標（不超出 slot 右緣）。
+ * 紅卡本體矩形：在 pitch 內上下各留 CARD_GAP_FRAC/2，高度 = pitch×(1-CARD_GAP_FRAC)。
+ * 黃框邊長與辨認裁切以此高度為準（非 flush panelH/6）。
  */
-export function thumbRectInSlot(slot: PixelRect): PixelRect {
-  const side = Math.max(1, slot.height);
-  let x = slot.x + slot.width * THUMB_CROP.left;
-  const maxX = slot.x + Math.max(0, slot.width - side);
-  x = Math.min(Math.max(slot.x, x), maxX);
+export function cardRect(
+  panelPx: PixelRect,
+  slot: number,
+  slots: number = SLOT_COUNT,
+  gapFrac: number = CARD_GAP_FRAC,
+): PixelRect {
+  const pitch = panelPx.height / slots;
+  const gap = Math.max(0, Math.min(0.4, gapFrac));
+  const bodyH = pitch * (1 - gap);
+  const topInset = pitch * (gap / 2);
+  return {
+    x: panelPx.x,
+    y: Math.floor(panelPx.y + slot * pitch + topInset),
+    width: panelPx.width,
+    height: Math.max(1, Math.floor(bodyH)),
+  };
+}
+
+/**
+ * 單格內黃框：正方形，邊長 = 紅卡本體高度，左緣 = card.x + left×card.width。
+ * 傳入 cardRect（或等高矩形）；回傳整幀像素座標（不超出 card 右緣）。
+ */
+export function thumbRectInSlot(card: PixelRect): PixelRect {
+  const side = Math.max(1, card.height);
+  let x = card.x + card.width * THUMB_CROP.left;
+  const maxX = card.x + Math.max(0, card.width - side);
+  x = Math.min(Math.max(card.x, x), maxX);
   return {
     x: Math.floor(x),
-    y: Math.floor(slot.y),
+    y: Math.floor(card.y),
     width: Math.floor(side),
     height: Math.floor(side),
   };
@@ -195,24 +224,47 @@ export function slotCssPercent(
   };
 }
 
+export function cardCssPercent(
+  panel: PanelRectNorm,
+  slot: number,
+  slots: number = SLOT_COUNT,
+  gapFrac: number = CARD_GAP_FRAC,
+): { left: number; top: number; width: number; height: number } {
+  const panelH = panel.bottom - panel.top;
+  const pitch = panelH / slots;
+  const gap = Math.max(0, Math.min(0.4, gapFrac));
+  const bodyH = pitch * (1 - gap);
+  const topInset = pitch * (gap / 2);
+  return {
+    left: panel.left * 100,
+    top: (panel.top + slot * pitch + topInset) * 100,
+    width: (panel.right - panel.left) * 100,
+    height: bodyH * 100,
+  };
+}
+
 export function thumbCssPercent(
   panel: PanelRectNorm,
   slot: number,
   slots: number = SLOT_COUNT,
+  gapFrac: number = CARD_GAP_FRAC,
 ): { left: number; top: number; width: number; height: number } {
   const panelH = panel.bottom - panel.top;
   const panelW = panel.right - panel.left;
-  const slotH = panelH / slots;
-  const slotTop = panel.top + slot * slotH;
+  const pitch = panelH / slots;
+  const gap = Math.max(0, Math.min(0.4, gapFrac));
+  const bodyH = pitch * (1 - gap);
+  const topInset = pitch * (gap / 2);
+  const cardTop = panel.top + slot * pitch + topInset;
   // Visual square on 16:9 content: height% of contentH == width% of contentW in pixels
-  const heightFrac = slotH;
-  const widthFrac = slotH / TARGET_ASPECT;
+  const heightFrac = bodyH;
+  const widthFrac = bodyH / TARGET_ASPECT;
   let left = panel.left + panelW * THUMB_CROP.left;
   const maxLeft = panel.left + panelW - widthFrac;
   left = Math.min(Math.max(panel.left, left), maxLeft);
   return {
     left: left * 100,
-    top: slotTop * 100,
+    top: cardTop * 100,
     width: widthFrac * 100,
     height: heightFrac * 100,
   };

@@ -28,6 +28,7 @@ ENEMY_PANEL = {"left": 0.811, "top": 0.143, "right": 0.965, "bottom": 0.832}
 THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}  # square: side=slotH; left offset
 TEMPLATE_SIZE = 64
 SLOT_COUNT = 6
+CARD_GAP_FRAC = 0.08  # fraction of pitch that is inter-card gap (mirror src/lib/roi.ts)
 TARGET_ASPECT = 16 / 9
 CONFIDENCE_THRESHOLD = 0.55
 
@@ -143,22 +144,30 @@ def confidence(gray: list[float], hash_s: str, tmpl_gray: list[float], tmpl_hash
     return min(1.0, ncc_score * 0.55 + ssd_score * 0.25 + hash_score * 0.2)
 
 
-def crop_slot(im: Image.Image, slot: int) -> Image.Image:
-    """Yellow square: side = red card (slot) height; left = THUMB_CROP left offset."""
+def crop_slot(im: Image.Image, slot: int, *, card_body: bool = False) -> Image.Image:
+    """Yellow square crop for matching.
+
+    Default card_body=False → side = full pitch (matches app recognition; ~15/18).
+    card_body=True → side = pitch×(1-CARD_GAP_FRAC) (overlay yellow geometry).
+    """
     cx, cy, cw, ch = content_rect(*im.size)
     px = int(cx + ENEMY_PANEL["left"] * cw)
     py = int(cy + ENEMY_PANEL["top"] * ch)
     pw = max(1, int((ENEMY_PANEL["right"] - ENEMY_PANEL["left"]) * cw))
     ph = max(1, int((ENEMY_PANEL["bottom"] - ENEMY_PANEL["top"]) * ch))
-    slot_h = ph / SLOT_COUNT
-    sx, sy, sw, sh = px, int(py + slot * slot_h), pw, max(1, int(slot_h))
+    pitch = ph / SLOT_COUNT
+    gap = CARD_GAP_FRAC if card_body else 0.0
+    body_h = pitch * (1 - gap)
+    top_inset = pitch * (gap / 2)
+    sx, sw = px, pw
+    sy = int(py + slot * pitch + top_inset)
+    sh = max(1, int(body_h))
     side = sh
     tx = int(sx + sw * THUMB_CROP["left"])
     max_x = sx + max(0, sw - side)
     tx = min(max(sx, tx), max_x)
     ty = sy
     return im.crop((tx, ty, tx + side, ty + side))
-
 
 
 def main() -> int:

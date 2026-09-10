@@ -36,6 +36,7 @@ ENEMY_PANEL = {"left": 0.811, "top": 0.143, "right": 0.965, "bottom": 0.832}
 THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}
 TEMPLATE_SIZE = 64
 SLOT_COUNT = 6
+CARD_GAP_FRAC = 0.08  # fraction of pitch that is inter-card gap (mirror src/lib/roi.ts)
 TARGET_ASPECT = 16 / 9
 CONFIDENCE_THRESHOLD = 0.55
 
@@ -194,15 +195,24 @@ def confidence(gray: np.ndarray, hash_s: str, tmpl_gray: np.ndarray, tmpl_hash: 
     return min(1.0, ncc_score * 0.55 + ssd_score * 0.25 + hash_score * 0.2)
 
 
-def crop_slot(im: Image.Image, slot: int) -> Image.Image:
-    """Yellow square: side = red card (slot) height; left = THUMB_CROP left offset."""
+def crop_slot(im: Image.Image, slot: int, *, card_body: bool = False) -> Image.Image:
+    """Yellow square crop for matching.
+
+    Default card_body=False → side = full pitch (matches app recognition; ~15/18).
+    card_body=True → side = pitch×(1-CARD_GAP_FRAC) (overlay yellow geometry).
+    """
     cx, cy, cw, ch = content_rect(*im.size)
     px = int(cx + ENEMY_PANEL["left"] * cw)
     py = int(cy + ENEMY_PANEL["top"] * ch)
     pw = max(1, int((ENEMY_PANEL["right"] - ENEMY_PANEL["left"]) * cw))
     ph = max(1, int((ENEMY_PANEL["bottom"] - ENEMY_PANEL["top"]) * ch))
-    slot_h = ph / SLOT_COUNT
-    sx, sy, sw, sh = px, int(py + slot * slot_h), pw, max(1, int(slot_h))
+    pitch = ph / SLOT_COUNT
+    gap = CARD_GAP_FRAC if card_body else 0.0
+    body_h = pitch * (1 - gap)
+    top_inset = pitch * (gap / 2)
+    sx, sw = px, pw
+    sy = int(py + slot * pitch + top_inset)
+    sh = max(1, int(body_h))
     side = sh
     tx = int(sx + sw * THUMB_CROP["left"])
     max_x = sx + max(0, sw - side)
@@ -333,7 +343,7 @@ def main() -> int:
     n_ids = len({t["speciesId"] for t in templates})
 
     print(f"Templates: {len(templates)} files / {n_ids} speciesIds from {tmpl_dir.relative_to(ROOT)}")
-    print(f"ROI locked: panel={ENEMY_PANEL} thumb={THUMB_CROP}")
+    print(f"ROI locked: panel={ENEMY_PANEL} thumb={THUMB_CROP} CARD_GAP_FRAC={CARD_GAP_FRAC}")
     print(f"Match: bg-suppress + content-recenter + scales={MATCH_SCALES} shifts={MATCH_SHIFTS}")
     print(f"Mask: template_alpha ∩ query_nonblack; conf weights NCC×0.55+SSD×0.25+aHash×0.20")
 
@@ -417,7 +427,8 @@ def main() -> int:
         "",
         "## Notes",
         "",
-        "- Yellow ROI remains a **square** with side = red card height (`THUMB_CROP.left = 0.18`).",
+        "- Overlay yellow is a **square** with side = red card **body** height (pitch×(1-CARD_GAP_FRAC), CARD_GAP_FRAC=0.08) via `thumbCssPercent`/`cardRect`.",
+        "- Recognition/match crop uses **full pitch** square (side=pitch; `card_body=False`) — card-body shrink regresses fixtures; `THUMB_CROP.left = 0.18`.",
         "- Templates trimmed of transparent padding from sprite_poke_3 cells, then contain/letterbox to 64.",
         "- Capture path suppresses maroon card BG and recenters on the sprite blob before multi-scale match.",
         "- `recognize.ts` mirrors this pipeline.",

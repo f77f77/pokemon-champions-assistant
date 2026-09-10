@@ -1,8 +1,8 @@
 /**
  * Team Preview 敵方小縮圖辨認（本地 aHash + 灰階 NCC，無雲端）。
  *
- * 流程：抓一幀 → contentRect（去黑邊）→ 敵方面板 ROI → 6 等分 →
- * 每格黃框正方形（邊長=紅卡高，左側精靈）→ 抑制紅卡底 → content-aware 重對齊 →
+ * 流程：抓一幀 → contentRect（去黑邊）→ 敵方面板 ROI → 6 pitch → 紅卡本體（留 gap）→
+ * 每格黃框正方形（邊長=紅卡本體高，左側精靈）→ 抑制紅卡底 → content-aware 重對齊 →
  * 64×64 多尺度／微位移灰階比對（mask = 模板 alpha ∩ query 非黑）。
  *
  * 模板庫：public/templates/{showdownId}.png — 切自官方 sprite_poke_3（trim 透明邊 → contain 64）。
@@ -29,6 +29,7 @@ import {
 export {
   ENEMY_PANEL_DEFAULT,
   THUMB_CROP,
+  CARD_GAP_FRAC,
   SLOT_COUNT,
   TEMPLATE_SIZE,
   ROI_FINE_TUNE_MAX,
@@ -36,9 +37,11 @@ export {
   resolveEnemyPanel,
   panelToFrameRect,
   slotRect,
+  cardRect,
   thumbRectInSlot,
   panelCssPercent,
   slotCssPercent,
+  cardCssPercent,
   thumbCssPercent,
   loadFineTune,
   saveFineTune,
@@ -663,6 +666,9 @@ export async function recognizeEnemyTeamFromCanvas(
     const results: RecognizeResult[] = [];
     for (let slot = 0; slot < SLOT_COUNT; slot++) {
       try {
+        // Recognition crop: full pitch square (side≈pitch). Overlay yellow uses card
+        // body (CARD_GAP_FRAC) via thumbCssPercent; shrinking the match crop to card
+        // body regresses fixtures (~11/18 vs ~15/18).
         const sRect = slotRect(panelPx, slot);
         const tRect = thumbRectInSlot(sRect);
         const { imageData, dataUrl, gray } = cropResizeToTemplate(ctx, tRect);

@@ -32,6 +32,7 @@ ENEMY_PANEL = {"left": 0.811, "top": 0.143, "right": 0.965, "bottom": 0.832}
 THUMB_CROP = {"left": 0.18, "right": 0.60, "topInset": 0.0, "bottomInset": 0.0}  # square: side=slotH; left offset
 TEMPLATE_SIZE = 64
 SLOT_COUNT = 6
+CARD_GAP_FRAC = 0.08  # fraction of pitch that is inter-card gap (mirror src/lib/roi.ts)
 TARGET_ASPECT = 16 / 9
 
 # VGC seed showdownIds (圖二 top→bottom). Label files with these ids.
@@ -140,9 +141,14 @@ def main(argv: list[str] | None = None) -> None:
 
     templates = []
     for slot, meta in enumerate(slots_meta):
-        slot_h = ph / SLOT_COUNT
-        sx, sy, sw, sh = px, int(py + slot * slot_h), pw, max(1, int(slot_h))
-        side = sh  # square = red card height
+        pitch = ph / SLOT_COUNT
+        # Match app recognition crop (full pitch). Overlay yellow uses CARD_GAP_FRAC separately.
+        body_h = pitch
+        top_inset = 0.0
+        sx, sw = px, pw
+        sy = int(py + slot * pitch + top_inset)
+        sh = max(1, int(body_h))
+        side = sh  # square = pitch height (recognition)
         tx = int(sx + sw * THUMB_CROP["left"])
         max_x = sx + max(0, sw - side)
         tx = min(max(sx, tx), max_x)
