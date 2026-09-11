@@ -80,6 +80,12 @@ export interface RecognizeResult {
   margin?: number;
   /** Debug: soft-detected type icon ids from card top-right */
   detectedTypes?: string[];
+  /** Debug: why speciesId is null (threshold / margin / type-veto / ahash) */
+  rejectReason?: string | null;
+  /** Debug: top match candidates before accept gates */
+  topCandidates?: { speciesId: string; confidence: number; types: string[] }[];
+  /** Debug: whether the eventual/expected species survived aHash prefilter */
+  ahashHit?: boolean;
 }
 
 export const EMPTY_STATS: Stats = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };

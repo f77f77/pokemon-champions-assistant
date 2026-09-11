@@ -16,6 +16,7 @@
     "build:pokemon-data:usage": "node scripts/build-pokemon-data.mjs --usage-only",
     "check:usage": "node scripts/check-usage-invariants.mjs",
     "match:fixtures": "python3 scripts/match-test-fixtures.py",
+    "match:recognize": "node scripts/match-recognize-browser.mjs",
     "match:seed": "python3 scripts/match-seed-templates.py",
     "sprites:atlas": "python3 scripts/build-sprite-atlas.py",
     "fetch:cbd": "node scripts/fetch-cbd-templates.mjs --allowlist"
