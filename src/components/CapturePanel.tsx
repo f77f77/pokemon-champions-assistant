@@ -26,7 +26,6 @@ interface Props {
   busy: boolean;
   /** 單幀 canvas（鏡頭或靜態選隊圖），走同一套 ROI → thumb → recognize */
   onRecognize: (canvas: HTMLCanvasElement) => void;
-  onGenerate: () => void;
   statusText: string;
   fineTune: RoiFineTune;
   debugOverlay: boolean;
@@ -35,7 +34,6 @@ interface Props {
 export function CapturePanel({
   busy,
   onRecognize,
-  onGenerate,
   statusText,
   fineTune,
   debugOverlay,
@@ -203,9 +201,6 @@ export function CapturePanel({
           >
             {busy ? '辨認中…' : '辨認敵方隊伍'}
           </button>
-          <button type="button" className="btn btn--accent" disabled={busy} onClick={onGenerate}>
-            生成對方隊伍
-          </button>
         </div>
       </header>
 
@@ -298,45 +293,48 @@ export function CapturePanel({
             </p>
           </div>
         )}
-        {/* 綠色：敵方面板／六槽；黃色：縮圖裁切（debug） */}
-        <div
-          className="capture-preview__roi capture-preview__roi--panel"
-          style={{
-            left: `${panelPct.left}%`,
-            top: `${panelPct.top}%`,
-            width: `${panelPct.width}%`,
-            height: `${panelPct.height}%`,
-          }}
-          title="敵方面板 ROI"
-        />
-        {debugOverlay &&
-          Array.from({ length: SLOT_COUNT }, (_, slot) => {
-            const c = cardCssPercent(panel, slot);
-            const t = thumbCssPercent(panel, slot);
-            return (
-              <div key={slot}>
-                <div
-                  className="capture-preview__roi capture-preview__roi--slot"
-                  style={{
-                    left: `${c.left}%`,
-                    top: `${c.top}%`,
-                    width: `${c.width}%`,
-                    height: `${c.height}%`,
-                  }}
-                />
-                <div
-                  className="capture-preview__roi capture-preview__roi--thumb"
-                  style={{
-                    left: `${t.left}%`,
-                    top: `${t.top}%`,
-                    width: `${t.width}%`,
-                    height: `${t.height}%`,
-                  }}
-                  title={`槽 ${slot + 1} 縮圖`}
-                />
-              </div>
-            );
-          })}
+        {/* ROI 除錯疊加：綠面板／紅槽／黃縮圖（關閉時全部隱藏，含綠框） */}
+        {debugOverlay && (
+          <>
+            <div
+              className="capture-preview__roi capture-preview__roi--panel"
+              style={{
+                left: `${panelPct.left}%`,
+                top: `${panelPct.top}%`,
+                width: `${panelPct.width}%`,
+                height: `${panelPct.height}%`,
+              }}
+              title="敵方面板 ROI"
+            />
+            {Array.from({ length: SLOT_COUNT }, (_, slot) => {
+              const c = cardCssPercent(panel, slot);
+              const t = thumbCssPercent(panel, slot);
+              return (
+                <div key={slot}>
+                  <div
+                    className="capture-preview__roi capture-preview__roi--slot"
+                    style={{
+                      left: `${c.left}%`,
+                      top: `${c.top}%`,
+                      width: `${c.width}%`,
+                      height: `${c.height}%`,
+                    }}
+                  />
+                  <div
+                    className="capture-preview__roi capture-preview__roi--thumb"
+                    style={{
+                      left: `${t.left}%`,
+                      top: `${t.top}%`,
+                      width: `${t.width}%`,
+                      height: `${t.height}%`,
+                    }}
+                    title={`槽 ${slot + 1} 縮圖`}
+                  />
+                </div>
+              );
+            })}
+          </>
+        )}
         {dragOver && (
           <div className="capture-preview__drop-hint" aria-hidden>
             放開以載入靜態選隊圖

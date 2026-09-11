@@ -32,6 +32,7 @@ button, input, select, textarea {
   min-height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .app-header {
@@ -42,13 +43,48 @@ button, input, select, textarea {
   border-bottom: 1px solid var(--border);
   background: rgba(10, 12, 18, 0.9);
   backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 30;
 }
 .app-header__brand { display: flex; gap: 0.75rem; align-items: baseline; }
-.app-header__nav { display: flex; gap: 1rem; align-items: center; color: var(--muted); }
+.app-header__nav { display: flex; gap: 0.55rem; align-items: center; color: var(--muted); }
+.app-header__link {
+  color: var(--accent-3);
+  text-decoration: none;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  padding: 0.2rem 0.35rem;
+}
+.app-header__link:hover { text-decoration: underline; color: var(--text); }
 .muted { color: var(--muted); font-size: 0.85rem; }
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1;
+  font-size: 1.1rem;
+}
+.icon-btn:hover,
+.icon-btn.is-active {
+  color: var(--text);
+  border-color: var(--border);
+  background: #222838;
+}
 
 .settings { position: relative; }
 .settings summary { cursor: pointer; list-style: none; }
+.settings summary::-webkit-details-marker { display: none; }
+.settings__summary.icon-btn { list-style: none; }
+.settings[open] > .settings__summary { color: var(--text); border-color: var(--border); background: #222838; }
 .settings__body {
   position: absolute; right: 0; top: 120%;
   width: 240px; padding: 0.75rem;
@@ -59,10 +95,11 @@ button, input, select, textarea {
 .layout {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(360px, 1.3fr) minmax(280px, 1fr);
+  grid-template-columns: minmax(360px, 1.45fr) minmax(280px, 1fr);
   gap: 0.75rem;
   padding: 0.75rem;
   min-height: 0;
+  position: relative;
 }
 .layout__center {
   display: flex;
@@ -89,6 +126,7 @@ button, input, select, textarea {
   margin-bottom: 0.5rem;
 }
 .panel__header h2 { margin: 0; font-size: 1rem; letter-spacing: 0.04em; }
+.panel__header-actions { display: flex; align-items: center; gap: 0.25rem; }
 .panel__header--row { flex-wrap: wrap; }
 .panel__hint { color: var(--muted); font-size: 0.75rem; }
 .panel__cards {
@@ -152,7 +190,9 @@ button, input, select, textarea {
   gap: 0.3rem;
 }
 .pkmn-card__col--identity {
-  flex: 1.05 1 0;
+  flex: 0 1 10.75rem;
+  max-width: 11.25rem;
+  width: 11.25rem;
 }
 .pkmn-card__col--matchup {
   flex: 1 1 0;
@@ -173,7 +213,13 @@ button, input, select, textarea {
 .pkmn-card__items { min-width: 0; }
 .pkmn-card__types { display: flex; flex-direction: row; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
 .pkmn-card__species-select {
-  width: 100%; background: #0e1118; border: 1px solid var(--border); border-radius: 6px; padding: 0.2rem;
+  width: 100%;
+  max-width: 9.5rem;
+  background: #0e1118;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.15rem 0.25rem;
+  font-size: 0.75rem;
 }
 .pkmn-card__speed-input {
   display: flex; justify-content: space-between; align-items: center;
@@ -214,7 +260,16 @@ button, input, select, textarea {
   filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
 }
 
-.stat-row { display: grid; grid-template-columns: 1.4rem 1fr auto; gap: 0.35rem; align-items: center; font-size: 0.72rem; }
+.stat-row {
+  display: grid;
+  grid-template-columns: 1.1rem minmax(2rem, 1fr) auto;
+  gap: 0.18rem;
+  align-items: center;
+  font-size: 0.66rem;
+}
+.pkmn-card__stats {
+  max-width: 10.5rem;
+}
 .stat-row__bar { height: 6px; background: #0e1118; border-radius: 99px; overflow: hidden; }
 .stat-row__fill { height: 100%; background: linear-gradient(90deg, var(--accent-3), var(--accent)); }
 .stat-row__num small { color: var(--muted); margin-left: 0.2rem; }
@@ -267,13 +322,14 @@ button, input, select, textarea {
 .move-source-caption { display: none; } /* per-card caption removed; see .usage-source-global */
 
 .pkmn-card__form-select-wrap {
-  display: flex; align-items: center; gap: 0.35rem;
-  margin-top: 0.2rem; font-size: 0.7rem;
+  display: flex; align-items: center; gap: 0.25rem;
+  margin-top: 0.2rem; font-size: 0.66rem;
+  max-width: 9.5rem;
 }
 .pkmn-card__form-select {
   flex: 1; min-width: 0;
   background: #0e1118; border: 1px solid var(--border); border-radius: 6px;
-  padding: 0.15rem 0.3rem; color: var(--text); font-size: 0.72rem;
+  padding: 0.1rem 0.2rem; color: var(--text); font-size: 0.68rem;
 }
 
 .usage-source-global {
@@ -325,6 +381,30 @@ button, input, select, textarea {
 .error-text { color: var(--danger); }
 
 .speed-axis { overflow: auto; padding: 0.25rem 0.2rem 0.5rem; }
+.speed-axis__toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+.speed-axis__tw {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem 0.15rem 0.4rem;
+  cursor: pointer;
+  user-select: none;
+}
+.speed-axis__tw.is-on {
+  color: var(--accent);
+  border-color: #4a6b2a;
+  background: rgba(182, 255, 74, 0.08);
+}
+.speed-axis__tw input { margin: 0; }
 .speed-axis__scale {
   /* Shares .speed-row grid so tick positions match track % exactly */
   margin: 0 0 0.35rem; color: var(--muted); font-size: 0.65rem; height: auto;
@@ -421,6 +501,21 @@ button, input, select, textarea {
 
 @media (max-width: 1100px) {
   .layout { grid-template-columns: 1fr; }
+  .panel--team.panel--overlay {
+    width: min(22rem, calc(100% - 1.5rem));
+  }
+}
+
+/* Floating 我方隊伍 overlay — does not consume layout grid width */
+.panel--team.panel--overlay {
+  position: absolute;
+  left: 0.75rem;
+  top: 3.55rem;
+  bottom: 2.2rem;
+  width: min(22rem, 36vw);
+  z-index: 12;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  border-color: #3a4258;
 }
 
 /* —— Capture 16:9 + ROI debug —— */

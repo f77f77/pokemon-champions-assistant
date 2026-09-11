@@ -1,4 +1,4 @@
-# Pokemon Champions battle assistant (v0.1 / recognize v1.4)
+# Pokemon Champions battle assistant (v0.2 / recognize v1.4)
 
 Electron + Vite + React (TypeScript). Defaults: AverMedia GC551, local Team Preview thumbs, Spe hand-fill, championsbattledata VGC Doubles (2v2 / 6-pick-4) usage.
 
