@@ -91,10 +91,10 @@ FIXTURES = [
         "expected": [
             "froslass",
             "garchomp",
-            "basculegion",
+            "basculegion",  # Basculegion-M
             "kingambit",
             "sneasler",
-            "golisopod",  # yellow-box crop is Golisopod; Araquanid sheet art is the water-bubble spider
+            "golisopod",  # Bug/Water; not Araquanid
         ],
     },
 ]
@@ -870,9 +870,8 @@ def main() -> int:
         "- Atlas: official full-roster `sprite_sheet.png` + `sprite_poke.css` → "
         f"{len(templates)} dex-keyed in-memory crops (no per-species PNG dump).",
         "- Sole formal fixture: `team-preview-live-latest.jpg` (最新實機畫面). "
-        "Expected right-column top→bottom: froslass, garchomp, basculegion, kingambit, sneasler, golisopod. "
-        "Slot 5 was listed as Araquanid in the locked note; the yellow-box crop matches Golisopod "
-        "(water/bug armored isopod). Araquanid’s sheet cell is the water-bubble spider and scores 0.43 vs Golisopod 0.87 — do not force that id.",
+        "Enemy team top→bottom: Froslass, Garchomp, Basculegion-M, Kingambit, Sneasler, "
+        "Golisopod (Bug/Water).",
         f"- Legal roster counts: atlas cells={n_ids}, allowlist={allow_n}, pokemon.json={poke_n}.",
         "- Enemy/ally form selector uses sibling legal forms grouped by nationalDex "
         "(regional / gender / Rotom; Mega when present in the 262).",
