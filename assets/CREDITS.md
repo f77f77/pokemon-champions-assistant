@@ -6,7 +6,7 @@
 - API guide: https://championsbattledata.com/api_guide
 - Downloaded via `scripts/fetch-cbd-templates.mjs` into `assets/templates/preview-thumbs/`
 - Paths: `pokemon_champions_assets/pokemon/{SavedName}.png`
-- These are **menu-style** sprites. Prefer `public/templates/` ROI crops for Team Preview recognition.
+- These are **menu-style** sprites. Prefer `public/sprites/` sheet crops (nationalDex keys) for Team Preview recognition.
 - PNG binaries under `assets/templates/preview-thumbs/` are **gitignored** (re-fetch with the script). Keep `manifest.jsonl` + this CREDITS file in git.
 - Do **not** pull Pokémon HOME art or PokéAPI `official-artwork`.
 

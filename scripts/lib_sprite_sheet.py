@@ -154,8 +154,30 @@ def crop_cell(sheet: Image.Image, rect: dict[str, int]) -> Image.Image:
 
 
 def crop_template(sheet: Image.Image, rect: dict[str, int], size: int = TEMPLATE_SIZE) -> Image.Image:
-    """In-memory: sheet rect → content trim → contain `size` (no per-file write)."""
-    return letterbox_rgba(crop_cell(sheet, rect), size)
+    """In-memory cell crop → 64×64 contain (no per-file write).
+
+    If a TEMPLATE_SIZE image was packed centered in a larger cell (legacy pack),
+    extract it losslessly so we do not re-trim and change match scale.
+    Otherwise content-trim the official 128 cell and contain.
+    """
+    cell = crop_cell(sheet, rect).convert("RGBA")
+    w, h = cell.size
+    if w == size and h == size:
+        return cell
+    if w >= size and h >= size:
+        ox, oy = (w - size) // 2, (h - size) // 2
+        centered = cell.crop((ox, oy, ox + size, oy + size))
+        def _vis(im: Image.Image) -> int:
+            n = 0
+            for r, g, b, a in im.getdata():
+                if a > 12 and r + g + b > 20:
+                    n += 1
+            return n
+        full_v = _vis(cell)
+        cen_v = _vis(centered)
+        if full_v > 0 and cen_v >= 0.9 * full_v:
+            return centered
+    return letterbox_rgba(cell, size)
 
 
 def load_allowlist(path: Path | None = None) -> list[dict[str, Any]]:

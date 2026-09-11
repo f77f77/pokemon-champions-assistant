@@ -1,7 +1,7 @@
 # Test fixture match results
 
 - Fixtures: `public/fixtures/team-preview-test-1/2/3.png`
-- Templates: `public/templates/*.png` (sprite_poke_3 alpha-trimmed cells; 50 files / 50 ids)
+- Templates: `public/sprites/sprite_poke.png` + `atlas.json` (nationalDex-keyed in-memory crops; 50 cells / 50 ids)
 - Matcher: crop cleanup (right 0.05) + BG suppress + content-aware recenter + aHash prefilter + multi-scale/shift; NCC×0.55 + SSD×0.25 + aHash×0.20
 - Guards (v1.4): `CONFIDENCE_THRESHOLD=0.54`, `dyn ≥0.75→0.025 / ≥0.68→0.03 / ≥0.60→0.035 / ≥0.54→0.055 / else 0.08`, coarse hue ×0.85 if hist-dist>0.75, type **hard** gate (thr=0.58; skip if low-conf), aHash top40|ham≤18
 - Mask: template alpha ∩ query non-black
@@ -68,3 +68,5 @@
 - Coarse hue filter is conservative (×0.85) so shinies without shiny templates are not hard-killed.
 - `recognize.ts` mirrors this pipeline (`cardRect` → type crop + `thumbRectInSlot` match).
 - Result: **correct 12/18, wrong=0, null=6**.
+- Current committed sheet is a lossless pack of the 50 leftover sprite_poke_3 cells (official full-roster `sprite_sheet.png` + CSS were not available). Re-ingest with `scripts/build-sprite-atlas.py --sheet … --css …` when those files land; do not explode back into per-species PNGs.
+- Pack must copy RGBA pixels (no Pillow `paste(..., mask=src)` blend). Blended edges previously ranked Talonflame over Meowscarada on test-1 slot 2.

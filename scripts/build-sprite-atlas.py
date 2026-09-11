@@ -20,6 +20,7 @@ from lib_sprite_sheet import (
     CELL,
     DEFAULT_COLS,
     ROOT,
+    TEMPLATE_SIZE,
     crop_template,
     dex_key,
     emit_css_rule,
@@ -54,11 +55,8 @@ def _find_official() -> tuple[Path, Path] | None:
         csss = [d / n for n in css_names if (d / n).exists()]
         if sheets and csss:
             return sheets[0], csss[0]
-    # Already-committed pair
-    committed = OUT_DIR / "sprite_poke.png"
-    committed_css = OUT_DIR / "sprite_poke.css"
-    if committed.exists() and committed_css.exists():
-        return committed, committed_css
+    # Do not treat the already-packed public/sprites output as an "official"
+    # handoff — CSS percent rounding / re-parse would rewrite atlas coords.
     return None
 
 
@@ -197,7 +195,7 @@ def build_from_legacy_cells(type_map: dict[str, list[str]]) -> dict:
     cols = DEFAULT_COLS
     rows = max(1, (n + cols - 1) // cols)
     sheet_w, sheet_h = cols * CELL, rows * CELL
-    sheet = Image.new("RGBA", (sheet_w, sheet_h), (0, 0, 0, 255))
+    sheet = Image.new("RGBA", (sheet_w, sheet_h), (0, 0, 0, 0))
     css_parts = [
         "/* Dex-keyed Champions-style sprite CSS. Runtime crops in memory; do not cut per-species PNGs. */\n",
         f"/* sheet {sheet_w}x{sheet_h} cell {CELL} cols {cols} rows {rows} */\n",
@@ -208,13 +206,16 @@ def build_from_legacy_cells(type_map: dict[str, list[str]]) -> dict:
         col, row = i % cols, i // cols
         x, y = col * CELL, row * CELL
         src = Image.open(item["path"]).convert("RGBA")
-        # Place existing 64 (or other) cell centered in 128 — crop+trim recovers it.
+        # Center in the 128 cell WITHOUT upscaling (2× LANCZOS + downscale caused FPs).
         tw, th = src.size
-        scale = min(CELL / max(1, tw), CELL / max(1, th))
-        nw, nh = max(1, int(round(tw * scale))), max(1, int(round(th * scale)))
-        placed = src.resize((nw, nh), Image.Resampling.LANCZOS)
-        ox, oy = (CELL - nw) // 2, (CELL - nh) // 2
-        sheet.paste(placed, (x + ox, y + oy), placed)
+        if tw > CELL or th > CELL:
+            scale = min(CELL / tw, CELL / th)
+            tw, th = max(1, int(round(tw * scale))), max(1, int(round(th * scale)))
+            src = src.resize((tw, th), Image.Resampling.LANCZOS)
+        ox, oy = (CELL - tw) // 2, (CELL - th) // 2
+        # Raw RGBA copy — paste(..., mask=src) alpha-blends onto the canvas
+        # and changes edge pixels (was the Meowscarada/Talonflame FP source).
+        sheet.paste(src, (x + ox, y + oy))
         dex = int(rec["nationalDex"])
         form = int(rec.get("form") or 0)
         css_parts.append(emit_css_rule(dex, form, col, row, cols, rows, sheet_w, sheet_h))
@@ -246,7 +247,19 @@ def build_from_legacy_cells(type_map: dict[str, list[str]]) -> dict:
     (OUT_DIR / "atlas.json").write_text(
         json.dumps(atlas, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    print(f"Packed {n} legacy cells → {sheet_w}×{sheet_h} ({cols}×{rows})")
+    # Confirm in-memory center-64 extract matches the source 64×64 files.
+    packed = Image.open(OUT_DIR / "sprite_poke.png").convert("RGBA")
+    lossless = 0
+    for item, entry in zip(wanted, entries):
+        src = Image.open(item["path"]).convert("RGBA")
+        if src.size != (TEMPLATE_SIZE, TEMPLATE_SIZE):
+            continue
+        crop = crop_template(packed, entry)
+        if crop.tobytes() == src.tobytes():
+            lossless += 1
+        else:
+            print(f"WARN crop != source for {entry['speciesId']}")
+    print(f"Packed {n} legacy cells → {sheet_w}×{sheet_h} ({cols}×{rows}); lossless 64×64 extracts {lossless}")
     return atlas
 
 
@@ -278,28 +291,26 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Build dex-keyed sprite atlas (no per-species PNG dump)")
     ap.add_argument("--sheet", type=Path, help="Official master sheet PNG")
     ap.add_argument("--css", type=Path, help="Official sprite_poke.css")
+    ap.add_argument(
+        "--pack-legacy",
+        action="store_true",
+        help="Force pack from public/templates/*.png even if a handoff sheet exists",
+    )
     ap.add_argument("--delete-legacy-pngs", action="store_true", help="Remove public/templates/*.png")
     args = ap.parse_args()
 
     type_map = load_pokemon_types()
     official = None
-    if args.sheet and args.css:
-        official = (args.sheet, args.css)
-    else:
-        official = _find_official()
+    if not args.pack_legacy:
+        if args.sheet and args.css:
+            official = (args.sheet, args.css)
+        else:
+            official = _find_official()
 
     if official:
         sheet_path, css_path = official
         print(f"Using official/handoff sheet: {sheet_path} + {css_path}")
-        # If the "official" pair is the already-packed public/sprites output and
-        # templates still exist, prefer re-packing only when atlas is missing.
-        atlas_path = OUT_DIR / "atlas.json"
-        packed_only = sheet_path.resolve() == (OUT_DIR / "sprite_poke.png").resolve()
-        legacy_pngs = list((ROOT / "public/templates").glob("*.png"))
-        if packed_only and legacy_pngs and not atlas_path.exists():
-            atlas = build_from_legacy_cells(type_map)
-        else:
-            atlas = build_from_official(sheet_path, css_path, type_map)
+        atlas = build_from_official(sheet_path, css_path, type_map)
     else:
         print("No official sheet+CSS found; packing leftover public/templates cells")
         atlas = build_from_legacy_cells(type_map)

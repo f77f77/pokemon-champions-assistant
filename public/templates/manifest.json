@@ -1,11 +1,10 @@
 {
   "deprecated": true,
-  "source": "moved to public/sprites/ (nationalDex-keyed master sheet)",
-  "sheet": "../sprites/sprite_poke.png",
-  "css": "../sprites/sprite_poke.css",
-  "atlas": "../sprites/atlas.json",
-  "notes": "Per-species {englishName}.png templates are deprecated. Recognition crops in memory from the sprite sheet using CSS/atlas coordinates. Primary key = nationalDex (form suffix if needed).",
-  "defaultSource": "sprite_sheet",
-  "sourceKind": "sprite_sheet",
-  "templates": []
+  "note": "Per-species template PNGs were removed. Recognition loads public/sprites/sprite_poke.png once and crops cells in memory from public/sprites/atlas.json (nationalDex keys).",
+  "source": "pokemon-champions-legal-roster-sprite-sheet",
+  "cell": 128,
+  "legacyCell": 64,
+  "count": 0,
+  "atlas": "/sprites/atlas.json",
+  "sheet": "/sprites/sprite_poke.png"
 }

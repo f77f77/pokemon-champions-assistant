@@ -27,7 +27,7 @@
       "ok": false,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 37,
+        "ahashRankExpected": 34,
         "ahashHamExpected": 22,
         "ahashCandCount": 40,
         "expectedInAhashCands": true,
@@ -328,7 +328,7 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 17,
+        "ahashRankExpected": 19,
         "ahashHamExpected": 17,
         "ahashCandCount": 40,
         "expectedInAhashCands": true,
@@ -429,7 +429,7 @@
       "ok": false,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 3,
+        "ahashRankExpected": 2,
         "ahashHamExpected": 9,
         "ahashCandCount": 40,
         "expectedInAhashCands": true,
@@ -829,7 +829,7 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 8,
+        "ahashRankExpected": 14,
         "ahashHamExpected": 13,
         "ahashCandCount": 40,
         "expectedInAhashCands": true,
@@ -1029,7 +1029,7 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 23,
+        "ahashRankExpected": 24,
         "ahashHamExpected": 21,
         "ahashCandCount": 40,
         "expectedInAhashCands": true,
@@ -1126,7 +1126,7 @@
       "ok": false,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 30,
+        "ahashRankExpected": 31,
         "ahashHamExpected": 26,
         "ahashCandCount": 40,
         "expectedInAhashCands": true,
@@ -1188,11 +1188,11 @@
             ]
           },
           {
-            "speciesId": "sinistcha",
-            "confidence": 0.4677,
+            "speciesId": "annihilape",
+            "confidence": 0.4658,
             "types": [
-              "ghost",
-              "grass"
+              "fighting",
+              "ghost"
             ]
           }
         ],
@@ -1226,7 +1226,7 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 13,
+        "ahashRankExpected": 11,
         "ahashHamExpected": 15,
         "ahashCandCount": 40,
         "expectedInAhashCands": true,
@@ -1333,7 +1333,7 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 10,
+        "ahashRankExpected": 9,
         "ahashHamExpected": 11,
         "ahashCandCount": 40,
         "expectedInAhashCands": true,
@@ -1442,7 +1442,7 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 15,
+        "ahashRankExpected": 17,
         "ahashHamExpected": 16,
         "ahashCandCount": 40,
         "expectedInAhashCands": true,
@@ -1538,7 +1538,7 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 7,
+        "ahashRankExpected": 9,
         "ahashHamExpected": 14,
         "ahashCandCount": 40,
         "expectedInAhashCands": true,
@@ -1647,7 +1647,7 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 21,
+        "ahashRankExpected": 22,
         "ahashHamExpected": 14,
         "ahashCandCount": 40,
         "expectedInAhashCands": true,
@@ -1783,11 +1783,10 @@
             ]
           },
           {
-            "speciesId": "farigiraf",
-            "confidence": 0.5153,
+            "speciesId": "milotic",
+            "confidence": 0.5279,
             "types": [
-              "normal",
-              "psychic"
+              "water"
             ]
           },
           {
@@ -1819,15 +1818,15 @@
           "primarina",
           "incineroar",
           "dragonite",
-          "farigiraf",
+          "milotic",
           "empoleon",
           "swampert",
           "rotomwash",
           "blaziken",
           "kingambit",
           "kangaskhan",
-          "sinistcha",
-          "excadrill"
+          "excadrill",
+          "basculegion"
         ],
         "requiredMargin": 0.055
       }

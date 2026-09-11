@@ -8,8 +8,8 @@
     2176,
     384
   ],
-  "source": "official sprite sheet + CSS (in-memory crops; no per-species PNG dump)",
-  "notes": "Templates are cropped in memory from this sheet using CSS/atlas rects. Key = nationalDex or nationalDex-form (e.g. 6, 38-1, 6-mega-x alias).",
+  "source": "packed sprite_poke_3 cells (legacy per-file templates) into one sheet; replace with official sheet+CSS via this script when available",
+  "notes": "Recognition crops these cells in memory. Primary key = nationalDex (form suffix if needed). Do not explode back into per-species PNGs.",
   "entries": [
     {
       "dexKey": "3",

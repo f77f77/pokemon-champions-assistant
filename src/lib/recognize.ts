@@ -396,10 +396,21 @@ function ssdSimilarity(a: Float32Array, b: Float32Array, mask?: Float32Array): n
 }
 
 function alphaMaskFromImageData(data: ImageData, threshold = 12): Float32Array {
-  const { data: px } = data;
-  const out = new Float32Array(data.width * data.height);
+  const { data: px, width, height } = data;
+  const n = width * height;
+  const alphaVis = new Float32Array(n);
+  let opaque = 0;
   for (let i = 0, j = 0; i < px.length; i += 4, j++) {
-    out[j] = px[i + 3] > threshold ? 1 : 0;
+    const vis = px[i + 3] > threshold ? 1 : 0;
+    alphaVis[j] = vis;
+    opaque += vis;
+  }
+  // Transparent pad (packed RGBA cells) vs flat black-bg official sheet.
+  if (opaque / n < 0.98) return alphaVis;
+  const out = new Float32Array(n);
+  for (let i = 0, j = 0; i < px.length; i += 4, j++) {
+    const gray = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+    out[j] = gray > threshold ? 1 : 0;
   }
   return out;
 }
@@ -472,9 +483,19 @@ function thumbFromImageData(
   };
 }
 
+function visibleCount(data: ImageData): number {
+  const px = data.data;
+  let n = 0;
+  for (let i = 0; i < px.length; i += 4) {
+    if (px[i + 3] > 12 && px[i] + px[i + 1] + px[i + 2] > 20) n++;
+  }
+  return n;
+}
+
 /**
- * Crop one atlas cell from the decoded sheet → content-aware square → 64×64.
- * Matches the query path (trim black/empty pad) so NCC compares like-for-like.
+ * Crop one atlas cell from the decoded sheet → 64×64.
+ * Centered TEMPLATE_SIZE pack (legacy) is extracted losslessly; official
+ * 128 cells content-trim then contain (never stretch).
  */
 function imageDataFromSheetCell(
   sheet: ImageBitmap,
@@ -487,7 +508,22 @@ function imageDataFromSheetCell(
     h: entry.h,
   });
   const ctx = cell.getContext('2d', { willReadFrequently: true })!;
-  const raw = ctx.getImageData(0, 0, cell.width, cell.height);
+  const w = cell.width;
+  const h = cell.height;
+  if (w === TEMPLATE_SIZE && h === TEMPLATE_SIZE) {
+    return ctx.getImageData(0, 0, w, h);
+  }
+  if (w >= TEMPLATE_SIZE && h >= TEMPLATE_SIZE) {
+    const ox = Math.floor((w - TEMPLATE_SIZE) / 2);
+    const oy = Math.floor((h - TEMPLATE_SIZE) / 2);
+    const centered = ctx.getImageData(ox, oy, TEMPLATE_SIZE, TEMPLATE_SIZE);
+    const full = ctx.getImageData(0, 0, w, h);
+    const fv = visibleCount(full);
+    if (fv > 0 && visibleCount(centered) >= 0.9 * fv) {
+      return centered;
+    }
+  }
+  const raw = ctx.getImageData(0, 0, w, h);
   const recentered = contentAwareSquare(raw, 2);
   const tmp = document.createElement('canvas');
   tmp.width = TEMPLATE_SIZE;

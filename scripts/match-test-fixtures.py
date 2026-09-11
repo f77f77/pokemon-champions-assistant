@@ -168,8 +168,13 @@ def to_gray_and_mask(im: Image.Image) -> tuple[np.ndarray, np.ndarray]:
     gray = 0.299 * arr[:, :, 0] + 0.587 * arr[:, :, 1] + 0.114 * arr[:, :, 2]
     gray = gray.astype(np.float32)
     a = arr[:, :, 3]
-    gray = np.where(a > 12, gray, 0.0).astype(np.float32)
-    mask = (a > 12).astype(np.float32)
+    # Transparent pad (legacy RGBA cells) or flat black-bg official sheet.
+    if float((a > 12).mean()) < 0.98:
+        vis = a > 12
+    else:
+        vis = gray > 12
+    gray = np.where(vis, gray, 0.0).astype(np.float32)
+    mask = vis.astype(np.float32)
     return gray, mask
 
 
@@ -877,6 +882,12 @@ def main() -> int:
         "- Coarse hue filter is conservative (×0.85) so shinies without shiny templates are not hard-killed.",
         "- `recognize.ts` mirrors this pipeline (`cardRect` → type crop + `thumbRectInSlot` match).",
         f"- Result: **correct {accuracy}, wrong={wrong}, null={null_n}**.",
+        "- Current committed sheet is a lossless pack of the 50 leftover sprite_poke_3 cells "
+        "(official full-roster `sprite_sheet.png` + CSS were not available). Re-ingest with "
+        "`scripts/build-sprite-atlas.py --sheet … --css …` when those files land; do not explode "
+        "back into per-species PNGs.",
+        "- Pack must copy RGBA pixels (no Pillow `paste(..., mask=src)` blend). Blended edges "
+        "previously ranked Talonflame over Meowscarada on test-1 slot 2.",
         "",
     ]
     out_md.write_text("\n".join(lines), encoding="utf-8")
