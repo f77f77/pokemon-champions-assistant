@@ -190,6 +190,32 @@ export default function App() {
     })();
   }, []);
 
+  const onAllySpeciesChange = useCallback((index: number, speciesKey: string) => {
+    if (!speciesKey) return;
+    const sp = findSpecies(speciesKey);
+    if (!sp) return;
+    setMyTeam((prev) =>
+      prev.map((p, i) =>
+        i === index
+          ? speciesToSet(sp, p.id, {
+              speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
+              moves: top4ForCard([]),
+              item: p.item,
+              ability: p.ability,
+              thumbnailDataUrl: p.thumbnailDataUrl,
+            })
+          : p,
+      ),
+    );
+    setStatus(`已選擇種族：${sp.nameZh}`);
+    void (async () => {
+      const moves = top4ForCard(await fetchTopMoves(sp.key));
+      setMyTeam((prev) =>
+        prev.map((p, i) => (i === index && p.speciesKey === sp.key ? { ...p, moves } : p)),
+      );
+    })();
+  }, []);
+
   const onSpeciesOverride = useCallback((index: number, speciesKey: string) => {
     if (!speciesKey) {
       setEnemyTeam((prev) =>
@@ -397,6 +423,7 @@ export default function App() {
           onTeamChange={onMyTeamChange}
           onSpeedChange={onSpeedChange}
           onFormChange={onAllyFormChange}
+          onSpeciesChange={onAllySpeciesChange}
           selectedIndex={selectedAllyIndex}
           onSelectAlly={onSelectAlly}
         />

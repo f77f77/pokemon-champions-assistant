@@ -2,12 +2,14 @@ import { useState } from 'react';
 import type { PokemonSet } from '../types';
 import { PokemonCard } from './PokemonCard';
 import { DEMO_SHOWDOWN_PASTE, parseTeamImport } from '../lib/showdownPaste';
+import { legalSpeciesOptions } from '../lib/species';
 
 interface Props {
   team: PokemonSet[];
   onTeamChange: (team: PokemonSet[]) => void;
   onSpeedChange: (index: number, speed: number) => void;
   onFormChange?: (index: number, formKey: string) => void;
+  onSpeciesChange?: (index: number, speciesKey: string) => void;
   selectedIndex: number | null;
   onSelectAlly: (index: number) => void;
 }
@@ -17,11 +19,13 @@ export function TeamPanel({
   onTeamChange,
   onSpeedChange,
   onFormChange,
+  onSpeciesChange,
   selectedIndex,
   onSelectAlly,
 }: Props) {
   const [paste, setPaste] = useState(DEMO_SHOWDOWN_PASTE);
   const [open, setOpen] = useState(false);
+  const options = legalSpeciesOptions();
 
   function applyImport() {
     onTeamChange(parseTeamImport(paste));
@@ -65,6 +69,8 @@ export function TeamPanel({
             selected={selectedIndex === i}
             onSelect={() => onSelectAlly(i)}
             onSpeedChange={(spe) => onSpeedChange(i, spe)}
+            speciesOptions={onSpeciesChange ? options : undefined}
+            onSpeciesOverride={onSpeciesChange ? (key) => onSpeciesChange(i, key) : undefined}
             onFormChange={onFormChange ? (fk) => onFormChange(i, fk) : undefined}
           />
         ))}

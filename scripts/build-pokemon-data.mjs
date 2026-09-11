@@ -573,7 +573,9 @@ async function buildPokemonRecord(showdownId, doublesCache, entryHint = null) {
     abilities: (pokemonData.abilities || [])
       .sort((a, b) => a.slot - b.slot)
       .map((a) => a.ability.name),
-    championsLegal: Boolean(cbdData),
+    // Allowlist membership (this record exists because the id is legal).
+    // CBD fetch may fail; that only omits vgcDoublesMoves — never hide from pickers.
+    championsLegal: true,
   };
 
   const moveNames = Array.isArray(cbdData?.learnableMoveNames)

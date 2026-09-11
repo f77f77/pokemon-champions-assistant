@@ -1836,7 +1836,7 @@
       "competitive",
       "frisk"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "wigglytuff",
@@ -2055,7 +2055,7 @@
       "technician",
       "unnerve"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "persian",
@@ -2119,7 +2119,7 @@
       "technician",
       "rattled"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "persianalola",
@@ -3256,7 +3256,7 @@
       "inner-focus",
       "defiant"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "farfetchd",
@@ -3772,7 +3772,7 @@
       "filter",
       "technician"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "mrmime",
@@ -10329,7 +10329,7 @@
       "sticky-hold",
       "gluttony"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "swalot",
@@ -11891,7 +11891,7 @@
       "intimidate",
       "moxie"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "salamence",
@@ -22764,7 +22764,7 @@
       "sap-sipper",
       "grass-pelt"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "gogoat",
@@ -29570,7 +29570,7 @@
     "abilities": [
       "emergency-exit"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "golisopod",
@@ -30096,7 +30096,7 @@
       "overgrow",
       "grassy-surge"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "rillaboom",
@@ -30158,7 +30158,7 @@
       "blaze",
       "libero"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "cinderace",
@@ -30220,7 +30220,7 @@
       "torrent",
       "sniper"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "inteleon",
@@ -30439,7 +30439,7 @@
       "unburden",
       "stakeout"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "thievul",
@@ -30970,7 +30970,7 @@
       "plus",
       "technician"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "toxtricity",
@@ -31036,7 +31036,7 @@
       "minus",
       "technician"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "toxtricitylowkey",
@@ -31100,7 +31100,7 @@
       "limber",
       "technician"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "grapploct",
@@ -31615,7 +31615,7 @@
       "tough-claws",
       "steely-spirit"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "perrserker",
@@ -31678,7 +31678,7 @@
       "steadfast",
       "scrappy"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "sirfetchd",
@@ -32352,7 +32352,7 @@
       "lightning-rod",
       "electric-surge"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "pincurchin",
@@ -32416,7 +32416,7 @@
       "synchronize",
       "psychic-surge"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "indeedee",
@@ -32482,7 +32482,7 @@
       "synchronize",
       "psychic-surge"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "indeedeef",
@@ -34230,7 +34230,7 @@
       "natural-cure",
       "iron-fist"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "pawmot",
@@ -34449,7 +34449,7 @@
       "seed-sower",
       "harvest"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "arboliva",
@@ -34514,7 +34514,7 @@
       "hustle",
       "guts"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "squawkabilly",
@@ -34580,7 +34580,7 @@
       "hustle",
       "sheer-force"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "squawkabillyyellow",
@@ -35237,7 +35237,7 @@
       "guard-dog",
       "stakeout"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "mabosstiff",
@@ -36831,7 +36831,7 @@
       "thermal-exchange",
       "ice-body"
     ],
-    "championsLegal": false,
+    "championsLegal": true,
     "forms": [
       {
         "showdownId": "baxcalibur",

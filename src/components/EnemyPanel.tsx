@@ -1,6 +1,6 @@
 import type { PokemonSet } from '../types';
 import { PokemonCard } from './PokemonCard';
-import { formatSpeciesLabel, legalSpeciesList, type SpeciesData } from '../lib/species';
+import { legalSpeciesOptions } from '../lib/species';
 
 interface Props {
   team: PokemonSet[];
@@ -8,23 +8,8 @@ interface Props {
   onFormChange: (index: number, formKey: string) => void;
 }
 
-function compareSpeciesOptions(a: SpeciesData, b: SpeciesData): number {
-  const da = a.nationalDex ?? Number.POSITIVE_INFINITY;
-  const db = b.nationalDex ?? Number.POSITIVE_INFINITY;
-  if (da !== db) return da - db;
-  // Same dex (e.g. Paradox / Mega): stable secondary by formKey then key
-  const fa = a.formKey || a.key;
-  const fb = b.formKey || b.key;
-  const byForm = fa.localeCompare(fb);
-  if (byForm !== 0) return byForm;
-  return a.key.localeCompare(b.key);
-}
-
 export function EnemyPanel({ team, onSpeciesOverride, onFormChange }: Props) {
-  const options = [...legalSpeciesList()].sort(compareSpeciesOptions).map((s) => ({
-    key: s.key,
-    label: formatSpeciesLabel(s),
-  }));
+  const options = legalSpeciesOptions();
 
   return (
     <section className="panel panel--enemy">

@@ -20,7 +20,7 @@ export interface SpeciesData {
   formKey?: string;
   formLabel?: string;
   forms?: SpeciesFormData[];
-  /** True when this showdownId is in the Champions legal allowlist (262). */
+  /** True when this showdownId is in the Champions legal allowlist (262). Independent of CBD usage rows. */
   championsLegal?: boolean;
 }
 
@@ -103,9 +103,24 @@ export function formatSpeciesLabel(
   return `${name}${formBit}`;
 }
 
-/** Champions legal roster only (pokemon.json overlay). Used by the enemy species dropdown. */
+/** Champions legal roster for species pickers (allowlist / pokemon.json, not CBD usage). */
 export function legalSpeciesList(): SpeciesData[] {
   return SPECIES_DB.filter((s) => s.championsLegal === true);
+}
+
+export function legalSpeciesOptions(): { key: string; label: string }[] {
+  return [...legalSpeciesList()]
+    .sort((a, b) => {
+      const da = a.nationalDex ?? Number.POSITIVE_INFINITY;
+      const db = b.nationalDex ?? Number.POSITIVE_INFINITY;
+      if (da !== db) return da - db;
+      const fa = a.formKey || a.key;
+      const fb = b.formKey || b.key;
+      const byForm = fa.localeCompare(fb);
+      if (byForm !== 0) return byForm;
+      return a.key.localeCompare(b.key);
+    })
+    .map((s) => ({ key: s.key, label: formatSpeciesLabel(s) }));
 }
 
 export function speciesToSet(s: SpeciesData, id: string, extras?: Partial<PokemonSet>): PokemonSet {
@@ -240,7 +255,8 @@ function recordToSpecies(rec: GeneratedPokemonRecord): SpeciesData {
     types: rec.types.map(enTypeToZh),
     baseStats: { ...rec.baseStats },
     forms,
-    championsLegal: rec.championsLegal !== false,
+    // pokemon.json is the allowlist dump (262). CBD usage may be missing; still legal.
+    championsLegal: true,
   };
 }
 

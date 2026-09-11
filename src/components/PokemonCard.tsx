@@ -179,15 +179,15 @@ export function PokemonCard({
           )}
         </div>
         <div className="pkmn-card__title">
-          {variant === 'enemy' && onSpeciesOverride ? (
+          {onSpeciesOverride ? (
             <select
               className="pkmn-card__species-select"
               value={pokemon.speciesKey || ''}
               onChange={(e) => onSpeciesOverride(e.target.value)}
               onClick={(e) => e.stopPropagation()}
-              aria-label="手動覆寫種族"
+              aria-label={variant === 'enemy' ? '手動覆寫種族' : '選擇種族'}
             >
-              <option value="">未識別</option>
+              {variant === 'enemy' ? <option value="">未識別</option> : null}
               {(speciesOptions ?? []).map((opt) => (
                 <option key={opt.key} value={opt.key}>
                   {opt.label}
