@@ -137,8 +137,12 @@ export function SpeedAxis({ myTeam, enemyTeam, selectedAllyIndex }: Props) {
 
   return (
     <section className="panel panel--speed">
-      <header className="panel__header panel__header--row">
+      <header className="panel__header panel__header--row panel__header--speed">
         <h2>速度軸</h2>
+        <span className="panel__hint">
+          敵方雙色帶：減速0／中性0／中性32／加速0 · 我方單點（點選隊員 · 手填 Spe）
+          {allyTailwind || enemyTailwind ? ' · 順風 Spe ×2' : ''}
+        </span>
         <div className="speed-axis__toggles">
           <label className={`speed-axis__tw ${allyTailwind ? 'is-on' : ''}`}>
             <input
@@ -157,10 +161,6 @@ export function SpeedAxis({ myTeam, enemyTeam, selectedAllyIndex }: Props) {
             敵方順風
           </label>
         </div>
-        <span className="panel__hint">
-          敵方雙色帶：減速0／中性0／中性32／加速0 · 我方單點（點選隊員 · 手填 Spe）
-          {allyTailwind || enemyTailwind ? ' · 順風 Spe ×2' : ''}
-        </span>
       </header>
       <div className="speed-axis">
         <div className="speed-axis__scale speed-row" aria-hidden="true">

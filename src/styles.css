@@ -381,11 +381,19 @@ button, input, select, textarea {
 .error-text { color: var(--danger); }
 
 .speed-axis { overflow: auto; padding: 0.25rem 0.2rem 0.5rem; }
+.panel__header--speed .speed-axis__toggles {
+  margin-left: auto;
+}
+.layout--team-open .panel--speed {
+  /* Keep 順風 toggles / axis usable; overlay covers capture only */
+  margin-left: min(22rem, 36vw);
+}
 .speed-axis__toggles {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
   align-items: center;
+  flex-shrink: 0;
 }
 .speed-axis__tw {
   display: inline-flex;
