@@ -338,12 +338,14 @@ function toShowdownMoveId(displayName) {
     .replace(/[^a-z0-9]+/g, '');
 }
 
-async function attachMegaForms(forms, species, parentShowdownId, doublesCache) {
+async function attachMegaForms(forms, species, parentShowdownId, doublesCache, parentFormKey) {
   const varieties = Array.isArray(species?.varieties) ? species.varieties : [];
   const have = new Set(forms.map((f) => String(f.formKey || '').toLowerCase()));
+  const parentKey = parentFormKey || forms[0]?.formKey || '';
   for (const v of varieties) {
     const vName = v?.pokemon?.name;
     if (!vName || !isMegaPokemonName(vName) || have.has(vName.toLowerCase())) continue;
+    if (!megaBelongsToForm(vName, parentKey)) continue;
     try {
       const formEntry = await loadFormEntry(vName, parentShowdownId, doublesCache);
       formEntry.formNames = megaFormLabel(vName);
@@ -442,6 +444,14 @@ function megaFormLabel(pokemonName) {
 function isMegaPokemonName(name) {
   const n = String(name || '').toLowerCase();
   return n.includes('-mega') && !n.includes('-gmax') && !n.includes('-z');
+}
+
+/** Mega X/Y/base must belong to this form slug (do not hang Kanto megas on Alolan records). */
+function megaBelongsToForm(megaName, parentFormKey) {
+  const mega = String(megaName || '').toLowerCase();
+  const parent = String(parentFormKey || '').toLowerCase();
+  if (!parent || !mega) return false;
+  return mega === `${parent}-mega` || mega.startsWith(`${parent}-mega-`);
 }
 
 /**
@@ -754,7 +764,7 @@ async function buildPokemonRecord(showdownId, doublesCache, entryHint = null) {
       }
     }
   }
-  await attachMegaForms(forms, species, showdownId, doublesCache);
+  await attachMegaForms(forms, species, showdownId, doublesCache, record.formKey);
   if (forms.length) {
     record.forms = forms;
   }
@@ -872,7 +882,7 @@ async function applyUsageToRecord(rec, doublesCache, speciesCache) {
     speciesCache.set(speciesKey, species);
   }
   if (!rec.forms) rec.forms = [];
-  await attachMegaForms(rec.forms, species, sid, doublesCache);
+  await attachMegaForms(rec.forms, species, sid, doublesCache, rec.formKey);
 }
 
 async function refreshUsageOnly({ dryRun, allowlistPath }) {
