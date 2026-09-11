@@ -10,11 +10,13 @@
 - PNG binaries under `assets/templates/preview-thumbs/` are **gitignored** (re-fetch with the script). Keep `manifest.jsonl` + this CREDITS file in git.
 - Do **not** pull Pokémon HOME art or PokéAPI `official-artwork`.
 
-## ROI-crop Team Preview thumbs
+## Sprite sheet Team Preview thumbs
 
-- Source screenshot: 圖二 / `public/fixtures/team-preview.png`
-- Cropped with locked ROI Doc v1.2 (`scripts/crop-preview-templates.py` ↔ `src/lib/roi.ts`)
-- Stored in `public/templates/{showdownId}.png` with `source: roi-crop` in `manifest.json`
+- Master sheet + CSS: `public/sprites/sprite_poke.png`, `sprite_poke.css`
+- Parsed map: `public/sprites/atlas.json` (primary key = `nationalDex` / form)
+- Runtime: in-memory cell crops — no per-species PNG dump
+- Rebuild: `python3 scripts/build-sprite-atlas.py`
+- Pokémon images © The Pokémon Company / Nintendo / Game Freak; fan-project local matching only
 
 ## PokéAPI species / move data
 

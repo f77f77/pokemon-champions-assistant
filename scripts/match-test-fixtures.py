@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Match Team Preview test fixtures against public/templates/ (sprite_poke_3).
+Match Team Preview test fixtures against in-memory crops from
+public/sprites/sprite_poke.png (dex-keyed atlas / CSS).
 
 Pipeline (pose/scale alignment + false-positive guards):
   1. Yellow square ROI (side = red card height; locked panel + THUMB left)
@@ -36,7 +37,10 @@ try:
 except ImportError as e:
     raise SystemExit("Need numpy") from e
 
+from lib_sprite_sheet import crop_template, load_atlas
+
 ROOT = Path(__file__).resolve().parents[1]
+SPRITES_DIR = ROOT / "public/sprites"
 
 # Locked — mirror src/lib/roi.ts (DO NOT change panel / yellow / CARD_GAP)
 ENEMY_PANEL = {"left": 0.811, "top": 0.137, "right": 0.965, "bottom": 0.836}
@@ -428,8 +432,48 @@ def load_pokemon_types() -> dict[str, set[str]]:
 
 
 def load_templates(tmpl_dir: Path, type_map: dict[str, set[str]]) -> list[dict]:
-    manifest = json.loads((tmpl_dir / "manifest.json").read_text(encoding="utf-8"))
+    """Load templates from the master sheet + atlas (in-memory crops).
+
+    Falls back to deprecated public/templates/*.png only if the sheet is missing.
+    """
+    atlas_path = SPRITES_DIR / "atlas.json"
+    sheet_path = SPRITES_DIR / "sprite_poke.png"
     templates: list[dict] = []
+    if atlas_path.exists() and sheet_path.exists():
+        atlas = load_atlas(atlas_path)
+        sheet = Image.open(sheet_path).convert("RGBA")
+        seen: set[str] = set()
+        for entry in atlas.get("entries") or []:
+            sid = entry.get("speciesId")
+            dex_key = entry.get("dexKey")
+            if not sid or not dex_key or dex_key in seen:
+                continue
+            seen.add(dex_key)
+            im = crop_template(sheet, entry)
+            g, mask = to_gray_and_mask(im)
+            rgb = to_rgb_letterbox(im)
+            templates.append(
+                {
+                    "speciesId": sid,
+                    "dexKey": dex_key,
+                    "nationalDex": entry.get("nationalDex"),
+                    "gray": g,
+                    "mask": mask,
+                    "rgb": rgb,
+                    "hue": hue_hist(rgb),
+                    "hash": average_hash(g),
+                    "types": type_map.get(sid, set(entry.get("types") or [])),
+                    "meta": entry,
+                    "file": f"sheet:{dex_key}",
+                }
+            )
+        return templates
+
+    # Deprecated name-keyed files
+    manifest_path = tmpl_dir / "manifest.json"
+    if not manifest_path.exists():
+        return templates
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     for entry in manifest.get("templates", []):
         sid = entry["speciesId"]
         fpath = tmpl_dir / entry.get("file", f"{sid}.png")
@@ -691,7 +735,12 @@ def main() -> int:
     total = 0
     n_ids = len({t["speciesId"] for t in templates})
 
-    print(f"Templates: {len(templates)} files / {n_ids} speciesIds from {tmpl_dir.relative_to(ROOT)}")
+    src_label = (
+        f"{SPRITES_DIR.relative_to(ROOT)} (sheet+atlas, dex-keyed in-memory crops)"
+        if (SPRITES_DIR / "atlas.json").exists()
+        else f"{tmpl_dir.relative_to(ROOT)} (deprecated name-keyed PNGs)"
+    )
+    print(f"Templates: {len(templates)} crops / {n_ids} speciesIds from {src_label}")
     print(
         f"ROI locked: panel={ENEMY_PANEL} thumb={THUMB_CROP} "
         f"CARD_GAP_FRAC={CARD_GAP_FRAC} PANEL_OUTER_MARGIN_FRAC={PANEL_OUTER_MARGIN_FRAC}"
@@ -767,7 +816,7 @@ def main() -> int:
         "# Test fixture match results",
         "",
         f"- Fixtures: `public/fixtures/team-preview-test-1/2/3.png`",
-        f"- Templates: `public/templates/*.png` (sprite_poke_3 alpha-trimmed cells; {len(templates)} files / {n_ids} ids)",
+        f"- Templates: `public/sprites/sprite_poke.png` + `atlas.json` (nationalDex-keyed in-memory crops; {len(templates)} cells / {n_ids} ids)",
         f"- Matcher: crop cleanup (right {MATCH_CROP_RIGHT_EXCLUDE_FRAC}) + BG suppress + content-aware recenter + aHash prefilter + multi-scale/shift; NCC×0.55 + SSD×0.25 + aHash×0.20",
         f"- Guards (v1.4): `CONFIDENCE_THRESHOLD={CONFIDENCE_THRESHOLD}`, `{margin_rule}`, "
         f"coarse hue ×{HUE_PENALTY} if hist-dist>{HUE_DIST_THR}, type **hard** gate (thr={TYPE_MATCH_THR}; skip if low-conf), "

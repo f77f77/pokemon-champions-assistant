@@ -7,7 +7,8 @@
  * aHash prefilter → 64×64 多尺度／微位移灰階比對（mask = 模板 alpha ∩ query 非黑）→
  * 粗 hue 軟懲罰 → 卡右側 type icon 硬否決（低信心則跳過）→ dynamic margin + threshold。
  *
- * 模板庫：public/templates/{showdownId}.png — 切自官方 sprite_poke_3（trim 透明邊 → contain 64）。
+ * 模板庫：public/sprites/sprite_poke.png + atlas.json（nationalDex 主鍵）。
+ * 整張 sheet 載入一次，依 CSS/atlas 座標記憶體裁切 — 不落地數百張小 PNG。
  * 寧可 speciesId=null（未識別）也不要錯種。不拉伸。不猜道具。不做逐幀即時辨認。
  * ROI 黃框 / ENEMY_PANEL / CARD_GAP_FRAC 鎖定（見 roi.ts）。
  */
@@ -27,6 +28,12 @@ import {
   cardRect,
   thumbRectInSlot,
 } from './roi';
+import {
+  cropSheetCell,
+  loadSpriteAtlas,
+  loadSpriteSheetBitmap,
+  type SpriteAtlasEntry,
+} from './spriteSheet';
 
 export {
   ENEMY_PANEL_DEFAULT,
@@ -98,15 +105,20 @@ export const ROI = {
 
 export type RoiConfig = typeof ROI;
 
-/** Team Preview 小縮圖模板條目 */
+/** Team Preview 小縮圖模板條目（主鍵 = nationalDex / dexKey） */
 export interface ThumbTemplate {
+  /** Showdown id（UI / pokemon.json）；辨認結果仍回傳此欄 */
   speciesId: string;
   speciesNameZh: string;
+  /** Primary template key: "6" or "38-1" */
+  dexKey: string;
+  nationalDex: number;
+  form?: number;
   /** 64×64 aHash 位元字串（僅不透明像素） */
   aHash: string;
   /** 灰階 float（長度 TEMPLATE_SIZE²），用於 NCC */
   gray: Float32Array;
-  /** Alpha mask 0/1（sprite_poke_3 透明底忽略）；缺省視為全 1 */
+  /** Alpha mask 0/1（sheet 透明／裁切後忽略黑底）；缺省視為全 1 */
   mask?: Float32Array;
   /** 粗 hue hist（HUE_BINS）；透明→黑後計算 */
   hue: Float32Array;
@@ -124,7 +136,7 @@ interface TypeIconTemplate {
 
 /**
  * Fallback seed showdownIds when manifest is missing (new team-select fixtures).
- * Prefer public/templates/manifest.json ROI-crop entries at runtime.
+ * Prefer public/sprites/atlas.json (nationalDex keys) at runtime.
  */
 export const SEED_TEMPLATE_IDS = [
   'charizard',
@@ -431,74 +443,66 @@ function imageDataFromBitmap(bmp: ImageBitmap): ImageData {
   return ctx.getImageData(0, 0, TEMPLATE_SIZE, TEMPLATE_SIZE);
 }
 
-/** Manifest / seed template entries under public/templates/. */
-interface ManifestTemplateEntry {
-  speciesId: string;
-  speciesNameZh?: string;
-  file?: string;
-  source?: string;
-}
-
-interface TemplatesManifest {
-  templates?: ManifestTemplateEntry[];
-  defaultSource?: string;
-}
-
-interface ResolvedTemplateFile {
-  speciesId: string;
-  nameZh: string;
-  /** File under public/templates/ (may include variants e.g. sableye-test2.png) */
-  file: string;
+function thumbFromImageData(
+  imageData: ImageData,
+  entry: {
+    speciesId: string;
+    speciesNameZh?: string;
+    dexKey: string;
+    nationalDex: number;
+    form?: number;
+  },
+): ThumbTemplate {
+  const zh =
+    findSpecies(entry.speciesId)?.nameZh ??
+    entry.speciesNameZh ??
+    SEED_META[entry.speciesId] ??
+    entry.speciesId;
+  return {
+    speciesId: entry.speciesId,
+    speciesNameZh: zh,
+    dexKey: entry.dexKey,
+    nationalDex: entry.nationalDex,
+    form: entry.form ?? 0,
+    aHash: averageHash(imageData),
+    gray: toGray(imageData),
+    mask: alphaMaskFromImageData(imageData),
+    hue: hueHistFromImageData(imageData),
+    types: speciesTypeIds(entry.speciesId),
+  };
 }
 
 /**
- * Resolve template files to load: manifest.json ROI-crop entries (multi-file per
- * showdownId allowed) ∪ SEED_TEMPLATE_IDS as `{id}.png` fallback.
+ * Crop one atlas cell from the decoded sheet → content-aware square → 64×64.
+ * Matches the query path (trim black/empty pad) so NCC compares like-for-like.
  */
-async function resolveTemplateFiles(): Promise<ResolvedTemplateFile[]> {
-  const files: ResolvedTemplateFile[] = [];
-  const seenFiles = new Set<string>();
-  try {
-    const url = `${templatesBaseUrl()}manifest.json`;
-    const res = await fetch(url);
-    if (res.ok) {
-      const manifest = (await res.json()) as TemplatesManifest;
-      for (const t of manifest.templates ?? []) {
-        if (!t?.speciesId) continue;
-        if (t.source && t.source !== 'sprite_poke_3' && t.source !== 'roi-crop') continue;
-        const file = t.file || `${t.speciesId}.png`;
-        if (seenFiles.has(file)) continue;
-        seenFiles.add(file);
-        files.push({
-          speciesId: t.speciesId,
-          nameZh: t.speciesNameZh || SEED_META[t.speciesId] || t.speciesId,
-          file,
-        });
-      }
-    }
-  } catch {
-    /* fall back below */
-  }
-  if (files.length === 0) {
-    for (const id of SEED_TEMPLATE_IDS) {
-      const file = `${id}.png`;
-      if (seenFiles.has(file)) continue;
-      seenFiles.add(file);
-      files.push({ speciesId: id, nameZh: SEED_META[id] ?? id, file });
-    }
-  } else {
-    // Ensure seed files are present even if omitted from an older manifest
-    for (const id of SEED_TEMPLATE_IDS) {
-      const file = `${id}.png`;
-      if (seenFiles.has(file)) continue;
-      seenFiles.add(file);
-      files.push({ speciesId: id, nameZh: SEED_META[id] ?? id, file });
-    }
-  }
-  return files;
+function imageDataFromSheetCell(
+  sheet: ImageBitmap,
+  entry: SpriteAtlasEntry,
+): ImageData {
+  const cell = cropSheetCell(sheet, sheet.width, sheet.height, {
+    x: entry.x,
+    y: entry.y,
+    w: entry.w,
+    h: entry.h,
+  });
+  const ctx = cell.getContext('2d', { willReadFrequently: true })!;
+  const raw = ctx.getImageData(0, 0, cell.width, cell.height);
+  const recentered = contentAwareSquare(raw, 2);
+  const tmp = document.createElement('canvas');
+  tmp.width = TEMPLATE_SIZE;
+  tmp.height = TEMPLATE_SIZE;
+  const tctx = tmp.getContext('2d', { willReadFrequently: true })!;
+  const src = document.createElement('canvas');
+  src.width = recentered.width;
+  src.height = recentered.height;
+  src.getContext('2d')!.putImageData(recentered, 0, 0);
+  drawContained(tctx, src, recentered.width, recentered.height, { padBlack: false });
+  return tctx.getImageData(0, 0, TEMPLATE_SIZE, TEMPLATE_SIZE);
 }
 
-async function fetchTemplateFile(file: string): Promise<ImageData | null> {
+/** @deprecated name-keyed files under public/templates/ — sheet crops are primary. */
+async function fetchLegacyTemplateFile(file: string): Promise<ImageData | null> {
   try {
     const url = `${templatesBaseUrl()}${file}`;
     const res = await fetch(url);
@@ -513,6 +517,48 @@ async function fetchTemplateFile(file: string): Promise<ImageData | null> {
   }
 }
 
+async function loadTemplatesFromSheet(): Promise<ThumbTemplate[]> {
+  const [atlas, sheet] = await Promise.all([loadSpriteAtlas(), loadSpriteSheetBitmap()]);
+  if (!atlas || !sheet) return [];
+  const loaded: ThumbTemplate[] = [];
+  const seenDex = new Set<string>();
+  for (const entry of atlas.entries) {
+    if (!entry?.speciesId || !entry.dexKey) continue;
+    if (seenDex.has(entry.dexKey)) continue;
+    seenDex.add(entry.dexKey);
+    const imageData = imageDataFromSheetCell(sheet, entry);
+    loaded.push(
+      thumbFromImageData(imageData, {
+        speciesId: entry.speciesId,
+        speciesNameZh: entry.speciesNameZh,
+        dexKey: entry.dexKey,
+        nationalDex: entry.nationalDex,
+        form: entry.form,
+      }),
+    );
+  }
+  sheet.close();
+  return loaded;
+}
+
+async function loadLegacyNameTemplates(): Promise<ThumbTemplate[]> {
+  const loaded: ThumbTemplate[] = [];
+  for (const id of SEED_TEMPLATE_IDS) {
+    const imageData = await fetchLegacyTemplateFile(`${id}.png`);
+    if (!imageData) continue;
+    const dex = findSpecies(id)?.nationalDex ?? 0;
+    loaded.push(
+      thumbFromImageData(imageData, {
+        speciesId: id,
+        speciesNameZh: SEED_META[id],
+        dexKey: dex ? String(dex) : id,
+        nationalDex: dex || 0,
+      }),
+    );
+  }
+  return loaded;
+}
+
 export async function loadPreviewThumbTemplates(
   force = false,
 ): Promise<ThumbTemplate[]> {
@@ -520,22 +566,9 @@ export async function loadPreviewThumbTemplates(
   if (!force && loadPromise) return loadPromise;
 
   loadPromise = (async () => {
-    const loaded: ThumbTemplate[] = [];
-    const entries = await resolveTemplateFiles();
-    for (const { speciesId, nameZh, file } of entries) {
-      const imageData = await fetchTemplateFile(file);
-      if (!imageData) continue;
-      const zh = findSpecies(speciesId)?.nameZh ?? nameZh ?? SEED_META[speciesId] ?? speciesId;
-      const mask = alphaMaskFromImageData(imageData);
-      loaded.push({
-        speciesId,
-        speciesNameZh: zh,
-        aHash: averageHash(imageData),
-        gray: toGray(imageData),
-        mask,
-        hue: hueHistFromImageData(imageData),
-        types: speciesTypeIds(speciesId),
-      });
+    let loaded = await loadTemplatesFromSheet();
+    if (loaded.length === 0) {
+      loaded = await loadLegacyNameTemplates();
     }
     PREVIEW_THUMB_TEMPLATES = loaded;
     return loaded;

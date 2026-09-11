@@ -15,6 +15,7 @@
     "build:pokemon-data": "node scripts/build-pokemon-data.mjs",
     "match:fixtures": "python3 scripts/match-test-fixtures.py",
     "match:seed": "python3 scripts/match-seed-templates.py",
+    "sprites:atlas": "python3 scripts/build-sprite-atlas.py",
     "fetch:cbd": "node scripts/fetch-cbd-templates.mjs --allowlist"
   },
   "dependencies": {
