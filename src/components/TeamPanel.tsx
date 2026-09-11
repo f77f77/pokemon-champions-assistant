@@ -12,6 +12,7 @@ interface Props {
   onSpeciesChange?: (index: number, speciesKey: string) => void;
   selectedIndex: number | null;
   onSelectAlly: (index: number) => void;
+  onClose?: () => void;
 }
 
 export function TeamPanel({
@@ -22,6 +23,7 @@ export function TeamPanel({
   onSpeciesChange,
   selectedIndex,
   onSelectAlly,
+  onClose,
 }: Props) {
   const [paste, setPaste] = useState(DEMO_SHOWDOWN_PASTE);
   const [open, setOpen] = useState(false);
@@ -33,12 +35,19 @@ export function TeamPanel({
   }
 
   return (
-    <section className="panel panel--team">
+    <section className="panel panel--team panel--overlay" aria-label="我方隊伍">
       <header className="panel__header">
         <h2>我方隊伍</h2>
-        <button type="button" className="btn btn--ghost" onClick={() => setOpen((v) => !v)}>
-          {open ? '關閉匯入' : 'Showdown / JSON'}
-        </button>
+        <div className="panel__header-actions">
+          <button type="button" className="btn btn--ghost" onClick={() => setOpen((v) => !v)}>
+            {open ? '關閉匯入' : 'Showdown / JSON'}
+          </button>
+          {onClose ? (
+            <button type="button" className="icon-btn" onClick={onClose} aria-label="隱藏我方隊伍" title="隱藏">
+              ×
+            </button>
+          ) : null}
+        </div>
       </header>
       {open && (
         <div className="import-box">

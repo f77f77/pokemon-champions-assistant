@@ -64,5 +64,12 @@ export function mySpeedPoint(baseSpe: number, enteredSpeed?: number, ev = 0, nat
   return calcStat(baseSpe, 31, ev, 50, natureMult);
 }
 
+/** Tailwind (順風) doubles Speed while the field is up. */
+export function applyTailwind(spe: number, tailwind: boolean): number {
+  return tailwind ? spe * 2 : spe;
+}
+
 export const SPEED_AXIS_MIN = 20;
 export const SPEED_AXIS_MAX = 220;
+/** Axis ceiling when any side has Tailwind so doubled Spe still fits. */
+export const SPEED_AXIS_MAX_TAILWIND = SPEED_AXIS_MAX * 2;

@@ -18,6 +18,49 @@ import {
   type RoiFineTune,
 } from './lib/recognize';
 import { fetchTopMoves, fetchTopItems, top4ForCard, top6ForCard, MOVES_SOURCE_LABEL } from './lib/movesCache';
+import { APP_NAME, SHOWDOWN_TEAMBUILDER_URL, formatAppVersion } from './version';
+
+const TEAM_PANEL_STORAGE_KEY = 'pkmn-ally-panel-open';
+
+function loadTeamPanelOpen(): boolean {
+  try {
+    const v = localStorage.getItem(TEAM_PANEL_STORAGE_KEY);
+    if (v == null) return true;
+    return v === '1';
+  } catch {
+    return true;
+  }
+}
+
+function saveTeamPanelOpen(open: boolean): void {
+  try {
+    localStorage.setItem(TEAM_PANEL_STORAGE_KEY, open ? '1' : '0');
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+function GearIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.55-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.81 8.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.93 14.16a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.43.34.69.22l2.39-.96c.5.39 1.04.7 1.63.94l.36 2.54c.05.24.25.42.49.42h3.8c.24 0 .44-.18.49-.42l.36-2.54c.59-.24 1.13-.55 1.63-.94l2.39.96c.26.12.55.02.69-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"
+      />
+    </svg>
+  );
+}
+
+function TeamPanelIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M4 5a1 1 0 0 1 1-1h6v16H5a1 1 0 0 1-1-1V5zm10-1h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5V4zM6.5 7h3v1.5h-3V7zm0 3h3V11.5h-3V10z"
+      />
+    </svg>
+  );
+}
 
 async function buildDemoMyTeam(): Promise<PokemonSet[]> {
   const out: PokemonSet[] = [];
@@ -138,6 +181,12 @@ export default function App() {
   const [debugOverlay, setDebugOverlay] = useState(() => loadDebugOverlay());
   /** 速度軸對照用：目前選中的我方隊員 index */
   const [selectedAllyIndex, setSelectedAllyIndex] = useState<number | null>(null);
+  const [teamOpen, setTeamOpen] = useState(() => loadTeamPanelOpen());
+  const appVersion = formatAppVersion();
+
+  useEffect(() => {
+    document.title = `${APP_NAME} ${appVersion} · Doubles`;
+  }, [appVersion]);
 
   // Prefer CBD Doubles top-4 for ally demo when baked usage exists; else 未載入 (no fake stubs).
   useEffect(() => {
@@ -303,6 +352,14 @@ export default function App() {
     });
   }, []);
 
+  const toggleTeamPanel = useCallback(() => {
+    setTeamOpen((prev) => {
+      const next = !prev;
+      saveTeamPanelOpen(next);
+      return next;
+    });
+  }, []);
+
   const onRecognize = useCallback(
     async (canvas: HTMLCanvasElement) => {
       setBusy(true);
@@ -362,44 +419,38 @@ export default function App() {
     [fineTune],
   );
 
-  const onGenerate = useCallback(async () => {
-    setBusy(true);
-    setStatus('正在生成對方隊伍（示範資料 + moves cache）…');
-    try {
-      // Prefer allowlisted top Doubles species when present in SPECIES_DB
-      const keys = ['kingambit', 'garchomp', 'sneasler', 'basculegion', 'whimsicott', 'incineroar'];
-      const next: PokemonSet[] = [];
-      for (let i = 0; i < 6; i++) {
-        const sp = findSpecies(keys[i]) ?? findSpecies('pelipper')!;
-        const [movesRaw, items] = await Promise.all([fetchTopMoves(sp.key), fetchTopItems(sp.key, 2)]);
-        next.push(
-          speciesToSet(sp, `enemy-${i}`, {
-            speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
-            moves: top6ForCard(movesRaw),
-            item: undefined,
-            items,
-            ability: undefined,
-          }),
-        );
-      }
-      setEnemyTeam(next);
-      setStatus(`對方隊伍已生成（${MOVES_SOURCE_LABEL}；無資料顯示未載入）`);
-    } finally {
-      setBusy(false);
-    }
-  }, []);
-
   return (
     <div className="app">
       <header className="app-header">
         <div className="app-header__brand">
-          <strong>Pokémon Champions 對戰助手</strong>
-          <span className="muted">v0.1 · Doubles · GC551</span>
+          <strong>{APP_NAME}</strong>
+          <span className="muted">
+            {appVersion} · Doubles
+          </span>
         </div>
         <nav className="app-header__nav">
-          <span>我方隊伍</span>
+          <a
+            className="app-header__link"
+            href={SHOWDOWN_TEAMBUILDER_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Showdown 組隊
+          </a>
+          <button
+            type="button"
+            className={`icon-btn ${teamOpen ? 'is-active' : ''}`}
+            aria-pressed={teamOpen}
+            aria-label={teamOpen ? '隱藏我方隊伍' : '顯示我方隊伍'}
+            title={teamOpen ? '隱藏我方隊伍' : '顯示我方隊伍'}
+            onClick={toggleTeamPanel}
+          >
+            <TeamPanelIcon />
+          </button>
           <details className="settings">
-            <summary>設置</summary>
+            <summary className="settings__summary icon-btn" aria-label="設置" title="設置">
+              <GearIcon />
+            </summary>
             <div className="settings__body">
               <p className="settings__title">ROI 微調（±2%）</p>
               <p className="muted settings__hint">預設 {panelPreview} · 相對 16:9 內容區</p>
@@ -443,7 +494,7 @@ export default function App() {
         </nav>
       </header>
 
-      <main className="layout">
+      {teamOpen ? (
         <TeamPanel
           team={myTeam}
           onTeamChange={onMyTeamChange}
@@ -452,12 +503,15 @@ export default function App() {
           onSpeciesChange={onAllySpeciesChange}
           selectedIndex={selectedAllyIndex}
           onSelectAlly={onSelectAlly}
+          onClose={toggleTeamPanel}
         />
+      ) : null}
+
+      <main className={`layout ${teamOpen ? 'layout--team-open' : ''}`}>
         <div className="layout__center">
           <CapturePanel
             busy={busy}
             onRecognize={onRecognize}
-            onGenerate={onGenerate}
             statusText={status}
             fineTune={fineTune}
             debugOverlay={debugOverlay}

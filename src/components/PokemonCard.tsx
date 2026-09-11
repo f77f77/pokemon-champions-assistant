@@ -123,6 +123,9 @@ function MatchupRows({ matchups }: { matchups: Record<PokemonType, number> }) {
         <div key={ri} className="type-grid__row">
           {groups.map(({ mult, types }) => (
             <span key={mult} className="type-grid__group">
+              <span className={`type-grid__mult type-grid__mult--${multCssKey(mult)}`} title={`×${mult}`}>
+                {formatMultLabel(mult)}
+              </span>
               {types.map((t) => {
                 const icon = typeIconUrl(t);
                 return icon ? (
@@ -133,9 +136,6 @@ function MatchupRows({ matchups }: { matchups: Record<PokemonType, number> }) {
                   </span>
                 );
               })}
-              <span className={`type-grid__mult type-grid__mult--${multCssKey(mult)}`} title={`×${mult}`}>
-                {formatMultLabel(mult)}
-              </span>
             </span>
           ))}
         </div>
