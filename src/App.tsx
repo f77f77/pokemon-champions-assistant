@@ -17,7 +17,7 @@ import {
   ENEMY_PANEL_DEFAULT,
   type RoiFineTune,
 } from './lib/recognize';
-import { fetchTopMoves, top4ForCard, top6ForCard, MOVES_SOURCE_LABEL } from './lib/movesCache';
+import { fetchTopMoves, fetchTopItems, top4ForCard, top6ForCard, MOVES_SOURCE_LABEL } from './lib/movesCache';
 
 async function buildDemoMyTeam(): Promise<PokemonSet[]> {
   const out: PokemonSet[] = [];
@@ -25,10 +25,12 @@ async function buildDemoMyTeam(): Promise<PokemonSet[]> {
     const key = SAMPLE_MY_TEAM_KEYS[i];
     const sp = findSpecies(key)!;
     const moves = top4ForCard(await fetchTopMoves(sp.key));
+    const items = await fetchTopItems(sp.key, 2);
     out.push(
       speciesToSet(sp, `my-${i}`, {
         speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
-        item: ['勿花果', '突擊背心', '氣勢披帶', '講究眼鏡', '生命寶珠', '岩石盔甲'][i],
+        item: items[0]?.name || ['勿花果', '突擊背心', '氣勢披帶', '講究眼鏡', '生命寶珠', '岩石盔甲'][i],
+        items,
         ability: ['威嚇', '青草製造者', '無形拳', '古代活性', '威嚇', '再生力'][i],
         moves,
       }),
@@ -49,19 +51,7 @@ function clampTune(v: number): number {
 function applyFormSync(prev: PokemonSet, formKey: string): PokemonSet | null {
   const form = prev.forms?.find((f) => f.formKey === formKey);
   if (!form) return null;
-  const sp = findSpecies(form.showdownId) || findSpecies(formKey);
-  if (sp) {
-    return speciesToSet(sp, prev.id, {
-      thumbnailDataUrl: prev.thumbnailDataUrl,
-      confidence: prev.confidence ?? 1,
-      identified: true,
-      item: prev.item,
-      ability: undefined,
-      moves: prev.moves,
-      speed: calcStat(form.baseStats.spe, 31, 0, 50, 1),
-    });
-  }
-  return {
+  const patched: PokemonSet = {
     ...prev,
     formKey: form.formKey,
     formLabel: form.label,
@@ -69,6 +59,26 @@ function applyFormSync(prev: PokemonSet, formKey: string): PokemonSet | null {
     baseStats: { ...form.baseStats },
     speed: calcStat(form.baseStats.spe, 31, 0, 50, 1),
   };
+  const sp = findSpecies(form.showdownId) || findSpecies(formKey);
+  // Different allowlist record (gender / regional sibling) → swap species identity.
+  // Same showdownId (Base → Mega on Garchomp) → keep this record and only patch form fields.
+  if (sp && sp.key !== prev.speciesKey) {
+    return speciesToSet(sp, prev.id, {
+      thumbnailDataUrl: prev.thumbnailDataUrl,
+      confidence: prev.confidence ?? 1,
+      identified: true,
+      item: prev.item,
+      items: prev.items,
+      ability: undefined,
+      moves: prev.moves,
+      speed: calcStat(form.baseStats.spe, 31, 0, 50, 1),
+      formKey: form.formKey,
+      formLabel: form.label,
+      types: [...form.types],
+      baseStats: { ...form.baseStats },
+    });
+  }
+  return patched;
 }
 
 /** Resolve CBD showdown id for a formKey without reading React state. */
@@ -90,12 +100,24 @@ function resolveFormMoveIds(formKey: string): { primaryId: string; fallbackId?: 
 
 async function fetchMovesForForm(formKey: string, moveCount: 4 | 6) {
   const ids = resolveFormMoveIds(formKey);
-  if (!ids) return moveCount === 4 ? top4ForCard([]) : top6ForCard([]);
+  if (!ids) {
+    return {
+      moves: moveCount === 4 ? top4ForCard([]) : top6ForCard([]),
+      items: [] as Awaited<ReturnType<typeof fetchTopItems>>,
+    };
+  }
   let movesRaw = await fetchTopMoves(ids.primaryId);
+  let items = await fetchTopItems(ids.primaryId, 2);
   if (!movesRaw.length && ids.fallbackId && ids.fallbackId !== ids.primaryId) {
     movesRaw = await fetchTopMoves(ids.fallbackId);
   }
-  return moveCount === 4 ? top4ForCard(movesRaw) : top6ForCard(movesRaw);
+  if (!items.length && ids.fallbackId && ids.fallbackId !== ids.primaryId) {
+    items = await fetchTopItems(ids.fallbackId, 2);
+  }
+  return {
+    moves: moveCount === 4 ? top4ForCard(movesRaw) : top6ForCard(movesRaw),
+    items,
+  };
 }
 
 export default function App() {
@@ -164,9 +186,9 @@ export default function App() {
     const label = meta?.label || formKey;
     setStatus(`已切換形態：${label}（種族值／屬性已更新）`);
     void (async () => {
-      const moves = await fetchMovesForForm(formKey, 4);
+      const { moves, items } = await fetchMovesForForm(formKey, 4);
       setMyTeam((prev) =>
-        prev.map((p, i) => (i === index && p.formKey === formKey ? { ...p, moves } : p)),
+        prev.map((p, i) => (i === index && p.formKey === formKey ? { ...p, moves, items, item: items[0]?.name ?? p.item } : p)),
       );
       setStatus(`已切換形態：${label}（種族值／屬性／招式已更新）`);
     })();
@@ -183,9 +205,9 @@ export default function App() {
     const meta = resolveFormMoveIds(formKey);
     setStatus(`敵方形態：${meta?.label || formKey}`);
     void (async () => {
-      const moves = await fetchMovesForForm(formKey, 6);
+      const { moves, items } = await fetchMovesForForm(formKey, 6);
       setEnemyTeam((prev) =>
-        prev.map((p, i) => (i === index && p.formKey === formKey ? { ...p, moves } : p)),
+        prev.map((p, i) => (i === index && p.formKey === formKey ? { ...p, moves, items } : p)),
       );
     })();
   }, []);
@@ -210,8 +232,9 @@ export default function App() {
     setStatus(`已選擇種族：${sp.nameZh}`);
     void (async () => {
       const moves = top4ForCard(await fetchTopMoves(sp.key));
+      const items = await fetchTopItems(sp.key, 2);
       setMyTeam((prev) =>
-        prev.map((p, i) => (i === index && p.speciesKey === sp.key ? { ...p, moves } : p)),
+        prev.map((p, i) => (i === index && p.speciesKey === sp.key ? { ...p, moves, items, item: items[0]?.name ?? p.item } : p)),
       );
     })();
   }, []);
@@ -235,8 +258,8 @@ export default function App() {
               speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
               moves: top6ForCard([]),
               confidence: 1,
-              // 手動覆寫不猜道具
               item: undefined,
+              items: [],
               ability: undefined,
               thumbnailDataUrl: p.thumbnailDataUrl,
             })
@@ -246,8 +269,9 @@ export default function App() {
     setStatus(`已手動覆寫：${sp.nameZh}（弱點／速度軸已更新）`);
     void (async () => {
       const moves = top6ForCard(await fetchTopMoves(sp.key));
+      const items = await fetchTopItems(sp.key, 2);
       setEnemyTeam((prev) =>
-        prev.map((p, i) => (i === index && p.speciesKey === sp.key ? { ...p, moves } : p)),
+        prev.map((p, i) => (i === index && p.speciesKey === sp.key ? { ...p, moves, items } : p)),
       );
     })();
   }, []);
@@ -307,13 +331,14 @@ export default function App() {
             });
             continue;
           }
-          const moves = top6ForCard(await fetchTopMoves(sp.key));
+          const [movesRaw, items] = await Promise.all([fetchTopMoves(sp.key), fetchTopItems(sp.key, 2)]);
           next.push(
             speciesToSet(sp, `enemy-${i}`, {
               speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
               confidence: conf,
-              moves,
+              moves: top6ForCard(movesRaw),
               item: undefined,
+              items,
               ability: undefined,
               thumbnailDataUrl: r.thumbnailDataUrl,
             }),
@@ -346,12 +371,13 @@ export default function App() {
       const next: PokemonSet[] = [];
       for (let i = 0; i < 6; i++) {
         const sp = findSpecies(keys[i]) ?? findSpecies('pelipper')!;
-        const moves = top6ForCard(await fetchTopMoves(sp.key));
+        const [movesRaw, items] = await Promise.all([fetchTopMoves(sp.key), fetchTopItems(sp.key, 2)]);
         next.push(
           speciesToSet(sp, `enemy-${i}`, {
             speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
-            moves,
+            moves: top6ForCard(movesRaw),
             item: undefined,
+            items,
             ability: undefined,
           }),
         );

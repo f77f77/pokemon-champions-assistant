@@ -1,4 +1,4 @@
-import type { MoveSlot, PokemonType } from '../types';
+import type { HeldItemSlot, MoveSlot, PokemonType } from '../types';
 import { TYPE_ID_TO_ZH, type TypeIconId } from './typeIcons';
 
 /**
@@ -58,6 +58,14 @@ export interface VgcDoublesMoveRow {
   rank?: number | null;
 }
 
+export interface VgcDoublesItemRow {
+  id: string;
+  nameEn: string;
+  nameZh?: string | null;
+  usage: string | null;
+  rank?: number | null;
+}
+
 export interface VgcDoublesMeta {
   source?: string;
   format?: string;
@@ -69,17 +77,21 @@ export interface VgcDoublesMeta {
 interface PokemonMovesRecord {
   showdownId: string;
   vgcDoublesMoves?: VgcDoublesMoveRow[];
+  vgcDoublesItems?: VgcDoublesItemRow[];
   vgcDoublesMeta?: VgcDoublesMeta | null;
   forms?: {
     showdownId?: string;
     vgcDoublesMoves?: VgcDoublesMoveRow[];
+    vgcDoublesItems?: VgcDoublesItemRow[];
     vgcDoublesMeta?: VgcDoublesMeta | null;
   }[];
 }
 
 const MEMORY = new Map<string, { fetchedAt: string; moves: MoveSlot[]; sourceLabel: string | null }>();
+const ITEM_MEMORY = new Map<string, { fetchedAt: string; items: HeldItemSlot[] }>();
 const MOVES_BY_ID = new Map<string, GeneratedMoveRecord>();
 const DOUBLES_BY_SPECIES = new Map<string, VgcDoublesMoveRow[]>();
+const ITEMS_BY_SPECIES = new Map<string, VgcDoublesItemRow[]>();
 const META_BY_SPECIES = new Map<string, VgcDoublesMeta | null>();
 
 let loadPromise: Promise<void> | null = null;
@@ -90,7 +102,17 @@ function todayKey(): string {
 }
 
 function storageKey(speciesKey: string): string {
-  return `pkmn-moves-cache:v2:${todayKey()}:${speciesKey}`;
+  return `pkmn-moves-cache:v3:${todayKey()}:${speciesKey}`;
+}
+
+export function parseUsagePercent(usage: string | number | null | undefined): number {
+  if (usage == null || usage === '') return Number.NEGATIVE_INFINITY;
+  const n = typeof usage === 'number' ? usage : parseFloat(String(usage).replace(/%/g, '').trim());
+  return Number.isFinite(n) ? n : Number.NEGATIVE_INFINITY;
+}
+
+export function sortByUsageDesc<T extends { usage?: string | number | null }>(rows: T[]): T[] {
+  return [...rows].sort((a, b) => parseUsagePercent(b.usage) - parseUsagePercent(a.usage));
 }
 
 function enTypeToZh(t: string | null | undefined): PokemonType {
@@ -151,6 +173,7 @@ export async function loadMovesData(
       applyMetaUsageDate(meta);
       MOVES_BY_ID.clear();
       DOUBLES_BY_SPECIES.clear();
+      ITEMS_BY_SPECIES.clear();
       META_BY_SPECIES.clear();
       if (Array.isArray(moves)) {
         for (const m of moves) {
@@ -162,7 +185,9 @@ export async function loadMovesData(
         for (const p of pokemon) {
           if (!p?.showdownId) continue;
           const rows = Array.isArray(p.vgcDoublesMoves) ? p.vgcDoublesMoves : [];
-          if (rows.length) DOUBLES_BY_SPECIES.set(p.showdownId, rows);
+          if (rows.length) DOUBLES_BY_SPECIES.set(p.showdownId, sortByUsageDesc(rows));
+          const itemRows = Array.isArray(p.vgcDoublesItems) ? p.vgcDoublesItems : [];
+          if (itemRows.length) ITEMS_BY_SPECIES.set(p.showdownId, sortByUsageDesc(itemRows));
           META_BY_SPECIES.set(p.showdownId, p.vgcDoublesMeta ?? null);
           // Nested forms may carry their own CBD Doubles rows (e.g. rotomwash vs rotomheat)
           if (Array.isArray(p.forms)) {
@@ -170,7 +195,11 @@ export async function loadMovesData(
               if (!f?.showdownId) continue;
               const fRows = Array.isArray(f.vgcDoublesMoves) ? f.vgcDoublesMoves : [];
               if (fRows.length && !DOUBLES_BY_SPECIES.has(f.showdownId)) {
-                DOUBLES_BY_SPECIES.set(f.showdownId, fRows);
+                DOUBLES_BY_SPECIES.set(f.showdownId, sortByUsageDesc(fRows));
+              }
+              const fItems = Array.isArray(f.vgcDoublesItems) ? f.vgcDoublesItems : [];
+              if (fItems.length && !ITEMS_BY_SPECIES.has(f.showdownId)) {
+                ITEMS_BY_SPECIES.set(f.showdownId, sortByUsageDesc(fItems));
               }
               if (f.vgcDoublesMeta && !META_BY_SPECIES.has(f.showdownId)) {
                 META_BY_SPECIES.set(f.showdownId, f.vgcDoublesMeta);
@@ -249,9 +278,36 @@ export async function fetchTopMoves(speciesKey: string): Promise<MoveSlot[]> {
     return [];
   }
 
-  const moves = rows.slice(0, 6).map(resolveMoveSlot);
+  const moves = sortByUsageDesc(rows).slice(0, 6).map(resolveMoveSlot);
   setCachedMoves(speciesKey, moves);
   return moves;
+}
+
+function resolveItemSlot(row: VgcDoublesItemRow): HeldItemSlot {
+  const name = (row.nameZh && String(row.nameZh).trim()) || row.nameEn || row.id;
+  const usage =
+    row.usage != null && String(row.usage).trim() !== ''
+      ? String(row.usage).trim()
+      : undefined;
+  return usage ? { name, usage } : { name };
+}
+
+/**
+ * Top-2 Doubles held items by usage % from baked CBD meta.
+ * Missing item rows → empty (UI shows —). Never invents a held item.
+ */
+export async function fetchTopItems(speciesKey: string, limit = 2): Promise<HeldItemSlot[]> {
+  await ensureLoaded();
+  const mem = ITEM_MEMORY.get(speciesKey);
+  if (mem && mem.fetchedAt === todayKey()) return mem.items.slice(0, limit);
+  const rows = ITEMS_BY_SPECIES.get(speciesKey);
+  if (!rows?.length) {
+    ITEM_MEMORY.set(speciesKey, { fetchedAt: todayKey(), items: [] });
+    return [];
+  }
+  const items = sortByUsageDesc(rows).slice(0, Math.max(2, limit)).map(resolveItemSlot);
+  ITEM_MEMORY.set(speciesKey, { fetchedAt: todayKey(), items });
+  return items.slice(0, limit);
 }
 
 /** Ally card: ≤4; empty CBD → 未載入 ×4 */

@@ -22,6 +22,12 @@ export interface MoveSlot {
   usage?: string | number;
 }
 
+/** CBD Doubles held-item usage row (not a guessed held item). */
+export interface HeldItemSlot {
+  name: string;
+  usage?: string | number;
+}
+
 /** Alternate form / Mega selectable on a card */
 export interface PokemonFormOption {
   showdownId: string;
@@ -39,6 +45,8 @@ export interface PokemonSet {
   /** PokéAPI national dex number */
   nationalDex?: number | null;
   item?: string;
+  /** Top held items by CBD Doubles usage % (display only; do not guess the live item). */
+  items?: HeldItemSlot[];
   ability?: string;
   types: PokemonType[];
   baseStats: Stats;

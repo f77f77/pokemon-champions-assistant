@@ -13,6 +13,8 @@
     "electron:build": "npm run build && electron-builder",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit",
     "build:pokemon-data": "node scripts/build-pokemon-data.mjs",
+    "build:pokemon-data:usage": "node scripts/build-pokemon-data.mjs --usage-only",
+    "check:usage": "node scripts/check-usage-invariants.mjs",
     "match:fixtures": "python3 scripts/match-test-fixtures.py",
     "match:seed": "python3 scripts/match-seed-templates.py",
     "sprites:atlas": "python3 scripts/build-sprite-atlas.py",

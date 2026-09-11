@@ -26,7 +26,7 @@ jobs:
           node-version: "20"
 
       - name: Generate data/pokemon.json + moves.json + meta.json
-        run: node scripts/build-pokemon-data.mjs
+        run: node scripts/build-pokemon-data.mjs --usage-only
 
       - name: Upload data artifact
         uses: actions/upload-artifact@v4

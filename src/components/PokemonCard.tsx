@@ -1,9 +1,9 @@
-import type { PokemonFormOption, PokemonSet, PokemonType, StatKey } from '../types';
+import type { HeldItemSlot, PokemonFormOption, PokemonSet, PokemonType, StatKey } from '../types';
 import { ALL_TYPES, TYPE_COLORS, defensiveMatchups } from '../lib/typeChart';
 import { typeIconUrl } from '../lib/typeIcons';
 import { calcAllStats } from '../lib/speedCalc';
 import { formatSpeciesLabel } from '../lib/species';
-import { MOVES_SOURCE_LABEL } from '../lib/movesCache';
+import { MOVES_SOURCE_LABEL, sortByUsageDesc } from '../lib/movesCache';
 
 const STAT_LABELS: { key: StatKey; label: string }[] = [
   { key: 'hp', label: 'HP' },
@@ -50,6 +50,17 @@ function formatUsage(usage: string | number | undefined): string | null {
   const s = String(usage).trim();
   if (!s) return null;
   return /%$/.test(s) ? s : `${s}%`;
+}
+
+function formatItemUsageLine(items: HeldItemSlot[] | undefined, fallback: string): string {
+  const top = (items ?? []).slice(0, 2);
+  if (!top.length) return fallback;
+  return top
+    .map((it) => {
+      const u = formatUsage(it.usage);
+      return u ? `${it.name} ${u}` : it.name;
+    })
+    .join(' · ');
 }
 
 function formOptionsOf(pokemon: PokemonSet): PokemonFormOption[] {
@@ -148,6 +159,18 @@ export function PokemonCard({
   const maxStat = Math.max(150, ...Object.values(pokemon.baseStats));
   const matchups = pokemon.types.length ? defensiveMatchups(pokemon.types) : null;
   const moveLimit = variant === 'enemy' ? 6 : 4;
+  const displayMoves = (() => {
+    const raw = pokemon.moves.slice();
+    const ranked = sortByUsageDesc(
+      raw.filter((m) => m?.name && m.name !== '—' && m.name !== '未載入' && m.usage != null && m.usage !== ''),
+    );
+    const rest = raw.filter(
+      (m) => !ranked.includes(m),
+    );
+    const ordered = [...ranked, ...rest];
+    while (ordered.length < moveLimit) ordered.push({ name: '—', type: '一般' });
+    return ordered.slice(0, moveLimit);
+  })();
   const forms = formOptionsOf(pokemon);
   const showFormSelect = forms.length > 1 && !!onFormChange;
   const formSelectValue = forms.some((f) => f.formKey === pokemon.formKey)
@@ -217,13 +240,22 @@ export function PokemonCard({
             pokemon.formLabel && <span className="pkmn-card__form">{pokemon.formLabel}</span>
           )}
           <div className="pkmn-card__meta">
-            {variant === 'enemy' ? (
-              <span className="muted" title="do not guess held items">
-                道具：—
-              </span>
-            ) : (
-              <span>{pokemon.item || '無道具'}</span>
-            )}
+            <span
+              className="pkmn-card__items"
+              title={
+                pokemon.items?.length
+                  ? `${formatItemUsageLine(pokemon.items, '')} · ${MOVES_SOURCE_LABEL}`
+                  : variant === 'enemy'
+                    ? 'CBD Doubles 道具使用率（非猜測持有）'
+                    : undefined
+              }
+            >
+              {variant === 'enemy'
+                ? `道具：${formatItemUsageLine(pokemon.items, '—')}`
+                : pokemon.items?.length
+                  ? `道具：${formatItemUsageLine(pokemon.items, pokemon.item || '無道具')}`
+                  : pokemon.item || '無道具'}
+            </span>
             <span>{pokemon.ability || '—'}</span>
           </div>
         </div>
@@ -275,7 +307,7 @@ export function PokemonCard({
       {matchups && <MatchupRows matchups={matchups} />}
 
       <div className={`move-grid ${variant === 'enemy' ? 'move-grid--six' : ''}`}>
-        {pokemon.moves.slice(0, moveLimit).map((mv, i) => {
+        {displayMoves.map((mv, i) => {
           const moveIcon = typeIconUrl(mv.type);
           const usageLabel = formatUsage(mv.usage);
           const tip = usageLabel
