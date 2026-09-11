@@ -170,6 +170,7 @@ button, input, select, textarea {
   font-size: 0.7rem; color: var(--accent); border: 1px solid #4a6b2a; border-radius: 4px; padding: 0 0.3rem;
 }
 .pkmn-card__meta { display: flex; gap: 0.5rem; color: var(--muted); font-size: 0.72rem; margin-top: 0.15rem; flex-wrap: wrap; }
+.pkmn-card__items { min-width: 0; }
 .pkmn-card__types { display: flex; flex-direction: row; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
 .pkmn-card__species-select {
   width: 100%; background: #0e1118; border: 1px solid var(--border); border-radius: 6px; padding: 0.2rem;

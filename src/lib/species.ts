@@ -20,9 +20,27 @@ export interface SpeciesData {
   formKey?: string;
   formLabel?: string;
   forms?: SpeciesFormData[];
+  /** PokéAPI species slug (shared by gender/mega siblings). */
+  speciesKey?: string;
   /** True when this showdownId is in the Champions legal allowlist (262). Independent of CBD usage rows. */
   championsLegal?: boolean;
 }
+
+/**
+ * Atlas / PokéAPI / dex-key aliases → canonical allowlist showdownId.
+ * Male Basculegion is `basculegion` (dex 902 form 0); female is `basculegionf`.
+ */
+export const SPECIES_ID_ALIASES: Record<string, string> = {
+  'basculegion-male': 'basculegion',
+  basculegionmale: 'basculegion',
+  basculegionm: 'basculegion',
+  '902': 'basculegion',
+  '902-0': 'basculegion',
+  '902-male': 'basculegion',
+  'basculegion-female': 'basculegionf',
+  '902-1': 'basculegionf',
+  '902-female': 'basculegionf',
+};
 
 /** 離線示範用種族資料（足夠 demo；boot 時由 pokemon.json overlay） */
 export const SPECIES_DB: SpeciesData[] = [
@@ -52,7 +70,7 @@ export const SPECIES_DB: SpeciesData[] = [
   { key: 'gengar', nameZh: '耿鬼', nameEn: 'Gengar', nationalDex: 94, types: ['幽靈', '毒'], baseStats: { hp: 60, atk: 65, def: 60, spa: 130, spd: 75, spe: 110 } },
   { key: 'sableye', nameZh: '勾魂眼', nameEn: 'Sableye', nationalDex: 302, types: ['惡', '幽靈'], baseStats: { hp: 50, atk: 75, def: 75, spa: 65, spd: 65, spe: 50 } },
   { key: 'zoroark', nameZh: '索羅亞克', nameEn: 'Zoroark', nationalDex: 571, types: ['惡'], baseStats: { hp: 60, atk: 105, def: 60, spa: 120, spd: 60, spe: 105 } },
-  { key: 'basculegion', nameZh: '幽尾玄魚', nameEn: 'Basculegion', nationalDex: 902, types: ['水', '幽靈'], baseStats: { hp: 120, atk: 112, def: 65, spa: 80, spd: 75, spe: 78 } },
+  { key: 'basculegion', nameZh: '幽尾玄魚', nameEn: 'Basculegion', nationalDex: 902, formKey: 'basculegion-male', formLabel: '雄性的樣子', types: ['水', '幽靈'], baseStats: { hp: 120, atk: 112, def: 65, spa: 80, spd: 75, spe: 78 } },
   { key: 'annihilape', nameZh: '棄世猴', nameEn: 'Annihilape', nationalDex: 979, types: ['格鬥', '幽靈'], baseStats: { hp: 110, atk: 115, def: 80, spa: 50, spd: 90, spe: 90 } },
   { key: 'sinistcha', nameZh: '來悲粗茶', nameEn: 'Sinistcha', nationalDex: 1013, types: ['草', '幽靈'], baseStats: { hp: 71, atk: 60, def: 106, spa: 121, spd: 80, spe: 70 } },
   { key: 'charizard', nameZh: '噴火龍', nameEn: 'Charizard', nationalDex: 6, types: ['火', '飛行'], baseStats: { hp: 78, atk: 84, def: 78, spa: 109, spd: 85, spe: 100 } },
@@ -65,6 +83,14 @@ export const SPECIES_DB: SpeciesData[] = [
 const byKey = new Map<string, SpeciesData>();
 const byName = new Map<string, SpeciesData>();
 
+function addAlias(alias: string | null | undefined, s: SpeciesData) {
+  const k = String(alias || '')
+    .trim()
+    .toLowerCase();
+  if (!k || byKey.has(k)) return;
+  byKey.set(k, s);
+}
+
 function reindexSpeciesMaps() {
   byKey.clear();
   byName.clear();
@@ -72,11 +98,20 @@ function reindexSpeciesMaps() {
     byKey.set(s.key.toLowerCase(), s);
     byName.set(s.nameZh.toLowerCase(), s);
     byName.set(s.nameEn.toLowerCase(), s);
-    byName.set(s.key.toLowerCase(), s);
-    if (s.formKey) {
-      const fk = s.formKey.toLowerCase();
-      if (!byKey.has(fk)) byKey.set(fk, s);
+    addAlias(s.key, s);
+    addAlias(s.formKey, s);
+    addAlias(s.speciesKey, s);
+    addAlias(s.key.replace(/-/g, ''), s);
+    addAlias((s.formKey || '').replace(/-/g, ''), s);
+    if (s.nationalDex != null && s.nationalDex > 0) {
+      const dex = String(s.nationalDex);
+      // Prefer form-0 / male / non-`f` suffix when several share a dex.
+      if (!byKey.has(dex)) byKey.set(dex, s);
     }
+  }
+  for (const [alias, canonical] of Object.entries(SPECIES_ID_ALIASES)) {
+    const hit = byKey.get(canonical);
+    if (hit) byKey.set(alias, hit);
   }
 }
 reindexSpeciesMaps();
@@ -84,7 +119,22 @@ reindexSpeciesMaps();
 export function findSpecies(query: string): SpeciesData | undefined {
   const q = query.trim().toLowerCase();
   if (!q) return undefined;
-  return byKey.get(q) ?? byName.get(q) ?? SPECIES_DB.find((s) => s.nameZh.includes(query) || s.nameEn.toLowerCase().includes(q));
+  const aliased = SPECIES_ID_ALIASES[q];
+  if (aliased) {
+    const hit = byKey.get(aliased) ?? byKey.get(q);
+    if (hit) return hit;
+  }
+  const direct = byKey.get(q) ?? byName.get(q);
+  if (direct) return direct;
+  const compact = q.replace(/[-_ ]+/g, '');
+  if (compact !== q) {
+    const viaAlias = SPECIES_ID_ALIASES[compact];
+    const hit = (viaAlias ? byKey.get(viaAlias) : undefined) ?? byKey.get(compact);
+    if (hit) return hit;
+  }
+  return SPECIES_DB.find(
+    (s) => s.nameZh.includes(query) || s.nameEn.toLowerCase().includes(q),
+  );
 }
 
 export function formatSpeciesLabel(
@@ -176,6 +226,13 @@ export interface GeneratedFormRecord {
     usage: string | null;
     rank?: number | null;
   }[];
+  vgcDoublesItems?: {
+    id: string;
+    nameEn: string;
+    nameZh?: string | null;
+    usage: string | null;
+    rank?: number | null;
+  }[];
   vgcDoublesMeta?: {
     source?: string;
     format?: string;
@@ -205,6 +262,13 @@ export interface GeneratedPokemonRecord {
     usage: string | null;
     rank?: number | null;
   }[];
+  vgcDoublesItems?: {
+    id: string;
+    nameEn: string;
+    nameZh?: string | null;
+    usage: string | null;
+    rank?: number | null;
+  }[];
   vgcDoublesMeta?: {
     source?: string;
     format?: string;
@@ -223,7 +287,17 @@ function displayNameZh(rec: GeneratedPokemonRecord): string {
   return rec.names['zh-Hant'] || rec.names.en || rec.showdownId;
 }
 
+function megaShortLabel(formKey: string): string | null {
+  const k = formKey.toLowerCase();
+  if (k.endsWith('-mega-x')) return 'Mega X';
+  if (k.endsWith('-mega-y')) return 'Mega Y';
+  if (k.endsWith('-mega') || /(^|-)mega(-|$)/.test(k)) return 'Mega';
+  return null;
+}
+
 function formLabelOf(form: GeneratedFormRecord, fallbackSpecies: string): string {
+  const mega = megaShortLabel(form.formKey);
+  if (mega) return mega;
   return (
     form.formNames?.['zh-Hant'] ||
     form.formNames?.en ||
@@ -251,7 +325,8 @@ function recordToSpecies(rec: GeneratedPokemonRecord): SpeciesData {
     nameEn: rec.names.en || rec.showdownId,
     nationalDex: rec.nationalDex ?? rec.pokeapiId ?? null,
     formKey: rec.formKey,
-    formLabel: formLabel || undefined,
+    formLabel: megaShortLabel(rec.formKey) || formLabel || undefined,
+    speciesKey: rec.speciesKey,
     types: rec.types.map(enTypeToZh),
     baseStats: { ...rec.baseStats },
     forms,
@@ -274,9 +349,10 @@ function formOptionFromSpecies(s: SpeciesData): SpeciesFormData {
 }
 
 /**
- * pokemon.json stores one record per legal showdownId, each with forms.length ≤ 1.
+ * pokemon.json stores one record per legal showdownId, each often with forms.length ≤ 1.
  * Group siblings by nationalDex so cards can switch regional / gender / Rotom / Mega
- * forms the same way on ally and enemy.
+ * forms the same way on ally and enemy. Preserve Mega entries nested on a single record
+ * even when that dex has only one allowlist row (e.g. Garchomp).
  */
 function attachSiblingLegalForms() {
   const groups = new Map<number, SpeciesData[]>();
@@ -287,8 +363,21 @@ function attachSiblingLegalForms() {
     groups.set(s.nationalDex, arr);
   }
   for (const group of groups.values()) {
-    if (group.length < 2) continue;
-    const forms = group.map(formOptionFromSpecies);
+    const forms: SpeciesFormData[] = [];
+    const seen = new Set<string>();
+    const push = (f: SpeciesFormData) => {
+      const k = (f.formKey || f.showdownId || '').toLowerCase();
+      if (!k || seen.has(k)) return;
+      seen.add(k);
+      forms.push(f);
+    };
+    if (group.length >= 2) {
+      for (const s of group) push(formOptionFromSpecies(s));
+    }
+    for (const s of group) {
+      for (const f of s.forms || []) push(f);
+    }
+    if (forms.length < 2) continue;
     if (!forms.some((f) => f.isDefault)) forms[0].isDefault = true;
     for (const s of group) s.forms = forms;
   }

@@ -114,6 +114,7 @@ export interface ThumbTemplate {
   dexKey: string;
   nationalDex: number;
   form?: number;
+  formKey?: string;
   /** 64×64 aHash 位元字串（僅不透明像素） */
   aHash: string;
   /** 灰階 float（長度 TEMPLATE_SIZE²），用於 NCC */
@@ -189,6 +190,16 @@ function speciesTypeIds(speciesId: string): string[] {
     if (id && !out.includes(id)) out.push(id);
   }
   return out;
+}
+
+/** Map atlas / form / dex keys onto the allowlist showdownId used by pickers. */
+function canonicalSpeciesId(...candidates: Array<string | null | undefined>): string | null {
+  for (const raw of candidates) {
+    if (!raw) continue;
+    const sp = findSpecies(raw);
+    if (sp?.key) return sp.key;
+  }
+  return candidates.find((c) => !!c) || null;
 }
 
 function templatesBaseUrl(): string {
@@ -462,24 +473,30 @@ function thumbFromImageData(
     dexKey: string;
     nationalDex: number;
     form?: number;
+    formKey?: string;
   },
 ): ThumbTemplate {
+  const resolvedId = canonicalSpeciesId(entry.speciesId, entry.formKey, entry.dexKey) || entry.speciesId;
   const zh =
-    findSpecies(entry.speciesId)?.nameZh ??
+    findSpecies(resolvedId)?.nameZh ??
     entry.speciesNameZh ??
     SEED_META[entry.speciesId] ??
     entry.speciesId;
   return {
-    speciesId: entry.speciesId,
+    speciesId: resolvedId,
     speciesNameZh: zh,
     dexKey: entry.dexKey,
     nationalDex: entry.nationalDex,
     form: entry.form ?? 0,
+    formKey: entry.formKey,
     aHash: averageHash(imageData),
     gray: toGray(imageData),
     mask: alphaMaskFromImageData(imageData),
     hue: hueHistFromImageData(imageData),
-    types: speciesTypeIds(entry.speciesId),
+    types: (() => {
+      const t = speciesTypeIds(resolvedId);
+      return t.length ? t : speciesTypeIds(entry.speciesId);
+    })(),
   };
 }
 
@@ -570,6 +587,7 @@ async function loadTemplatesFromSheet(): Promise<ThumbTemplate[]> {
         dexKey: entry.dexKey,
         nationalDex: entry.nationalDex,
         form: entry.form,
+        formKey: entry.formKey,
       }),
     );
   }
@@ -1254,11 +1272,12 @@ export async function recognizeEnemyTeamFromCanvas(
         const { imageData, dataUrl, gray, hue } = cropResizeToTemplate(ctx, tRect);
         const hash = averageHash(imageData);
         const matched = matchTemplate(hash, gray, hue, detectedTypes);
-        let speciesId = matched.speciesId;
+        let speciesId = canonicalSpeciesId(matched.speciesId);
         let speciesNameZh = matched.speciesNameZh;
         if (speciesId) {
           const sp = findSpecies(speciesId);
           if (sp) {
+            speciesId = sp.key;
             speciesNameZh = sp.nameZh;
           }
           // Keep matched showdownId even if species DB lacks an entry (template zh retained).

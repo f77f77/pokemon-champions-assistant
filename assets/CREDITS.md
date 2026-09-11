@@ -39,8 +39,11 @@
 - API: https://championsbattledata.com/api/pokemon/{showdownId}
   - Roster presence (`championsLegal`) + learnable move *names* for `data/allowlist.json`
 - Battle API: https://championsbattledata.com/api/battle/Doubles/{showdownId}
-  - **VGC Doubles (2v2 / 6-pick-4)** top moves + usage % → baked as `vgcDoublesMoves` on `data/pokemon.json` (and per-form when a distinct showdownId exists)
-  - App resolves zh-Hant names / types via PokéAPI `data/moves.json`; never invents learnsets or fake %
+  - **VGC Doubles (2v2 / 6-pick-4)** top moves + held items + usage % → `vgcDoublesMoves` / `vgcDoublesItems` on `data/pokemon.json`
+  - Sorted **highest usage % first** (CSV `rank` is table column position, not usage order)
+  - When Current CSV is missing rank-1 moves (right-column only, e.g. Basculegion-M), the build falls back to the newest complete `?days=7` daily snapshot
+  - App resolves zh-Hant names / types via PokéAPI `data/moves.json`; item names via PokéAPI `/item`; never invents learnsets or fake %
+  - Mega forms (PokéAPI `*-mega`) are attached as `forms[]` siblings so ally/enemy selectors list Base + Mega
 - **Do not** use CBD `summary.primary` / screen-scaled stats as classic base stats — those stay PokéAPI
 - No bulk image scrape in the data build path (sprites remain the separate optional `fetch-cbd-templates.mjs` allowlist tool)
 

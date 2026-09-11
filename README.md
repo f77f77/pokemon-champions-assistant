@@ -176,8 +176,11 @@ Form mapping notes (best-effort): `lycanroc` ‒ lycanroc-midday; `rotom` ‒ ba
 
 ```bash
 npm run build:pokemon-data
+# daily usage/items/Mega refresh without a full PokéAPI species crawl:
+npm run build:pokemon-data:usage
 # or
 node scripts/build-pokemon-data.mjs
+node scripts/build-pokemon-data.mjs --usage-only
 node scripts/build-pokemon-data.mjs --allowlist=data/allowlist.json
 node scripts/build-pokemon-data.mjs --dry-run
 ```

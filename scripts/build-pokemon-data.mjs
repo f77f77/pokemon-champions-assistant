@@ -9,15 +9,17 @@
  *                (Doubles usage rank → --update-allowlist --top=N)
  *   - CBD API:   https://championsbattledata.com/api/pokemon/{showdownId}
  *   - CBD battle: https://championsbattledata.com/api/battle/Doubles/{showdownId}
+ *                 (+ ?days=7 fallback when Current CSV omits rank-1 moves)
  *   - PokéAPI:   national dex, classic base stats, types, abilities, forms, locales
  *
  * Outputs (canonical under data/, mirrored to public/data/ for Vite):
- *   data/pokemon.json  — array; nationalDex + forms[]; optional vgcDoublesMoves
+ *   data/pokemon.json  — array; nationalDex + forms[] (incl. Mega) + vgcDoublesMoves/Items
  *   data/moves.json    — move records referenced by allowlisted Pokémon
  *   data/meta.json     — schemaVersion, generatedAt, sources, counts
  *
  * Usage:
  *   node scripts/build-pokemon-data.mjs
+ *   node scripts/build-pokemon-data.mjs --usage-only
  *   node scripts/build-pokemon-data.mjs --update-allowlist --top=50
  *   node scripts/build-pokemon-data.mjs --allowlist=data/allowlist.json
  *   node scripts/build-pokemon-data.mjs --dry-run
@@ -183,11 +185,13 @@ function parseArgs(argv) {
   let allowlistPath = path.join(ROOT, 'data/allowlist.json');
   let dryRun = false;
   let updateAllowlist = false;
+  let usageOnly = false;
   let topN = 50;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--dry-run') dryRun = true;
     else if (a === '--update-allowlist') updateAllowlist = true;
+    else if (a === '--usage-only') usageOnly = true;
     else if (a === '--top' || a.startsWith('--top=')) {
       const raw = a.startsWith('--top=') ? a.slice('--top='.length) : argv[++i];
       topN = Math.max(1, Number(raw) || 50);
@@ -195,14 +199,16 @@ function parseArgs(argv) {
       const raw = a.startsWith('--allowlist=') ? a.slice('--allowlist='.length) : argv[++i];
       allowlistPath = path.resolve(ROOT, raw);
     } else if (a === '--help' || a === '-h') {
-      console.log(`Usage: node scripts/build-pokemon-data.mjs [--allowlist=data/allowlist.json] [--update-allowlist] [--top=50] [--dry-run]`);
+      console.log(
+        `Usage: node scripts/build-pokemon-data.mjs [--allowlist=data/allowlist.json] [--update-allowlist] [--top=50] [--usage-only] [--dry-run]`,
+      );
       process.exit(0);
     } else {
       console.error(`Unknown arg: ${a}`);
       process.exit(1);
     }
   }
-  return { allowlistPath, dryRun, updateAllowlist, topN };
+  return { allowlistPath, dryRun, updateAllowlist, usageOnly, topN };
 }
 
 /**
@@ -234,11 +240,25 @@ function readAllowlist(filePath) {
 }
 
 async function fetchJson(url) {
-  const res = await fetch(url, {
-    headers: { Accept: 'application/json', 'User-Agent': UA },
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-  return res.json();
+  let lastErr = null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: { Accept: 'application/json', 'User-Agent': UA },
+      });
+      if (res.status === 429 || res.status >= 500) {
+        lastErr = new Error(`HTTP ${res.status} for ${url}`);
+        await sleep(RATE_LIMIT_MS * (attempt + 2));
+        continue;
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+      return res.json();
+    } catch (err) {
+      lastErr = err;
+      if (attempt < 4) await sleep(RATE_LIMIT_MS * (attempt + 2));
+    }
+  }
+  throw lastErr || new Error(`HTTP retry exhausted for ${url}`);
 }
 
 let lastFetch = 0;
@@ -318,6 +338,49 @@ function toShowdownMoveId(displayName) {
     .replace(/[^a-z0-9]+/g, '');
 }
 
+async function attachMegaForms(forms, species, parentShowdownId, doublesCache) {
+  const varieties = Array.isArray(species?.varieties) ? species.varieties : [];
+  const have = new Set(forms.map((f) => String(f.formKey || '').toLowerCase()));
+  for (const v of varieties) {
+    const vName = v?.pokemon?.name;
+    if (!vName || !isMegaPokemonName(vName) || have.has(vName.toLowerCase())) continue;
+    try {
+      const formEntry = await loadFormEntry(vName, parentShowdownId, doublesCache);
+      formEntry.formNames = megaFormLabel(vName);
+      formEntry.isDefault = false;
+      formEntry.showdownId = parentShowdownId;
+      forms.push(formEntry);
+      have.add(vName.toLowerCase());
+      console.log(`  + mega form ${vName}`);
+    } catch (err) {
+      console.warn(`  mega skip ${vName}: ${err.message || err}`);
+    }
+  }
+}
+
+async function localizeItemRows(itemRows, itemCache) {
+  if (!Array.isArray(itemRows) || !itemRows.length) return itemRows || [];
+  const out = [];
+  for (const row of itemRows) {
+    const slug = row.id || toPokeapiMoveSlug(row.nameEn);
+    let rec = itemCache.get(slug);
+    if (!rec) {
+      try {
+        const data = await rateLimitedJson(`${POKEAPI}/item/${encodeURIComponent(slug)}`);
+        rec = { slug, names: pickNames(data.names) };
+      } catch {
+        rec = { slug, names: { en: row.nameEn, 'zh-Hant': null, ja: null } };
+      }
+      itemCache.set(slug, rec);
+    }
+    out.push({
+      ...row,
+      nameZh: rec.names?.['zh-Hant'] || row.nameEn,
+    });
+  }
+  return out;
+}
+
 async function fetchCbdPokemon(showdownId) {
   try {
     return await rateLimitedJson(`${CBD_ORIGIN}/api/pokemon/${encodeURIComponent(showdownId)}`);
@@ -327,50 +390,113 @@ async function fetchCbdPokemon(showdownId) {
   }
 }
 
+function parsePct(row) {
+  const usageRaw = row?.percentage_value ?? row?.percentage;
+  if (typeof usageRaw === 'number' && Number.isFinite(usageRaw)) return usageRaw;
+  if (usageRaw != null && String(usageRaw).trim()) {
+    const n = Number.parseFloat(String(usageRaw).replace(/%/g, '').trim());
+    if (Number.isFinite(n)) return n;
+  }
+  return null;
+}
+
+function formatPct(n) {
+  if (n == null || !Number.isFinite(n)) return null;
+  return `${n.toFixed(1).replace(/\.0$/, '')}%`;
+}
+
+function categoryRows(data, category) {
+  const rows = Array.isArray(data?.rows) ? data.rows : [];
+  return rows.filter((r) => r && r.category === category && r.name);
+}
+
+function movesLookComplete(moveRows) {
+  if (!moveRows.length) return false;
+  const ranks = moveRows.map((r) => Number(r.rank) || 99);
+  return Math.min(...ranks) <= 1;
+}
+
+function toUsageRows(raw, { asItem = false, limit = 6 } = {}) {
+  const mapped = raw.map((r) => {
+    const pct = parsePct(r);
+    const nameEn = String(r.name);
+    return {
+      id: asItem ? toPokeapiMoveSlug(nameEn) : toShowdownMoveId(nameEn),
+      nameEn,
+      usage: formatPct(pct),
+      rank: Number(r.rank) || null,
+      _pct: pct ?? Number.NEGATIVE_INFINITY,
+    };
+  });
+  mapped.sort((a, b) => b._pct - a._pct || (a.rank ?? 99) - (b.rank ?? 99));
+  return mapped.slice(0, limit).map(({ _pct, ...rest }) => rest);
+}
+
+function megaFormLabel(pokemonName) {
+  const n = String(pokemonName).toLowerCase();
+  if (n.endsWith('-mega-x')) return { en: 'Mega X', 'zh-Hant': 'Mega X', ja: 'メガX' };
+  if (n.endsWith('-mega-y')) return { en: 'Mega Y', 'zh-Hant': 'Mega Y', ja: 'メガY' };
+  return { en: 'Mega', 'zh-Hant': 'Mega', ja: 'メガ' };
+}
+
+function isMegaPokemonName(name) {
+  const n = String(name || '').toLowerCase();
+  return n.includes('-mega') && !n.includes('-gmax') && !n.includes('-z');
+}
+
 /**
- * Current VGC Doubles (2v2 / 6-pick-4) top moves + ladder usage % from CBD battle API.
- * Returns [] when the species has no Doubles meta — callers must NOT invent stubs.
+ * VGC Doubles (2v2 / 6-pick-4) top moves + held items from CBD battle API.
+ * Current CSVs sometimes omit ranks 1–5 (right-column only). When that happens,
+ * fall back to the newest ?days=7 snapshot that still has a rank-1 move.
+ * Always sort by usage % descending — table `rank` is column position, not %.
  */
-async function fetchCbdDoublesTopMoves(showdownId, limit = 6) {
+async function fetchCbdDoublesUsage(showdownId, { moveLimit = 6, itemLimit = 10 } = {}) {
   try {
-    const data = await rateLimitedJson(
+    const current = await rateLimitedJsonOptional(
       `${CBD_ORIGIN}/api/battle/Doubles/${encodeURIComponent(showdownId)}`,
     );
-    const rows = Array.isArray(data?.rows) ? data.rows : [];
-    const moves = rows
-      .filter((r) => r && r.category === 'move' && r.name)
-      .sort((a, b) => Number(a.rank ?? 99) - Number(b.rank ?? 99))
-      .slice(0, limit)
-      .map((r) => {
-        const usageRaw = r.percentage ?? r.percentage_value;
-        let usage = null;
-        if (typeof usageRaw === 'number' && Number.isFinite(usageRaw)) {
-          usage = `${usageRaw}%`.replace(/\.0%$/, '%');
-        } else if (usageRaw != null && String(usageRaw).trim()) {
-          const s = String(usageRaw).trim();
-          usage = /%$/.test(s) ? s : `${s}%`;
+    let chosen = current;
+    let chosenMoves = categoryRows(current, 'move');
+    if (!movesLookComplete(chosenMoves)) {
+      const dailyPack = await rateLimitedJsonOptional(
+        `${CBD_ORIGIN}/api/battle/Doubles/${encodeURIComponent(showdownId)}?days=7`,
+      );
+      const days = Array.isArray(dailyPack?.daily) ? dailyPack.daily : [];
+      for (const day of days) {
+        const m = categoryRows(day, 'move');
+        if (movesLookComplete(m)) {
+          chosen = day;
+          chosenMoves = m;
+          console.log(
+            `  Doubles fallback ${showdownId}: ${day.date || day.source || 'daily'} (Current CSV missing rank-1 moves)`,
+          );
+          break;
         }
-        return {
-          id: toShowdownMoveId(r.name),
-          nameEn: String(r.name),
-          usage,
-          rank: Number(r.rank) || null,
-        };
-      });
+      }
+    }
+    if (!chosen) return { moves: [], items: [], meta: null };
+    const items = categoryRows(chosen, 'held_item');
     return {
-      moves,
+      moves: toUsageRows(chosenMoves, { limit: moveLimit }),
+      items: toUsageRows(items, { asItem: true, limit: itemLimit }),
       meta: {
         source: 'championsbattledata.com',
         format: 'Doubles',
-        season: data?.season ?? null,
-        battleSource: data?.source ?? null,
+        season: chosen.season ?? current?.season ?? 'Current',
+        battleSource: chosen.source ?? current?.source ?? null,
+        usageSnapshot: chosen.date || 'current',
         label: formatUsageSourceLabel(new Date()),
       },
     };
   } catch (err) {
     console.warn(`  CBD Doubles battle miss for ${showdownId}: ${err.message || err}`);
-    return { moves: [], meta: null };
+    return { moves: [], items: [], meta: null };
   }
+}
+
+async function fetchCbdDoublesTopMoves(showdownId, limit = 6) {
+  const { moves, items, meta } = await fetchCbdDoublesUsage(showdownId, { moveLimit: limit });
+  return { moves, items, meta };
 }
 
 /**
@@ -446,16 +572,18 @@ async function loadFormEntry(varietyPokemonName, cbdShowdownId, doublesCache) {
   }
 
   let vgcDoublesMoves;
+  let vgcDoublesItems;
   let vgcDoublesMeta;
   if (cbdShowdownId) {
     if (!doublesCache.has(cbdShowdownId)) {
-      doublesCache.set(cbdShowdownId, await fetchCbdDoublesTopMoves(cbdShowdownId, 6));
+      doublesCache.set(cbdShowdownId, await fetchCbdDoublesUsage(cbdShowdownId));
     }
-    const { moves, meta } = doublesCache.get(cbdShowdownId);
+    const { moves, items, meta } = doublesCache.get(cbdShowdownId);
     if (moves?.length) {
       vgcDoublesMoves = moves;
       vgcDoublesMeta = meta;
     }
+    if (items?.length) vgcDoublesItems = items;
   }
 
   return {
@@ -472,6 +600,7 @@ async function loadFormEntry(varietyPokemonName, cbdShowdownId, doublesCache) {
       .map((a) => a.ability.name),
     isDefault: Boolean(pokemonData.is_default),
     ...(vgcDoublesMoves ? { vgcDoublesMoves, vgcDoublesMeta } : {}),
+    ...(vgcDoublesItems ? { vgcDoublesItems } : {}),
   };
 }
 
@@ -583,9 +712,9 @@ async function buildPokemonRecord(showdownId, doublesCache, entryHint = null) {
     : (pokemonData.moves || []).map((m) => m.move.name);
 
   if (!doublesCache.has(showdownId)) {
-    doublesCache.set(showdownId, await fetchCbdDoublesTopMoves(showdownId, 6));
+    doublesCache.set(showdownId, await fetchCbdDoublesUsage(showdownId));
   }
-  const { moves: doublesMoves, meta: doublesMeta } = doublesCache.get(showdownId);
+  const { moves: doublesMoves, items: doublesItems, meta: doublesMeta } = doublesCache.get(showdownId);
   if (doublesMoves.length) {
     record.vgcDoublesMoves = doublesMoves;
     record.vgcDoublesMeta = doublesMeta;
@@ -593,6 +722,7 @@ async function buildPokemonRecord(showdownId, doublesCache, entryHint = null) {
       if (m.nameEn && !moveNames.includes(m.nameEn)) moveNames.push(m.nameEn);
     }
   }
+  if (doublesItems?.length) record.vgcDoublesItems = doublesItems;
 
   // Forms list: skip full variety crawl in legal-form mode (entry has pokemonSlug) for speed.
   // Still attach a single self form so UI form metadata stays available.
@@ -624,6 +754,7 @@ async function buildPokemonRecord(showdownId, doublesCache, entryHint = null) {
       }
     }
   }
+  await attachMegaForms(forms, species, showdownId, doublesCache);
   if (forms.length) {
     record.forms = forms;
   }
@@ -705,8 +836,107 @@ function writeOutputs({ pokemon, moves, meta }, dryRun) {
   }
 }
 
+async function localizeAllItems(pokemon) {
+  const cache = new Map();
+  for (const rec of pokemon) {
+    if (rec.vgcDoublesItems) rec.vgcDoublesItems = await localizeItemRows(rec.vgcDoublesItems, cache);
+    if (Array.isArray(rec.forms)) {
+      for (const f of rec.forms) {
+        if (f.vgcDoublesItems) f.vgcDoublesItems = await localizeItemRows(f.vgcDoublesItems, cache);
+      }
+    }
+  }
+}
+
+async function applyUsageToRecord(rec, doublesCache, speciesCache) {
+  const sid = rec.showdownId;
+  if (!doublesCache.has(sid)) doublesCache.set(sid, await fetchCbdDoublesUsage(sid));
+  const usage = doublesCache.get(sid);
+  if (usage.moves.length) rec.vgcDoublesMoves = usage.moves;
+  if (usage.items.length) rec.vgcDoublesItems = usage.items;
+  if (usage.meta) rec.vgcDoublesMeta = usage.meta;
+  if (Array.isArray(rec.forms)) {
+    for (const f of rec.forms) {
+      const fsid = f.showdownId || sid;
+      if (!doublesCache.has(fsid)) doublesCache.set(fsid, await fetchCbdDoublesUsage(fsid));
+      const u = doublesCache.get(fsid) || usage;
+      if (u.moves.length) f.vgcDoublesMoves = u.moves;
+      if (u.items.length) f.vgcDoublesItems = u.items;
+      if (u.meta) f.vgcDoublesMeta = u.meta;
+    }
+  }
+  const speciesKey = rec.speciesKey || sid;
+  let species = speciesCache.get(speciesKey);
+  if (!species) {
+    species = await rateLimitedJsonOptional(`${POKEAPI}/pokemon-species/${encodeURIComponent(speciesKey)}`);
+    speciesCache.set(speciesKey, species);
+  }
+  if (!rec.forms) rec.forms = [];
+  await attachMegaForms(rec.forms, species, sid, doublesCache);
+}
+
+async function refreshUsageOnly({ dryRun, allowlistPath }) {
+  const pokemonPath = path.join(ROOT, 'data/pokemon.json');
+  const movesPath = path.join(ROOT, 'data/moves.json');
+  const pokemon = JSON.parse(fs.readFileSync(pokemonPath, 'utf8'));
+  const existingMoves = JSON.parse(fs.readFileSync(movesPath, 'utf8'));
+  console.log(`usage-only: ${pokemon.length} pokemon from ${path.relative(ROOT, pokemonPath)}`);
+  const doublesCache = new Map();
+  const speciesCache = new Map();
+  const moveNameSet = new Map();
+  const usageFetchedAt = new Date();
+  let i = 0;
+  for (const rec of pokemon) {
+    i += 1;
+    console.log(`[usage ${i}/${pokemon.length}] ${rec.showdownId}`);
+    try {
+      await applyUsageToRecord(rec, doublesCache, speciesCache);
+    } catch (err) {
+      console.error(`  FAILED ${rec.showdownId}: ${err.message || err}`);
+    }
+    for (const m of rec.vgcDoublesMoves || []) {
+      if (m.nameEn && !moveNameSet.has(m.id)) moveNameSet.set(m.id, m.nameEn);
+    }
+  }
+  await localizeAllItems(pokemon);
+  const moveCache = new Map();
+  for (const m of existingMoves) if (m?.id) moveCache.set(m.id, m);
+  const moves = [...existingMoves];
+  for (const [, label] of moveNameSet) {
+    const rec = await buildMoveRecord(label, moveCache);
+    if (!moves.find((m) => m.id === rec.id)) moves.push(rec);
+  }
+  moves.sort((a, b) => String(a.id).localeCompare(String(b.id)));
+  const generatedAt = new Date();
+  const usageUpdatedAt = formatUsageDate(usageFetchedAt);
+  const meta = {
+    schemaVersion: SCHEMA_VERSION,
+    generatedAt: generatedAt.toISOString(),
+    updatedAt: formatUsageDate(generatedAt),
+    usageUpdatedAt,
+    usageSourceLabel: formatUsageSourceLabel(usageFetchedAt),
+    sources: {
+      pokeapi: POKEAPI,
+      cbd: `${CBD_ORIGIN}/api/pokemon/{showdownId}`,
+      cbdDoublesBattle: `${CBD_ORIGIN}/api/battle/Doubles/{showdownId}`,
+      cbdDoublesBattleDays: `${CBD_ORIGIN}/api/battle/Doubles/{showdownId}?days=7`,
+      cbdIndex: `${CBD_ORIGIN}/api/index`,
+      allowlist: path.relative(ROOT, allowlistPath).replace(/\\/g, '/'),
+      legalAllowlist: 'data/legal-allowlist.json',
+      notes:
+        'Classic PokéAPI base stats + nationalDex + forms[] including Mega (not CBD screen-scaled). Move/item usage % from CBD VGC Doubles (2v2 / 6-pick-4) sorted highest-first; Current CSV rank-1 gaps filled from newest complete daily snapshot. Locale keys: en / zh-Hant / ja. See assets/CREDITS.md.',
+    },
+    pokemonCount: pokemon.length,
+    movesCount: moves.length,
+    allowlistCount: pokemon.length,
+    usageMode: 'usage-only',
+  };
+  writeOutputs({ pokemon, moves, meta }, dryRun);
+  console.log(`Done (usage-only). pokemon=${pokemon.length} moves=${moves.length}`);
+}
+
 async function main() {
-  const { allowlistPath, dryRun, updateAllowlist, topN } = parseArgs(process.argv.slice(2));
+  const { allowlistPath, dryRun, updateAllowlist, usageOnly, topN } = parseArgs(process.argv.slice(2));
 
   if (updateAllowlist) {
     const ranked = await fetchTopDoublesFromCbdIndex(topN);
@@ -715,6 +945,11 @@ async function main() {
     }
     if (!dryRun) writeAllowlist(allowlistPath, ranked, topN);
     else console.log(`dry-run allowlist top${topN}: ${ranked.map((r) => r.showdownId).join(', ')}`);
+  }
+
+  if (usageOnly) {
+    await refreshUsageOnly({ dryRun, allowlistPath });
+    return;
   }
 
   const { ids: showdownIds, entryById } = readAllowlist(allowlistPath);
@@ -762,6 +997,8 @@ async function main() {
   }
   moves.sort((a, b) => String(a.id).localeCompare(String(b.id)));
 
+  await localizeAllItems(pokemon);
+
   const generatedAt = new Date();
   const usageUpdatedAt = formatUsageDate(usageFetchedAt);
   const meta = {
@@ -774,11 +1011,12 @@ async function main() {
       pokeapi: POKEAPI,
       cbd: `${CBD_ORIGIN}/api/pokemon/{showdownId}`,
       cbdDoublesBattle: `${CBD_ORIGIN}/api/battle/Doubles/{showdownId}`,
+      cbdDoublesBattleDays: `${CBD_ORIGIN}/api/battle/Doubles/{showdownId}?days=7`,
       cbdIndex: `${CBD_ORIGIN}/api/index`,
       allowlist: path.relative(ROOT, allowlistPath).replace(/\\/g, '/'),
       legalAllowlist: 'data/legal-allowlist.json',
       notes:
-        'Classic PokéAPI base stats + nationalDex + forms[] (not CBD screen-scaled). Move names/types from PokéAPI; usage % only from CBD VGC Doubles (2v2 / 6-pick-4). Locale keys: en / zh-Hant / ja. Legal Champions forms via map-legal-allowlist.mjs. See assets/CREDITS.md.',
+        'Classic PokéAPI base stats + nationalDex + forms[] including Mega (not CBD screen-scaled). Move/item names from PokéAPI; usage % from CBD VGC Doubles (2v2 / 6-pick-4) sorted highest-first. Current CSV rank-1 gaps filled from newest complete daily snapshot (?days=7). Locale keys: en / zh-Hant / ja. Legal Champions forms via map-legal-allowlist.mjs. See assets/CREDITS.md.',
     },
     pokemonCount: pokemon.length,
     movesCount: moves.length,
