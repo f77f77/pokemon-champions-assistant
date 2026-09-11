@@ -20,6 +20,8 @@ export interface SpeciesData {
   formKey?: string;
   formLabel?: string;
   forms?: SpeciesFormData[];
+  /** True when this showdownId is in the Champions legal allowlist (262). */
+  championsLegal?: boolean;
 }
 
 /** 離線示範用種族資料（足夠 demo；boot 時由 pokemon.json overlay） */
@@ -67,10 +69,14 @@ function reindexSpeciesMaps() {
   byKey.clear();
   byName.clear();
   for (const s of SPECIES_DB) {
-    byKey.set(s.key, s);
+    byKey.set(s.key.toLowerCase(), s);
     byName.set(s.nameZh.toLowerCase(), s);
     byName.set(s.nameEn.toLowerCase(), s);
     byName.set(s.key.toLowerCase(), s);
+    if (s.formKey) {
+      const fk = s.formKey.toLowerCase();
+      if (!byKey.has(fk)) byKey.set(fk, s);
+    }
   }
 }
 reindexSpeciesMaps();
@@ -81,11 +87,25 @@ export function findSpecies(query: string): SpeciesData | undefined {
   return byKey.get(q) ?? byName.get(q) ?? SPECIES_DB.find((s) => s.nameZh.includes(query) || s.nameEn.toLowerCase().includes(q));
 }
 
-export function formatSpeciesLabel(s: Pick<SpeciesData, 'nameZh' | 'nationalDex'> | Pick<PokemonSet, 'species' | 'nationalDex'>): string {
+export function formatSpeciesLabel(
+  s:
+    | Pick<SpeciesData, 'nameZh' | 'nationalDex' | 'formLabel'>
+    | Pick<PokemonSet, 'species' | 'nationalDex' | 'formLabel'>,
+): string {
   const name = 'nameZh' in s ? s.nameZh : s.species;
   const dex = s.nationalDex;
-  if (dex != null && Number.isFinite(dex) && dex > 0) return `#${dex} ${name}`;
-  return name;
+  const form = 'formLabel' in s ? s.formLabel : undefined;
+  const formBit =
+    form && form.trim() && form !== name && form.toLowerCase() !== 'base' && !name.includes(form)
+      ? ` · ${form}`
+      : '';
+  if (dex != null && Number.isFinite(dex) && dex > 0) return `#${dex} ${name}${formBit}`;
+  return `${name}${formBit}`;
+}
+
+/** Champions legal roster only (pokemon.json overlay). Used by the enemy species dropdown. */
+export function legalSpeciesList(): SpeciesData[] {
+  return SPECIES_DB.filter((s) => s.championsLegal === true);
 }
 
 export function speciesToSet(s: SpeciesData, id: string, extras?: Partial<PokemonSet>): PokemonSet {
@@ -220,7 +240,42 @@ function recordToSpecies(rec: GeneratedPokemonRecord): SpeciesData {
     types: rec.types.map(enTypeToZh),
     baseStats: { ...rec.baseStats },
     forms,
+    championsLegal: rec.championsLegal !== false,
   };
+}
+
+function formOptionFromSpecies(s: SpeciesData): SpeciesFormData {
+  const own =
+    s.forms?.find((f) => f.formKey === (s.formKey || s.key)) ?? s.forms?.[0];
+  return {
+    showdownId: s.key,
+    formKey: s.formKey || own?.formKey || s.key,
+    label: s.formLabel || own?.label || s.nameZh,
+    types: [...(own?.types ?? s.types)],
+    baseStats: { ...(own?.baseStats ?? s.baseStats) },
+    isDefault: own?.isDefault ?? false,
+  };
+}
+
+/**
+ * pokemon.json stores one record per legal showdownId, each with forms.length ≤ 1.
+ * Group siblings by nationalDex so cards can switch regional / gender / Rotom / Mega
+ * forms the same way on ally and enemy.
+ */
+function attachSiblingLegalForms() {
+  const groups = new Map<number, SpeciesData[]>();
+  for (const s of SPECIES_DB) {
+    if (s.championsLegal !== true || s.nationalDex == null || s.nationalDex <= 0) continue;
+    const arr = groups.get(s.nationalDex) ?? [];
+    arr.push(s);
+    groups.set(s.nationalDex, arr);
+  }
+  for (const group of groups.values()) {
+    if (group.length < 2) continue;
+    const forms = group.map(formOptionFromSpecies);
+    if (!forms.some((f) => f.isDefault)) forms[0].isDefault = true;
+    for (const s of group) s.forms = forms;
+  }
 }
 
 /**
@@ -244,6 +299,7 @@ export async function loadGeneratedSpeciesData(
       else SPECIES_DB.push(next);
       n += 1;
     }
+    attachSiblingLegalForms();
     reindexSpeciesMaps();
     return n;
   } catch {

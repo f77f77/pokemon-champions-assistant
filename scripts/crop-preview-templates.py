@@ -4,10 +4,10 @@ Crop Team Preview enemy thumbs using the SAME constants as src/lib/roi.ts (ROI s
 
 Usage:
   python scripts/crop-preview-templates.py [source.png] [out_dir]
-  python scripts/crop-preview-templates.py public/fixtures/team-preview-test-1.png \\
-      --slots=gengar,sableye,zoroark,basculegion,annihilape,sinistcha --merge
+  python scripts/crop-preview-templates.py public/fixtures/team-preview-live-latest.jpg \\
+      --slots=froslass,garchomp,basculegion,kingambit,sneasler,golisopod --merge
 
-Defaults: public/fixtures/team-preview.png → public/templates/
+Defaults: public/fixtures/team-preview-live-latest.jpg → public/templates/
 
 Do NOT change panel/thumb numbers here without updating roi.ts (and Doc) in lockstep.
 Forms/Mega/shiny, Rotom appliances, Lycanroc day/night, Hippowdon gender colors
@@ -106,7 +106,7 @@ def content_rect(frame_w: int, frame_h: int) -> tuple[int, int, int, int]:
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("source", nargs="?", default=str(ROOT / "public/fixtures/team-preview-test-1.png"))
+    p.add_argument("source", nargs="?", default=str(ROOT / "public/fixtures/team-preview-live-latest.jpg"))
     p.add_argument("out_dir", nargs="?", default=str(ROOT / "public/templates"))
     p.add_argument(
         "--slots",

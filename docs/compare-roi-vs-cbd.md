@@ -1,5 +1,9 @@
 # ROI-only vs CBD-only accuracy (Team Preview fixtures)
 
+Formal fixture is now `public/fixtures/team-preview-live-latest.jpg` only; the old
+`team-preview-test-1/2.png` files were removed. The table below is a historical
+ROI-vs-CBD comparison from those retired screenshots.
+
 ## Summary
 
 | Library | Accuracy | Templates | Distinct speciesIds |

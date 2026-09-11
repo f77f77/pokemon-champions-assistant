@@ -113,7 +113,7 @@ export function CapturePanel({
     setError(null);
   }
 
-  /** 載入內建 Team Preview fixtures（循環 test-1 → test-2 → team-preview） */
+  /** 載入內建 Team Preview 測試圖（最新實機畫面） */
   function loadFixtureStill() {
     stopStream(streamRef.current);
     streamRef.current = null;
@@ -254,7 +254,7 @@ export function CapturePanel({
           className="btn btn--ghost"
           disabled={busy}
           onClick={loadFixtureStill}
-          title="循環載入 public/fixtures/team-preview-test-1/2.png 與 team-preview.png"
+          title="載入 public/fixtures/team-preview-live-latest.jpg（最新實機畫面）"
         >
           載入測試圖
         </button>

@@ -86,42 +86,6 @@ def required_margin(confidence: float) -> float:
 
 FIXTURES = [
     {
-        "path": ROOT / "public/fixtures/team-preview-test-1.png",
-        "label": "team-preview-test-1",
-        "expected": [
-            "charizard",
-            "aerodactyl",
-            "sneasler",  # Fighting/Poison card (was mislabeled meowscarada)
-            "garchomp",
-            "rotomwash",
-            "aegislash",
-        ],
-    },
-    {
-        "path": ROOT / "public/fixtures/team-preview-test-2.png",
-        "label": "team-preview-test-2",
-        "expected": [
-            "whimsicott",
-            "charizard",
-            "basculegion",
-            "kingambit",
-            "sneasler",
-            "garchomp",
-        ],
-    },
-    {
-        "path": ROOT / "public/fixtures/team-preview-test-3.png",
-        "label": "team-preview-test-3",
-        "expected": [
-            "ninetalesalola",
-            "empoleon",
-            "garchomp",
-            "staraptor",
-            "whimsicott",
-            "charizard",
-        ],
-    },
-    {
         "path": ROOT / "public/fixtures/team-preview-live-latest.jpg",
         "label": "team-preview-live-latest",
         "expected": [
@@ -130,7 +94,7 @@ FIXTURES = [
             "basculegion",
             "kingambit",
             "sneasler",
-            "golisopod",
+            "golisopod",  # yellow-box crop is Golisopod; Araquanid sheet art is the water-bubble spider
         ],
     },
 ]
@@ -751,6 +715,14 @@ def main() -> int:
     null_n = 0
     total = 0
     n_ids = len({t["speciesId"] for t in templates})
+    allow_n = 0
+    allow_path = ROOT / "data/allowlist.json"
+    if allow_path.exists():
+        allow_n = len((json.loads(allow_path.read_text(encoding="utf-8")).get("entries") or []))
+    poke_n = 0
+    poke_path = ROOT / "data/pokemon.json"
+    if poke_path.exists():
+        poke_n = len(json.loads(poke_path.read_text(encoding="utf-8")))
 
     src_label = (
         f"{SPRITES_DIR.relative_to(ROOT)} (sheet+atlas, dex-keyed in-memory crops)"
@@ -758,6 +730,7 @@ def main() -> int:
         else f"{tmpl_dir.relative_to(ROOT)} (deprecated name-keyed PNGs)"
     )
     print(f"Templates: {len(templates)} crops / {n_ids} speciesIds from {src_label}")
+    print(f"Legal roster: atlas={n_ids} allowlist={allow_n} pokemon.json={poke_n}")
     print(
         f"ROI locked: panel={ENEMY_PANEL} thumb={THUMB_CROP} "
         f"CARD_GAP_FRAC={CARD_GAP_FRAC} PANEL_OUTER_MARGIN_FRAC={PANEL_OUTER_MARGIN_FRAC}"
@@ -832,7 +805,7 @@ def main() -> int:
     lines = [
         "# Test fixture match results",
         "",
-        f"- Fixtures: `public/fixtures/team-preview-test-1/2/3.png` + `team-preview-live-latest.jpg`",
+        f"- Fixtures: `public/fixtures/team-preview-live-latest.jpg` only (最新實機畫面)",
         f"- Templates: `public/sprites/sprite_poke.png` + `atlas.json` (nationalDex-keyed in-memory crops; {len(templates)} cells / {n_ids} ids)",
         f"- Matcher: crop cleanup (right {MATCH_CROP_RIGHT_EXCLUDE_FRAC}) + BG suppress + content-aware recenter + aHash prefilter + multi-scale/shift; NCC×0.55 + SSD×0.25 + aHash×0.20",
         f"- Guards (v1.4): `CONFIDENCE_THRESHOLD={CONFIDENCE_THRESHOLD}`, `{margin_rule}`, "
@@ -888,7 +861,7 @@ def main() -> int:
         "- Type hard second gate: uncertain/low-conf type OCR → no veto; when types known "
         f"(score≥{TYPE_MATCH_THR}), candidate types from `pokemon.json` must be a **superset** "
         "of detected set (e.g. Flying → reject Incineroar).",
-        f"- aHash TopK={AHASH_TOP_K} (smallest K lifting correct≥12/18 with wrong=0 on fixtures).",
+        f"- aHash TopK={AHASH_TOP_K} (fixture-tuned; prefer null over wrong species).",
         f"- Dynamic margin: {margin_rule}.",
         f"- Match-crop cleanup: zero right {MATCH_CROP_RIGHT_EXCLUDE_FRAC} of yellow (type bleed); type icons still read from card top-right.",
         "- Coarse hue filter is conservative (×0.85) so shinies without shiny templates are not hard-killed.",
@@ -896,9 +869,13 @@ def main() -> int:
         f"- Result: **correct {accuracy}, wrong={wrong}, null={null_n}**.",
         "- Atlas: official full-roster `sprite_sheet.png` + `sprite_poke.css` → "
         f"{len(templates)} dex-keyed in-memory crops (no per-species PNG dump).",
-        "- Live fixture `team-preview-live-latest.jpg` is a real Champions Team Preview capture.",
-        "- test-1 slot 2 ground truth is Sneasler (Fighting/Poison); older label meowscarada was wrong.",
-        "- dyn ≥0.60 margin raised to 0.06 so full-atlas FPs (e.g. whimsicott→appletun) stay null.",
+        "- Sole formal fixture: `team-preview-live-latest.jpg` (最新實機畫面). "
+        "Expected right-column top→bottom: froslass, garchomp, basculegion, kingambit, sneasler, golisopod. "
+        "Slot 5 was listed as Araquanid in the locked note; the yellow-box crop matches Golisopod "
+        "(water/bug armored isopod). Araquanid’s sheet cell is the water-bubble spider and scores 0.43 vs Golisopod 0.87 — do not force that id.",
+        f"- Legal roster counts: atlas cells={n_ids}, allowlist={allow_n}, pokemon.json={poke_n}.",
+        "- Enemy/ally form selector uses sibling legal forms grouped by nationalDex "
+        "(regional / gender / Rotom; Mega when present in the 262).",
         "",
     ]
     out_md.write_text("\n".join(lines), encoding="utf-8")

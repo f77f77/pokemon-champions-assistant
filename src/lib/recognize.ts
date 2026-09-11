@@ -1227,7 +1227,7 @@ function emptyResults(reasonConfidence = 0): RecognizeResult[] {
 }
 
 /**
- * 從已繪製的整幀 canvas 辨認 6 槽（驗收：可餵 team-preview-test-*.png）。
+ * 從已繪製的整幀 canvas 辨認 6 槽（驗收：可餵 team-preview-live-latest.jpg）。
  */
 export async function recognizeEnemyTeamFromCanvas(
   canvas: HTMLCanvasElement,
@@ -1307,12 +1307,8 @@ export async function recognizeEnemyTeam(
   }
 }
 
-/** Built-in Team Preview fixtures under public/fixtures/ (cycles on each load). */
-export const TEAM_PREVIEW_FIXTURES = [
-  'fixtures/team-preview-test-1.png',
-  'fixtures/team-preview-test-2.png',
-  'fixtures/team-preview-test-3.png',
-] as const;
+/** Built-in Team Preview fixture under public/fixtures/ (sole formal test image). */
+export const TEAM_PREVIEW_FIXTURES = ['fixtures/team-preview-live-latest.jpg'] as const;
 
 let fixtureCursor = 0;
 

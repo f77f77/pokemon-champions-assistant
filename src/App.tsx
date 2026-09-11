@@ -49,6 +49,18 @@ function clampTune(v: number): number {
 function applyFormSync(prev: PokemonSet, formKey: string): PokemonSet | null {
   const form = prev.forms?.find((f) => f.formKey === formKey);
   if (!form) return null;
+  const sp = findSpecies(form.showdownId) || findSpecies(formKey);
+  if (sp) {
+    return speciesToSet(sp, prev.id, {
+      thumbnailDataUrl: prev.thumbnailDataUrl,
+      confidence: prev.confidence ?? 1,
+      identified: true,
+      item: prev.item,
+      ability: undefined,
+      moves: prev.moves,
+      speed: calcStat(form.baseStats.spe, 31, 0, 50, 1),
+    });
+  }
   return {
     ...prev,
     formKey: form.formKey,

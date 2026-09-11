@@ -32,27 +32,15 @@ CONFIDENCE_THRESHOLD = 0.55
 
 FIXTURES = [
     {
-        "path": ROOT / "public/fixtures/team-preview-test-1.png",
-        "label": "team-preview-test-1",
+        "path": ROOT / "public/fixtures/team-preview-live-latest.jpg",
+        "label": "team-preview-live-latest",
         "expected": [
-            "gengar",
-            "sableye",
-            "zoroark",
+            "froslass",
+            "garchomp",
             "basculegion",
-            "annihilape",
-            "sinistcha",
-        ],
-    },
-    {
-        "path": ROOT / "public/fixtures/team-preview-test-2.png",
-        "label": "team-preview-test-2",
-        "expected": [
-            "charizard",
-            "bellibolt",
-            "scovillain",
-            "archaludon",
-            "blastoise",
-            "sableye",
+            "kingambit",
+            "sneasler",
+            "golisopod",
         ],
     },
 ]

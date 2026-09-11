@@ -18,7 +18,7 @@ npm run typecheck
 Without GC551:
 
 - Use static select-screen load button (or drag-drop onto the 16:9 preview)
-- Use test-fixture button to cycle `public/fixtures/team-preview-test-{1,2,3}.png` + `team-preview-live-latest.jpg`
+- Use test-fixture button to load `public/fixtures/team-preview-live-latest.jpg`（最新實機畫面）
 
 Same contentRect → ROI → thumb → recognize pipeline + green/yellow debug overlay. Still image overrides the preview until you re-open the camera.
 
@@ -63,7 +63,7 @@ Pipeline (local only, no cloud) — **prefer `null`/未識別 over wrong species
 1. Crop yellow square thumb with locked ROI (`cardRect` → `thumbRectInSlot`) — geometry unchanged
 2. Match-crop cleanup: zero right `MATCH_CROP_RIGHT_EXCLUDE_FRAC` (0.05) to drop type/gender bleed (type icons still read from full card top-right)
 3. Suppress maroon card BG → content-aware recenter → 64×64
-4. aHash Hamming prefilter → top **40** (or all ham≤18) — smallest K with ≥12/18 & wrong=0 on fixtures
+4. aHash Hamming prefilter → top **40** (or all ham≤18) — fixture-tuned; prefer `null` over wrong species
 5. Multi-scale / micro-shift grayscale match vs in-memory crops from `public/sprites/sprite_poke.png` (atlas keyed by **nationalDex**, e.g. `6` / `38-1`)
 6. Score = NCC×0.55 + SSD×0.25 + aHash×0.20; coarse hue hist soft ×0.85 if far from template
 7. **Second gate (type hard veto):** crop card top-right type icons → match `public/types/{id}.png`; when type detection conf ≥ `TYPE_MATCH_THR` (0.58), candidate types from `pokemon.json` must be a **superset** of detected set (e.g. Flying → reject Incineroar). Low type conf → skip hard veto.
@@ -102,9 +102,8 @@ python3 scripts/build-sprite-atlas.py \
 `recognize.ts` loads every atlas entry via `loadPreviewThumbTemplates()` (one sheet decode).
 
 Acceptance:
-- test fixtures → `python3 scripts/match-test-fixtures.py`
+- sole fixture `public/fixtures/team-preview-live-latest.jpg` → `python3 scripts/match-test-fixtures.py`
   - **wrong species count = 0** (null/未識別 OK; never return a wrong id)
-  - test-2 / test-3: keep hits or only become unidentified — no new wrong species
   - Results: `docs/match-test-fixtures-results.md`
 
 ## Type / Tera icons
@@ -141,7 +140,7 @@ Offline match:
 
 ```bash
 python scripts/match-seed-templates.py                        # 圖二 ~6/6
-/workspace/.venv-pkmn/bin/python scripts/match-test-fixtures.py  # test-1/2/3 + live-latest → docs/match-test-fixtures-results.md
+/workspace/.venv-pkmn/bin/python scripts/match-test-fixtures.py  # live-latest only → docs/match-test-fixtures-results.md
 ```
 
 Results: `docs/match-seed-results.md`

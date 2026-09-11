@@ -46,6 +46,5 @@
 
 ## Team Preview test fixtures
 
-- `public/fixtures/team-preview-test-1.png`, `team-preview-test-2.png` — SV Ranked Doubles team-preview screenshots (zh-Hans UI) for ROI / OCR regression
-- `public/fixtures/team-preview.png` — original seed screenshot
-- App「載入測試圖」cycles these three (ROI Doc remains locked; fixtures only)
+- `public/fixtures/team-preview-live-latest.jpg` — sole formal Team Preview capture（最新實機畫面）
+- App「載入測試圖」loads this image (ROI Doc remains locked; fixtures only)
