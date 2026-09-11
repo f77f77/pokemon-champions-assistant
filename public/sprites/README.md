@@ -4,7 +4,7 @@ Recognition loads **one** master sheet and crops cells in memory.
 
 | File | Role |
 |------|------|
-| `sprite_poke.png` | Master sheet (128×128 cells; official sheets are black-bg, packed legacy cells keep RGBA transparency) |
+| `sprite_poke.png` | Master sheet (128×128 cells; official Champions sheet 2208×2078, black-bg, 262 allowlisted cells) |
 | `sprite_poke.css` | `background-size` / `background-position` per dex+form |
 | `atlas.json` | Parsed dex → `{x,y,w,h}` + showdownId / types |
 

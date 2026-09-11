@@ -5,8 +5,8 @@
       "slot": 0,
       "expected": "charizard",
       "matched": null,
-      "confidence": 0.4788,
-      "margin": 0.0344,
+      "confidence": 0.4049,
+      "margin": 0.4049,
       "requiredMargin": 0.08,
       "altSpeciesId": "talonflame",
       "detectedTypes": [
@@ -23,90 +23,89 @@
           "score": 0.6127
         }
       ],
-      "reason": "LOW_CONF",
+      "reason": "AHASH_PREFILTER",
       "ok": false,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 34,
-        "ahashHamExpected": 22,
-        "ahashCandCount": 40,
-        "expectedInAhashCands": true,
+        "ahashRankExpected": 171,
+        "ahashHamExpected": 21,
+        "ahashCandCount": 114,
+        "expectedInAhashCands": false,
         "topCandidates": [
           {
-            "speciesId": "incineroar",
-            "confidence": 0.6282,
-            "types": [
-              "dark",
-              "fire"
-            ]
-          },
-          {
-            "speciesId": "raichu",
-            "confidence": 0.5681,
+            "speciesId": "pincurchin",
+            "confidence": 0.6316,
             "types": [
               "electric"
             ]
           },
           {
+            "speciesId": "slowkinggalar",
+            "confidence": 0.6036,
+            "types": [
+              "poison",
+              "psychic"
+            ]
+          },
+          {
+            "speciesId": "raichu",
+            "confidence": 0.5954,
+            "types": [
+              "electric"
+            ]
+          },
+          {
+            "speciesId": "sirfetchd",
+            "confidence": 0.5827,
+            "types": [
+              "fighting"
+            ]
+          },
+          {
+            "speciesId": "dedenne",
+            "confidence": 0.5793,
+            "types": [
+              "electric",
+              "fairy"
+            ]
+          },
+          {
+            "speciesId": "sinistcha",
+            "confidence": 0.5759,
+            "types": [
+              "ghost",
+              "grass"
+            ]
+          },
+          {
             "speciesId": "milotic",
-            "confidence": 0.5652,
+            "confidence": 0.5666,
             "types": [
               "water"
             ]
           },
           {
-            "speciesId": "dragonite",
-            "confidence": 0.5527,
-            "types": [
-              "dragon",
-              "flying"
-            ]
-          },
-          {
-            "speciesId": "aegislash",
-            "confidence": 0.5374,
+            "speciesId": "basculegion",
+            "confidence": 0.5623,
             "types": [
               "ghost",
-              "steel"
-            ]
-          },
-          {
-            "speciesId": "farigiraf",
-            "confidence": 0.5373,
-            "types": [
-              "normal",
-              "psychic"
-            ]
-          },
-          {
-            "speciesId": "torkoal",
-            "confidence": 0.5309,
-            "types": [
-              "fire"
-            ]
-          },
-          {
-            "speciesId": "excadrill",
-            "confidence": 0.5291,
-            "types": [
-              "ground",
-              "steel"
+              "water"
             ]
           }
         ],
         "typeVetoed": [
-          "incineroar",
+          "pincurchin",
+          "slowkinggalar",
           "raichu",
+          "sirfetchd",
+          "dedenne",
+          "sinistcha",
           "milotic",
-          "dragonite",
-          "aegislash",
-          "farigiraf",
-          "torkoal",
-          "excadrill",
-          "glimmora",
-          "politoed",
-          "empoleon",
-          "delphox"
+          "basculegion",
+          "hawlucha",
+          "sharpedo",
+          "mudsdale",
+          "scolipede"
         ],
         "requiredMargin": 0.08
       }
@@ -116,10 +115,10 @@
       "slot": 1,
       "expected": "aerodactyl",
       "matched": "aerodactyl",
-      "confidence": 0.7459,
-      "margin": 0.1552,
-      "requiredMargin": 0.03,
-      "altSpeciesId": "swampert",
+      "confidence": 0.8355,
+      "margin": 0.2138,
+      "requiredMargin": 0.025,
+      "altSpeciesId": "pincurchin",
       "detectedTypes": [],
       "typeScores": [
         {
@@ -136,88 +135,86 @@
       "wrongSpecies": false,
       "debug": {
         "ahashRankExpected": 1,
-        "ahashHamExpected": 4,
-        "ahashCandCount": 40,
+        "ahashHamExpected": 8,
+        "ahashCandCount": 129,
         "expectedInAhashCands": true,
         "topCandidates": [
           {
             "speciesId": "aerodactyl",
-            "confidence": 0.7459,
+            "confidence": 0.8355,
             "types": [
               "flying",
               "rock"
             ]
           },
           {
-            "speciesId": "swampert",
-            "confidence": 0.5908,
+            "speciesId": "pincurchin",
+            "confidence": 0.6217,
             "types": [
-              "ground",
-              "water"
+              "electric"
             ]
           },
           {
-            "speciesId": "primarina",
-            "confidence": 0.5321,
+            "speciesId": "salamence",
+            "confidence": 0.6044,
             "types": [
-              "fairy",
-              "water"
-            ]
-          },
-          {
-            "speciesId": "incineroar",
-            "confidence": 0.5204,
-            "types": [
-              "dark",
-              "fire"
-            ]
-          },
-          {
-            "speciesId": "aegislash",
-            "confidence": 0.5134,
-            "types": [
-              "ghost",
-              "steel"
-            ]
-          },
-          {
-            "speciesId": "charizard",
-            "confidence": 0.5076,
-            "types": [
-              "fire",
+              "dragon",
               "flying"
             ]
           },
           {
-            "speciesId": "venusaur",
-            "confidence": 0.501,
+            "speciesId": "hydreigon",
+            "confidence": 0.6007,
             "types": [
-              "grass",
+              "dark",
+              "dragon"
+            ]
+          },
+          {
+            "speciesId": "sharpedo",
+            "confidence": 0.5798,
+            "types": [
+              "dark",
+              "water"
+            ]
+          },
+          {
+            "speciesId": "overqwil",
+            "confidence": 0.5741,
+            "types": [
+              "dark",
               "poison"
             ]
           },
           {
-            "speciesId": "gengar",
-            "confidence": 0.4945,
+            "speciesId": "liepard",
+            "confidence": 0.5724,
             "types": [
-              "ghost",
-              "poison"
+              "dark"
+            ]
+          },
+          {
+            "speciesId": "skarmory",
+            "confidence": 0.5722,
+            "types": [
+              "flying",
+              "steel"
             ]
           }
         ],
         "typeVetoed": [],
-        "requiredMargin": 0.03
+        "requiredMargin": 0.025
       }
     },
     {
       "fixture": "team-preview-test-1",
       "slot": 2,
-      "expected": "meowscarada",
-      "matched": null,
-      "confidence": 0.6094,
-      "margin": 0.0337,
-      "requiredMargin": 0.035,
-      "altSpeciesId": "dragonite",
+      "expected": "sneasler",
+      "matched": "sneasler",
+      "confidence": 0.8365,
+      "margin": 0.2109,
+      "requiredMargin": 0.025,
+      "altSpeciesId": "watchog",
       "detectedTypes": [],
       "typeScores": [
         {
@@ -229,79 +226,80 @@
           "score": 0.5057
         }
       ],
-      "reason": "MARGIN_TOO_SMALL",
-      "ok": false,
+      "reason": "ok",
+      "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 1,
-        "ahashHamExpected": 12,
-        "ahashCandCount": 40,
+        "ahashRankExpected": 37,
+        "ahashHamExpected": 14,
+        "ahashCandCount": 131,
         "expectedInAhashCands": true,
         "topCandidates": [
           {
-            "speciesId": "talonflame",
-            "confidence": 0.6094,
+            "speciesId": "sneasler",
+            "confidence": 0.8365,
+            "types": [
+              "fighting",
+              "poison"
+            ]
+          },
+          {
+            "speciesId": "watchog",
+            "confidence": 0.6256,
+            "types": [
+              "normal"
+            ]
+          },
+          {
+            "speciesId": "thievul",
+            "confidence": 0.6179,
+            "types": [
+              "dark"
+            ]
+          },
+          {
+            "speciesId": "stunfisk",
+            "confidence": 0.6176,
+            "types": [
+              "electric",
+              "ground"
+            ]
+          },
+          {
+            "speciesId": "typhlosionhisui",
+            "confidence": 0.6063,
             "types": [
               "fire",
-              "flying"
+              "ghost"
             ]
           },
           {
-            "speciesId": "dragonite",
-            "confidence": 0.5757,
-            "types": [
-              "dragon",
-              "flying"
-            ]
-          },
-          {
-            "speciesId": "farigiraf",
-            "confidence": 0.5555,
+            "speciesId": "wyrdeer",
+            "confidence": 0.5999,
             "types": [
               "normal",
               "psychic"
             ]
           },
           {
-            "speciesId": "torkoal",
-            "confidence": 0.5463,
+            "speciesId": "gourgeistsmall",
+            "confidence": 0.5939,
             "types": [
-              "fire"
-            ]
-          },
-          {
-            "speciesId": "politoed",
-            "confidence": 0.5383,
-            "types": [
-              "water"
-            ]
-          },
-          {
-            "speciesId": "primarina",
-            "confidence": 0.5336,
-            "types": [
-              "fairy",
-              "water"
-            ]
-          },
-          {
-            "speciesId": "tsareena",
-            "confidence": 0.53,
-            "types": [
+              "ghost",
               "grass"
             ]
           },
           {
-            "speciesId": "delphox",
-            "confidence": 0.5291,
+            "speciesId": "squawkabilly",
+            "confidence": 0.5892,
             "types": [
-              "fire",
-              "psychic"
+              "flying",
+              "normal"
             ]
           }
         ],
         "typeVetoed": [],
-        "requiredMargin": 0.035
+        "requiredMargin": 0.025
       }
     },
     {
@@ -309,10 +307,10 @@
       "slot": 3,
       "expected": "garchomp",
       "matched": "garchomp",
-      "confidence": 0.6314,
-      "margin": 0.0378,
-      "requiredMargin": 0.035,
-      "altSpeciesId": "swampert",
+      "confidence": 0.7724,
+      "margin": 0.1498,
+      "requiredMargin": 0.025,
+      "altSpeciesId": "pangoro",
       "detectedTypes": [],
       "typeScores": [
         {
@@ -328,89 +326,88 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 19,
-        "ahashHamExpected": 17,
-        "ahashCandCount": 40,
+        "ahashRankExpected": 93,
+        "ahashHamExpected": 14,
+        "ahashCandCount": 216,
         "expectedInAhashCands": true,
         "topCandidates": [
           {
             "speciesId": "garchomp",
-            "confidence": 0.6314,
+            "confidence": 0.7724,
             "types": [
               "dragon",
               "ground"
             ]
           },
           {
-            "speciesId": "swampert",
-            "confidence": 0.5936,
+            "speciesId": "pangoro",
+            "confidence": 0.6226,
             "types": [
-              "ground",
+              "dark",
+              "fighting"
+            ]
+          },
+          {
+            "speciesId": "feraligatr",
+            "confidence": 0.6094,
+            "types": [
               "water"
             ]
           },
           {
-            "speciesId": "sableye",
-            "confidence": 0.5874,
+            "speciesId": "samurotthisui",
+            "confidence": 0.6082,
             "types": [
               "dark",
-              "ghost"
+              "water"
             ]
           },
           {
             "speciesId": "gengar",
-            "confidence": 0.5762,
+            "confidence": 0.5994,
             "types": [
               "ghost",
               "poison"
             ]
           },
           {
-            "speciesId": "venusaur",
-            "confidence": 0.5526,
-            "types": [
-              "grass",
-              "poison"
-            ]
-          },
-          {
-            "speciesId": "talonflame",
-            "confidence": 0.5467,
-            "types": [
-              "fire",
-              "flying"
-            ]
-          },
-          {
-            "speciesId": "kommoo",
-            "confidence": 0.5427,
-            "types": [
-              "dragon",
-              "fighting"
-            ]
-          },
-          {
-            "speciesId": "annihilape",
-            "confidence": 0.5401,
+            "speciesId": "emboar",
+            "confidence": 0.595,
             "types": [
               "fighting",
-              "ghost"
+              "fire"
+            ]
+          },
+          {
+            "speciesId": "krookodile",
+            "confidence": 0.5893,
+            "types": [
+              "dark",
+              "ground"
+            ]
+          },
+          {
+            "speciesId": "grimmsnarl",
+            "confidence": 0.5838,
+            "types": [
+              "dark",
+              "fairy"
             ]
           }
         ],
         "typeVetoed": [],
-        "requiredMargin": 0.035
+        "requiredMargin": 0.025
       }
     },
     {
       "fixture": "team-preview-test-1",
       "slot": 4,
       "expected": "rotomwash",
-      "matched": null,
-      "confidence": 0.5336,
-      "margin": 0.5336,
-      "requiredMargin": 0.08,
-      "altSpeciesId": "rotomwash",
+      "matched": "rotomwash",
+      "confidence": 0.5913,
+      "margin": 0.5913,
+      "requiredMargin": 0.055,
+      "altSpeciesId": null,
       "detectedTypes": [
         "electric",
         "water"
@@ -425,18 +422,42 @@
           "score": 0.6873
         }
       ],
-      "reason": "LOW_CONF",
-      "ok": false,
+      "reason": "ok",
+      "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 2,
-        "ahashHamExpected": 9,
-        "ahashCandCount": 40,
+        "ahashRankExpected": 1,
+        "ahashHamExpected": 7,
+        "ahashCandCount": 157,
         "expectedInAhashCands": true,
         "topCandidates": [
           {
+            "speciesId": "salamence",
+            "confidence": 0.6026,
+            "types": [
+              "dragon",
+              "flying"
+            ]
+          },
+          {
+            "speciesId": "rotomwash",
+            "confidence": 0.5913,
+            "types": [
+              "electric",
+              "water"
+            ]
+          },
+          {
+            "speciesId": "noivern",
+            "confidence": 0.5664,
+            "types": [
+              "dragon",
+              "flying"
+            ]
+          },
+          {
             "speciesId": "scizor",
-            "confidence": 0.5542,
+            "confidence": 0.5564,
             "types": [
               "bug",
               "steel"
@@ -444,86 +465,62 @@
           },
           {
             "speciesId": "basculegion",
-            "confidence": 0.5516,
+            "confidence": 0.5548,
             "types": [
               "ghost",
               "water"
             ]
           },
           {
-            "speciesId": "venusaur",
-            "confidence": 0.5352,
+            "speciesId": "kingambit",
+            "confidence": 0.5464,
             "types": [
-              "grass",
-              "poison"
-            ]
-          },
-          {
-            "speciesId": "sinistcha",
-            "confidence": 0.5342,
-            "types": [
-              "ghost",
-              "grass"
-            ]
-          },
-          {
-            "speciesId": "rotomwash",
-            "confidence": 0.5336,
-            "types": [
-              "electric",
-              "water"
-            ]
-          },
-          {
-            "speciesId": "tsareena",
-            "confidence": 0.525,
-            "types": [
-              "grass"
-            ]
-          },
-          {
-            "speciesId": "mawile",
-            "confidence": 0.5225,
-            "types": [
-              "fairy",
+              "dark",
               "steel"
             ]
           },
           {
-            "speciesId": "sableye",
-            "confidence": 0.5137,
+            "speciesId": "runerigus",
+            "confidence": 0.5394,
             "types": [
-              "dark",
-              "ghost"
+              "ghost",
+              "ground"
+            ]
+          },
+          {
+            "speciesId": "taurospaldeacombat",
+            "confidence": 0.5375,
+            "types": [
+              "fighting"
             ]
           }
         ],
         "typeVetoed": [
+          "salamence",
+          "noivern",
           "scizor",
           "basculegion",
+          "kingambit",
+          "runerigus",
+          "taurospaldeacombat",
           "venusaur",
-          "sinistcha",
-          "tsareena",
-          "mawile",
-          "sableye",
-          "excadrill",
-          "incineroar",
-          "talonflame",
-          "sneasler",
-          "froslass"
+          "kleavor",
+          "decidueyehisui",
+          "ariados",
+          "excadrill"
         ],
-        "requiredMargin": 0.08
+        "requiredMargin": 0.055
       }
     },
     {
       "fixture": "team-preview-test-1",
       "slot": 5,
       "expected": "aegislash",
-      "matched": null,
-      "confidence": 0.6016,
-      "margin": 0.0051,
-      "requiredMargin": 0.035,
-      "altSpeciesId": "aegislash",
+      "matched": "aegislash",
+      "confidence": 0.6997,
+      "margin": 0.094,
+      "requiredMargin": 0.03,
+      "altSpeciesId": "stunfiskgalar",
       "detectedTypes": [],
       "typeScores": [
         {
@@ -531,92 +528,90 @@
           "score": 0.4525
         }
       ],
-      "reason": "MARGIN_TOO_SMALL",
-      "ok": false,
+      "reason": "ok",
+      "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 26,
-        "ahashHamExpected": 19,
-        "ahashCandCount": 40,
+        "ahashRankExpected": 9,
+        "ahashHamExpected": 12,
+        "ahashCandCount": 162,
         "expectedInAhashCands": true,
         "topCandidates": [
           {
-            "speciesId": "talonflame",
-            "confidence": 0.6016,
-            "types": [
-              "fire",
-              "flying"
-            ]
-          },
-          {
             "speciesId": "aegislash",
-            "confidence": 0.5965,
+            "confidence": 0.6997,
             "types": [
               "ghost",
               "steel"
             ]
           },
           {
+            "speciesId": "stunfiskgalar",
+            "confidence": 0.6057,
+            "types": [
+              "ground",
+              "steel"
+            ]
+          },
+          {
+            "speciesId": "mudsdale",
+            "confidence": 0.6054,
+            "types": [
+              "ground"
+            ]
+          },
+          {
+            "speciesId": "aromatisse",
+            "confidence": 0.6046,
+            "types": [
+              "fairy"
+            ]
+          },
+          {
             "speciesId": "venusaur",
-            "confidence": 0.5931,
+            "confidence": 0.5892,
             "types": [
               "grass",
               "poison"
             ]
           },
           {
-            "speciesId": "politoed",
-            "confidence": 0.5898,
-            "types": [
-              "water"
-            ]
-          },
-          {
-            "speciesId": "swampert",
-            "confidence": 0.5607,
-            "types": [
-              "ground",
-              "water"
-            ]
-          },
-          {
-            "speciesId": "meowscarada",
-            "confidence": 0.5589,
+            "speciesId": "overqwil",
+            "confidence": 0.5858,
             "types": [
               "dark",
-              "grass"
+              "poison"
             ]
           },
           {
-            "speciesId": "basculegion",
-            "confidence": 0.5565,
+            "speciesId": "floette",
+            "confidence": 0.5855,
             "types": [
-              "ghost",
-              "water"
+              "fairy"
             ]
           },
           {
-            "speciesId": "kommoo",
-            "confidence": 0.5557,
+            "speciesId": "salamence",
+            "confidence": 0.5832,
             "types": [
               "dragon",
-              "fighting"
+              "flying"
             ]
           }
         ],
         "typeVetoed": [],
-        "requiredMargin": 0.035
+        "requiredMargin": 0.03
       }
     },
     {
       "fixture": "team-preview-test-2",
       "slot": 0,
       "expected": "whimsicott",
-      "matched": "whimsicott",
-      "confidence": 0.7514,
-      "margin": 0.183,
-      "requiredMargin": 0.025,
-      "altSpeciesId": "torkoal",
+      "matched": null,
+      "confidence": 0.616,
+      "margin": 0.0574,
+      "requiredMargin": 0.06,
+      "altSpeciesId": "slurpuff",
       "detectedTypes": [],
       "typeScores": [
         {
@@ -624,79 +619,78 @@
           "score": 0.4944
         }
       ],
-      "reason": "ok",
-      "ok": true,
+      "reason": "AHASH_PREFILTER",
+      "ok": false,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 3,
-        "ahashHamExpected": 9,
-        "ahashCandCount": 40,
-        "expectedInAhashCands": true,
+        "ahashRankExpected": 217,
+        "ahashHamExpected": 21,
+        "ahashCandCount": 167,
+        "expectedInAhashCands": false,
         "topCandidates": [
           {
-            "speciesId": "whimsicott",
-            "confidence": 0.7514,
+            "speciesId": "appletun",
+            "confidence": 0.616,
             "types": [
-              "fairy",
+              "dragon",
               "grass"
             ]
           },
           {
-            "speciesId": "torkoal",
-            "confidence": 0.5684,
+            "speciesId": "slurpuff",
+            "confidence": 0.5586,
             "types": [
-              "fire"
+              "fairy"
             ]
           },
           {
-            "speciesId": "talonflame",
-            "confidence": 0.5369,
+            "speciesId": "wyrdeer",
+            "confidence": 0.5433,
             "types": [
-              "fire",
-              "flying"
+              "normal",
+              "psychic"
             ]
           },
           {
-            "speciesId": "pelipper",
-            "confidence": 0.5238,
+            "speciesId": "forretress",
+            "confidence": 0.5361,
             "types": [
-              "flying",
-              "water"
+              "bug",
+              "steel"
             ]
           },
           {
-            "speciesId": "politoed",
-            "confidence": 0.5065,
+            "speciesId": "clefable",
+            "confidence": 0.5287,
             "types": [
-              "water"
+              "fairy"
             ]
           },
           {
-            "speciesId": "rotomwash",
-            "confidence": 0.4975,
+            "speciesId": "bellibolt",
+            "confidence": 0.5271,
             "types": [
-              "electric",
-              "water"
+              "electric"
             ]
           },
           {
-            "speciesId": "dragonite",
-            "confidence": 0.4927,
+            "speciesId": "houndstone",
+            "confidence": 0.5262,
             "types": [
-              "dragon",
-              "flying"
+              "ghost"
             ]
           },
           {
-            "speciesId": "blastoise",
-            "confidence": 0.4906,
+            "speciesId": "victreebel",
+            "confidence": 0.5221,
             "types": [
-              "water"
+              "grass",
+              "poison"
             ]
           }
         ],
         "typeVetoed": [],
-        "requiredMargin": 0.025
+        "requiredMargin": 0.06
       }
     },
     {
@@ -704,10 +698,10 @@
       "slot": 1,
       "expected": "charizard",
       "matched": null,
-      "confidence": 0.5487,
-      "margin": 0.002,
-      "requiredMargin": 0.055,
-      "altSpeciesId": "incineroar",
+      "confidence": 0.4771,
+      "margin": 0.0182,
+      "requiredMargin": 0.08,
+      "altSpeciesId": "arcaninehisui",
       "detectedTypes": [
         "fire"
       ],
@@ -721,90 +715,87 @@
       "ok": false,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 46,
-        "ahashHamExpected": 23,
-        "ahashCandCount": 40,
+        "ahashRankExpected": 171,
+        "ahashHamExpected": 22,
+        "ahashCandCount": 96,
         "expectedInAhashCands": false,
         "topCandidates": [
           {
-            "speciesId": "dragonite",
-            "confidence": 0.5947,
+            "speciesId": "azumarill",
+            "confidence": 0.5968,
+            "types": [
+              "fairy",
+              "water"
+            ]
+          },
+          {
+            "speciesId": "qwilfish",
+            "confidence": 0.5952,
+            "types": [
+              "poison",
+              "water"
+            ]
+          },
+          {
+            "speciesId": "aromatisse",
+            "confidence": 0.5782,
+            "types": [
+              "fairy"
+            ]
+          },
+          {
+            "speciesId": "feraligatr",
+            "confidence": 0.5693,
+            "types": [
+              "water"
+            ]
+          },
+          {
+            "speciesId": "pincurchin",
+            "confidence": 0.5641,
+            "types": [
+              "electric"
+            ]
+          },
+          {
+            "speciesId": "mudsdale",
+            "confidence": 0.5608,
+            "types": [
+              "ground"
+            ]
+          },
+          {
+            "speciesId": "salamence",
+            "confidence": 0.5592,
             "types": [
               "dragon",
               "flying"
             ]
           },
           {
-            "speciesId": "swampert",
-            "confidence": 0.5809,
-            "types": [
-              "ground",
-              "water"
-            ]
-          },
-          {
-            "speciesId": "farigiraf",
-            "confidence": 0.5556,
-            "types": [
-              "normal",
-              "psychic"
-            ]
-          },
-          {
-            "speciesId": "milotic",
-            "confidence": 0.5538,
-            "types": [
-              "water"
-            ]
-          },
-          {
-            "speciesId": "empoleon",
-            "confidence": 0.5526,
-            "types": [
-              "steel",
-              "water"
-            ]
-          },
-          {
-            "speciesId": "blaziken",
-            "confidence": 0.5487,
-            "types": [
-              "fighting",
-              "fire"
-            ]
-          },
-          {
-            "speciesId": "incineroar",
-            "confidence": 0.5467,
+            "speciesId": "krookodile",
+            "confidence": 0.5585,
             "types": [
               "dark",
-              "fire"
-            ]
-          },
-          {
-            "speciesId": "primarina",
-            "confidence": 0.5434,
-            "types": [
-              "fairy",
-              "water"
+              "ground"
             ]
           }
         ],
         "typeVetoed": [
+          "azumarill",
+          "qwilfish",
+          "aromatisse",
+          "feraligatr",
+          "pincurchin",
+          "mudsdale",
+          "salamence",
+          "krookodile",
+          "sinistcha",
+          "hawlucha",
           "dragonite",
-          "swampert",
-          "farigiraf",
-          "milotic",
-          "empoleon",
-          "primarina",
-          "excadrill",
-          "mawile",
-          "basculegion",
-          "rotomwash",
-          "venusaur",
-          "sinistcha"
+          "garbodor"
         ],
-        "requiredMargin": 0.055
+        "requiredMargin": 0.08
       }
     },
     {
@@ -812,10 +803,10 @@
       "slot": 2,
       "expected": "basculegion",
       "matched": "basculegion",
-      "confidence": 0.7204,
-      "margin": 0.2095,
+      "confidence": 0.7312,
+      "margin": 0.1872,
       "requiredMargin": 0.03,
-      "altSpeciesId": "swampert",
+      "altSpeciesId": "basculegionf",
       "detectedTypes": [
         "water"
       ],
@@ -830,13 +821,13 @@
       "wrongSpecies": false,
       "debug": {
         "ahashRankExpected": 14,
-        "ahashHamExpected": 13,
-        "ahashCandCount": 40,
+        "ahashHamExpected": 11,
+        "ahashCandCount": 176,
         "expectedInAhashCands": true,
         "topCandidates": [
           {
             "speciesId": "basculegion",
-            "confidence": 0.7204,
+            "confidence": 0.7312,
             "types": [
               "ghost",
               "water"
@@ -844,74 +835,73 @@
           },
           {
             "speciesId": "venusaur",
-            "confidence": 0.5837,
+            "confidence": 0.5877,
             "types": [
               "grass",
               "poison"
             ]
           },
           {
-            "speciesId": "incineroar",
-            "confidence": 0.5305,
+            "speciesId": "krookodile",
+            "confidence": 0.5818,
             "types": [
               "dark",
-              "fire"
+              "ground"
             ]
           },
           {
-            "speciesId": "mawile",
-            "confidence": 0.5271,
-            "types": [
-              "fairy",
-              "steel"
-            ]
-          },
-          {
-            "speciesId": "scizor",
-            "confidence": 0.5229,
+            "speciesId": "kleavor",
+            "confidence": 0.5793,
             "types": [
               "bug",
-              "steel"
-            ]
-          },
-          {
-            "speciesId": "swampert",
-            "confidence": 0.5109,
-            "types": [
-              "ground",
-              "water"
-            ]
-          },
-          {
-            "speciesId": "tyranitar",
-            "confidence": 0.5098,
-            "types": [
-              "dark",
               "rock"
             ]
           },
           {
-            "speciesId": "meowscarada",
-            "confidence": 0.5088,
+            "speciesId": "pincurchin",
+            "confidence": 0.5641,
             "types": [
-              "dark",
-              "grass"
+              "electric"
+            ]
+          },
+          {
+            "speciesId": "hawlucha",
+            "confidence": 0.5555,
+            "types": [
+              "fighting",
+              "flying"
+            ]
+          },
+          {
+            "speciesId": "rhyperior",
+            "confidence": 0.5551,
+            "types": [
+              "ground",
+              "rock"
+            ]
+          },
+          {
+            "speciesId": "ariados",
+            "confidence": 0.5466,
+            "types": [
+              "bug",
+              "poison"
             ]
           }
         ],
         "typeVetoed": [
           "venusaur",
-          "incineroar",
-          "mawile",
-          "scizor",
-          "tyranitar",
-          "meowscarada",
+          "krookodile",
+          "kleavor",
+          "pincurchin",
+          "hawlucha",
+          "rhyperior",
+          "ariados",
+          "weavile",
+          "aromatisse",
+          "vileplume",
           "aegislash",
-          "aerodactyl",
-          "sneasler",
-          "kingambit",
-          "archaludon",
-          "tsareena"
+          "vivillonfancy"
         ],
         "requiredMargin": 0.03
       }
@@ -921,10 +911,10 @@
       "slot": 3,
       "expected": "kingambit",
       "matched": "kingambit",
-      "confidence": 0.6931,
-      "margin": 0.1005,
-      "requiredMargin": 0.03,
-      "altSpeciesId": "excadrill",
+      "confidence": 0.6598,
+      "margin": 0.0708,
+      "requiredMargin": 0.06,
+      "altSpeciesId": "scrafty",
       "detectedTypes": [],
       "typeScores": [
         {
@@ -936,87 +926,88 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 39,
-        "ahashHamExpected": 23,
-        "ahashCandCount": 40,
+        "ahashRankExpected": 87,
+        "ahashHamExpected": 16,
+        "ahashCandCount": 133,
         "expectedInAhashCands": true,
         "topCandidates": [
           {
             "speciesId": "kingambit",
-            "confidence": 0.6931,
+            "confidence": 0.6598,
             "types": [
               "dark",
               "steel"
             ]
           },
           {
-            "speciesId": "excadrill",
-            "confidence": 0.5926,
+            "speciesId": "scrafty",
+            "confidence": 0.589,
             "types": [
-              "ground",
-              "steel"
+              "dark",
+              "fighting"
+            ]
+          },
+          {
+            "speciesId": "toxtricity",
+            "confidence": 0.5871,
+            "types": [
+              "electric",
+              "poison"
             ]
           },
           {
             "speciesId": "aegislash",
-            "confidence": 0.5874,
+            "confidence": 0.5865,
             "types": [
               "ghost",
               "steel"
             ]
           },
           {
+            "speciesId": "excadrill",
+            "confidence": 0.5826,
+            "types": [
+              "ground",
+              "steel"
+            ]
+          },
+          {
+            "speciesId": "hydrapple",
+            "confidence": 0.5786,
+            "types": [
+              "dragon",
+              "grass"
+            ]
+          },
+          {
+            "speciesId": "weavile",
+            "confidence": 0.573,
+            "types": [
+              "dark",
+              "ice"
+            ]
+          },
+          {
             "speciesId": "delphox",
-            "confidence": 0.5536,
+            "confidence": 0.5634,
             "types": [
               "fire",
               "psychic"
             ]
-          },
-          {
-            "speciesId": "kommoo",
-            "confidence": 0.5484,
-            "types": [
-              "dragon",
-              "fighting"
-            ]
-          },
-          {
-            "speciesId": "talonflame",
-            "confidence": 0.5377,
-            "types": [
-              "fire",
-              "flying"
-            ]
-          },
-          {
-            "speciesId": "rotomwash",
-            "confidence": 0.5344,
-            "types": [
-              "electric",
-              "water"
-            ]
-          },
-          {
-            "speciesId": "torkoal",
-            "confidence": 0.5179,
-            "types": [
-              "fire"
-            ]
           }
         ],
         "typeVetoed": [],
-        "requiredMargin": 0.03
+        "requiredMargin": 0.06
       }
     },
     {
       "fixture": "team-preview-test-2",
       "slot": 4,
       "expected": "sneasler",
-      "matched": "sneasler",
-      "confidence": 0.6525,
-      "margin": 0.0568,
-      "requiredMargin": 0.035,
+      "matched": null,
+      "confidence": 0.6062,
+      "margin": 0.0092,
+      "requiredMargin": 0.06,
       "altSpeciesId": "sableye",
       "detectedTypes": [],
       "typeScores": [
@@ -1025,81 +1016,80 @@
           "score": 0.5683
         }
       ],
-      "reason": "ok",
-      "ok": true,
+      "reason": "AHASH_PREFILTER",
+      "ok": false,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 24,
-        "ahashHamExpected": 21,
+        "ahashRankExpected": 136,
+        "ahashHamExpected": 22,
         "ahashCandCount": 40,
-        "expectedInAhashCands": true,
+        "expectedInAhashCands": false,
         "topCandidates": [
           {
-            "speciesId": "sneasler",
-            "confidence": 0.6525,
+            "speciesId": "scolipede",
+            "confidence": 0.6062,
             "types": [
-              "fighting",
+              "bug",
               "poison"
             ]
           },
           {
             "speciesId": "sableye",
-            "confidence": 0.5957,
+            "confidence": 0.597,
             "types": [
               "dark",
               "ghost"
             ]
           },
           {
-            "speciesId": "swampert",
-            "confidence": 0.5594,
+            "speciesId": "aurorus",
+            "confidence": 0.5951,
             "types": [
-              "ground",
-              "water"
-            ]
-          },
-          {
-            "speciesId": "aerodactyl",
-            "confidence": 0.556,
-            "types": [
-              "flying",
+              "ice",
               "rock"
             ]
           },
           {
-            "speciesId": "tsareena",
-            "confidence": 0.5449,
+            "speciesId": "furfrou",
+            "confidence": 0.5807,
             "types": [
+              "normal"
+            ]
+          },
+          {
+            "speciesId": "goodrahisui",
+            "confidence": 0.5607,
+            "types": [
+              "dragon",
+              "steel"
+            ]
+          },
+          {
+            "speciesId": "goodra",
+            "confidence": 0.5598,
+            "types": [
+              "dragon"
+            ]
+          },
+          {
+            "speciesId": "decidueyehisui",
+            "confidence": 0.5559,
+            "types": [
+              "fighting",
               "grass"
             ]
           },
           {
-            "speciesId": "incineroar",
-            "confidence": 0.5359,
+            "speciesId": "wyrdeer",
+            "confidence": 0.5543,
             "types": [
-              "dark",
-              "fire"
-            ]
-          },
-          {
-            "speciesId": "gengar",
-            "confidence": 0.5347,
-            "types": [
-              "ghost",
-              "poison"
-            ]
-          },
-          {
-            "speciesId": "kingambit",
-            "confidence": 0.5327,
-            "types": [
-              "dark",
-              "steel"
+              "normal",
+              "psychic"
             ]
           }
         ],
         "typeVetoed": [],
-        "requiredMargin": 0.035
+        "requiredMargin": 0.06
       }
     },
     {
@@ -1107,10 +1097,10 @@
       "slot": 5,
       "expected": "garchomp",
       "matched": null,
-      "confidence": 0.5541,
-      "margin": 0.0163,
+      "confidence": 0.574,
+      "margin": 0.0009,
       "requiredMargin": 0.055,
-      "altSpeciesId": "sableye",
+      "altSpeciesId": "vileplume",
       "detectedTypes": [],
       "typeScores": [
         {
@@ -1122,77 +1112,76 @@
           "score": 0.4928
         }
       ],
-      "reason": "MARGIN_TOO_SMALL",
+      "reason": "AHASH_PREFILTER",
       "ok": false,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 31,
-        "ahashHamExpected": 26,
-        "ahashCandCount": 40,
-        "expectedInAhashCands": true,
+        "ahashRankExpected": 150,
+        "ahashHamExpected": 21,
+        "ahashCandCount": 95,
+        "expectedInAhashCands": false,
         "topCandidates": [
           {
-            "speciesId": "garchomp",
-            "confidence": 0.5541,
+            "speciesId": "rhyperior",
+            "confidence": 0.574,
+            "types": [
+              "ground",
+              "rock"
+            ]
+          },
+          {
+            "speciesId": "vileplume",
+            "confidence": 0.573,
+            "types": [
+              "grass",
+              "poison"
+            ]
+          },
+          {
+            "speciesId": "glimmora",
+            "confidence": 0.5553,
+            "types": [
+              "poison",
+              "rock"
+            ]
+          },
+          {
+            "speciesId": "incineroar",
+            "confidence": 0.5543,
+            "types": [
+              "dark",
+              "fire"
+            ]
+          },
+          {
+            "speciesId": "grimmsnarl",
+            "confidence": 0.5492,
+            "types": [
+              "dark",
+              "fairy"
+            ]
+          },
+          {
+            "speciesId": "zoroark",
+            "confidence": 0.5384,
+            "types": [
+              "dark"
+            ]
+          },
+          {
+            "speciesId": "salamence",
+            "confidence": 0.5293,
             "types": [
               "dragon",
-              "ground"
+              "flying"
             ]
           },
           {
-            "speciesId": "sableye",
-            "confidence": 0.5379,
-            "types": [
-              "dark",
-              "ghost"
-            ]
-          },
-          {
-            "speciesId": "corviknight",
-            "confidence": 0.5072,
+            "speciesId": "gliscor",
+            "confidence": 0.5249,
             "types": [
               "flying",
-              "steel"
-            ]
-          },
-          {
-            "speciesId": "basculegion",
-            "confidence": 0.4891,
-            "types": [
-              "ghost",
-              "water"
-            ]
-          },
-          {
-            "speciesId": "kingambit",
-            "confidence": 0.4786,
-            "types": [
-              "dark",
-              "steel"
-            ]
-          },
-          {
-            "speciesId": "gengar",
-            "confidence": 0.4778,
-            "types": [
-              "ghost",
-              "poison"
-            ]
-          },
-          {
-            "speciesId": "sneasler",
-            "confidence": 0.4777,
-            "types": [
-              "fighting",
-              "poison"
-            ]
-          },
-          {
-            "speciesId": "annihilape",
-            "confidence": 0.4658,
-            "types": [
-              "fighting",
-              "ghost"
+              "ground"
             ]
           }
         ],
@@ -1205,10 +1194,10 @@
       "slot": 0,
       "expected": "ninetalesalola",
       "matched": "ninetalesalola",
-      "confidence": 0.8056,
-      "margin": 0.3402,
+      "confidence": 0.8442,
+      "margin": 0.2895,
       "requiredMargin": 0.025,
-      "altSpeciesId": "froslass",
+      "altSpeciesId": "glalie",
       "detectedTypes": [
         "ice"
       ],
@@ -1226,87 +1215,87 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 11,
-        "ahashHamExpected": 15,
-        "ahashCandCount": 40,
+        "ahashRankExpected": 141,
+        "ahashHamExpected": 16,
+        "ahashCandCount": 216,
         "expectedInAhashCands": true,
         "topCandidates": [
           {
             "speciesId": "ninetalesalola",
-            "confidence": 0.8056,
+            "confidence": 0.8442,
             "types": [
               "fairy",
               "ice"
             ]
           },
           {
-            "speciesId": "talonflame",
-            "confidence": 0.5852,
-            "types": [
-              "fire",
-              "flying"
-            ]
-          },
-          {
             "speciesId": "pelipper",
-            "confidence": 0.5561,
+            "confidence": 0.5922,
             "types": [
               "flying",
               "water"
             ]
           },
           {
-            "speciesId": "torkoal",
-            "confidence": 0.5331,
+            "speciesId": "pangoro",
+            "confidence": 0.5691,
             "types": [
-              "fire"
+              "dark",
+              "fighting"
             ]
           },
           {
-            "speciesId": "venusaur",
-            "confidence": 0.5301,
+            "speciesId": "talonflame",
+            "confidence": 0.5633,
+            "types": [
+              "fire",
+              "flying"
+            ]
+          },
+          {
+            "speciesId": "glalie",
+            "confidence": 0.5546,
+            "types": [
+              "ice"
+            ]
+          },
+          {
+            "speciesId": "avalugghisui",
+            "confidence": 0.5506,
+            "types": [
+              "ice",
+              "rock"
+            ]
+          },
+          {
+            "speciesId": "palafin",
+            "confidence": 0.5497,
+            "types": [
+              "water"
+            ]
+          },
+          {
+            "speciesId": "abomasnow",
+            "confidence": 0.5428,
             "types": [
               "grass",
-              "poison"
-            ]
-          },
-          {
-            "speciesId": "rotomwash",
-            "confidence": 0.523,
-            "types": [
-              "electric",
-              "water"
-            ]
-          },
-          {
-            "speciesId": "annihilape",
-            "confidence": 0.5111,
-            "types": [
-              "fighting",
-              "ghost"
-            ]
-          },
-          {
-            "speciesId": "blastoise",
-            "confidence": 0.4988,
-            "types": [
-              "water"
+              "ice"
             ]
           }
         ],
         "typeVetoed": [
-          "talonflame",
           "pelipper",
-          "torkoal",
-          "venusaur",
-          "rotomwash",
-          "annihilape",
-          "blastoise",
-          "empoleon",
-          "archaludon",
-          "swampert",
-          "gengar",
-          "scovillain"
+          "pangoro",
+          "talonflame",
+          "palafin",
+          "volcarona",
+          "machamp",
+          "beedrill",
+          "altaria",
+          "forretress",
+          "slowbro",
+          "slurpuff",
+          "appletun"
         ],
         "requiredMargin": 0.025
       }
@@ -1316,10 +1305,10 @@
       "slot": 1,
       "expected": "empoleon",
       "matched": "empoleon",
-      "confidence": 0.8355,
-      "margin": 0.2035,
+      "confidence": 0.8455,
+      "margin": 0.232,
       "requiredMargin": 0.025,
-      "altSpeciesId": "swampert",
+      "altSpeciesId": "feraligatr",
       "detectedTypes": [
         "water"
       ],
@@ -1333,87 +1322,87 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 9,
-        "ahashHamExpected": 11,
-        "ahashCandCount": 40,
+        "ahashRankExpected": 1,
+        "ahashHamExpected": 6,
+        "ahashCandCount": 203,
         "expectedInAhashCands": true,
         "topCandidates": [
           {
             "speciesId": "empoleon",
-            "confidence": 0.8355,
+            "confidence": 0.8455,
             "types": [
               "steel",
               "water"
             ]
           },
           {
-            "speciesId": "talonflame",
-            "confidence": 0.6422,
+            "speciesId": "thievul",
+            "confidence": 0.6853,
             "types": [
-              "fire",
-              "flying"
+              "dark"
             ]
           },
           {
-            "speciesId": "swampert",
-            "confidence": 0.632,
+            "speciesId": "pangoro",
+            "confidence": 0.6829,
             "types": [
-              "ground",
-              "water"
+              "dark",
+              "fighting"
             ]
           },
           {
-            "speciesId": "gengar",
-            "confidence": 0.6055,
-            "types": [
-              "ghost",
-              "poison"
-            ]
-          },
-          {
-            "speciesId": "gardevoir",
-            "confidence": 0.5905,
-            "types": [
-              "fairy",
-              "psychic"
-            ]
-          },
-          {
-            "speciesId": "aegislash",
-            "confidence": 0.5889,
-            "types": [
-              "ghost",
-              "steel"
-            ]
-          },
-          {
-            "speciesId": "raichu",
-            "confidence": 0.5839,
+            "speciesId": "pincurchin",
+            "confidence": 0.6757,
             "types": [
               "electric"
             ]
           },
           {
-            "speciesId": "kangaskhan",
-            "confidence": 0.5761,
+            "speciesId": "indeedeef",
+            "confidence": 0.6661,
             "types": [
+              "normal",
+              "psychic"
+            ]
+          },
+          {
+            "speciesId": "baxcalibur",
+            "confidence": 0.6615,
+            "types": [
+              "dragon",
+              "ice"
+            ]
+          },
+          {
+            "speciesId": "squawkabilly",
+            "confidence": 0.6607,
+            "types": [
+              "flying",
               "normal"
+            ]
+          },
+          {
+            "speciesId": "stunfiskgalar",
+            "confidence": 0.6415,
+            "types": [
+              "ground",
+              "steel"
             ]
           }
         ],
         "typeVetoed": [
-          "talonflame",
-          "gengar",
-          "gardevoir",
-          "aegislash",
-          "raichu",
-          "kangaskhan",
-          "charizard",
-          "corviknight",
-          "aerodactyl",
-          "staraptor",
-          "dragonite",
-          "excadrill"
+          "thievul",
+          "pangoro",
+          "pincurchin",
+          "indeedeef",
+          "baxcalibur",
+          "squawkabilly",
+          "stunfiskgalar",
+          "kleavor",
+          "watchog",
+          "hawlucha",
+          "squawkabillyyellow",
+          "bellibolt"
         ],
         "requiredMargin": 0.025
       }
@@ -1423,10 +1412,10 @@
       "slot": 2,
       "expected": "garchomp",
       "matched": "garchomp",
-      "confidence": 0.6571,
-      "margin": 0.0894,
-      "requiredMargin": 0.035,
-      "altSpeciesId": "sableye",
+      "confidence": 0.7334,
+      "margin": 0.1365,
+      "requiredMargin": 0.03,
+      "altSpeciesId": "grimmsnarl",
       "detectedTypes": [],
       "typeScores": [
         {
@@ -1442,78 +1431,76 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 17,
-        "ahashHamExpected": 16,
-        "ahashCandCount": 40,
+        "ahashRankExpected": 83,
+        "ahashHamExpected": 13,
+        "ahashCandCount": 224,
         "expectedInAhashCands": true,
         "topCandidates": [
           {
             "speciesId": "garchomp",
-            "confidence": 0.6571,
+            "confidence": 0.7334,
             "types": [
               "dragon",
               "ground"
             ]
           },
           {
-            "speciesId": "sableye",
-            "confidence": 0.5677,
+            "speciesId": "grimmsnarl",
+            "confidence": 0.5969,
             "types": [
               "dark",
-              "ghost"
+              "fairy"
             ]
           },
           {
-            "speciesId": "corviknight",
-            "confidence": 0.5443,
+            "speciesId": "glimmora",
+            "confidence": 0.5897,
             "types": [
-              "flying",
-              "steel"
+              "poison",
+              "rock"
             ]
           },
           {
-            "speciesId": "gengar",
-            "confidence": 0.5316,
-            "types": [
-              "ghost",
-              "poison"
-            ]
-          },
-          {
-            "speciesId": "annihilape",
-            "confidence": 0.5092,
-            "types": [
-              "fighting",
-              "ghost"
-            ]
-          },
-          {
-            "speciesId": "excadrill",
-            "confidence": 0.5013,
+            "speciesId": "rhyperior",
+            "confidence": 0.5821,
             "types": [
               "ground",
-              "steel"
+              "rock"
             ]
           },
           {
-            "speciesId": "scizor",
-            "confidence": 0.4995,
+            "speciesId": "pincurchin",
+            "confidence": 0.5817,
+            "types": [
+              "electric"
+            ]
+          },
+          {
+            "speciesId": "pangoro",
+            "confidence": 0.5807,
+            "types": [
+              "dark",
+              "fighting"
+            ]
+          },
+          {
+            "speciesId": "kleavor",
+            "confidence": 0.5755,
             "types": [
               "bug",
-              "steel"
+              "rock"
             ]
           },
           {
-            "speciesId": "swampert",
-            "confidence": 0.4848,
+            "speciesId": "taurospaldeacombat",
+            "confidence": 0.5712,
             "types": [
-              "ground",
-              "water"
+              "fighting"
             ]
           }
         ],
         "typeVetoed": [],
-        "requiredMargin": 0.035
+        "requiredMargin": 0.03
       }
     },
     {
@@ -1521,8 +1508,8 @@
       "slot": 3,
       "expected": "staraptor",
       "matched": "staraptor",
-      "confidence": 0.8272,
-      "margin": 0.2857,
+      "confidence": 0.859,
+      "margin": 0.253,
       "requiredMargin": 0.025,
       "altSpeciesId": "talonflame",
       "detectedTypes": [
@@ -1538,87 +1525,87 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 9,
-        "ahashHamExpected": 14,
-        "ahashCandCount": 40,
+        "ahashRankExpected": 73,
+        "ahashHamExpected": 13,
+        "ahashCandCount": 212,
         "expectedInAhashCands": true,
         "topCandidates": [
           {
             "speciesId": "staraptor",
-            "confidence": 0.8272,
+            "confidence": 0.859,
             "types": [
               "flying",
               "normal"
             ]
           },
           {
-            "speciesId": "excadrill",
-            "confidence": 0.578,
+            "speciesId": "thievul",
+            "confidence": 0.6784,
             "types": [
-              "ground",
-              "steel"
+              "dark"
             ]
           },
           {
-            "speciesId": "tsareena",
-            "confidence": 0.5702,
+            "speciesId": "liepard",
+            "confidence": 0.6199,
             "types": [
-              "grass"
+              "dark"
             ]
           },
           {
-            "speciesId": "mawile",
-            "confidence": 0.5519,
+            "speciesId": "pangoro",
+            "confidence": 0.6065,
             "types": [
-              "fairy",
-              "steel"
-            ]
-          },
-          {
-            "speciesId": "farigiraf",
-            "confidence": 0.5499,
-            "types": [
-              "normal",
-              "psychic"
+              "dark",
+              "fighting"
             ]
           },
           {
             "speciesId": "talonflame",
-            "confidence": 0.5415,
+            "confidence": 0.6059,
             "types": [
               "fire",
               "flying"
             ]
           },
           {
-            "speciesId": "raichu",
-            "confidence": 0.5385,
+            "speciesId": "arcaninehisui",
+            "confidence": 0.6015,
             "types": [
-              "electric"
+              "fire",
+              "rock"
             ]
           },
           {
-            "speciesId": "empoleon",
-            "confidence": 0.5339,
+            "speciesId": "runerigus",
+            "confidence": 0.597,
             "types": [
-              "steel",
-              "water"
+              "ghost",
+              "ground"
+            ]
+          },
+          {
+            "speciesId": "hawlucha",
+            "confidence": 0.5858,
+            "types": [
+              "fighting",
+              "flying"
             ]
           }
         ],
         "typeVetoed": [
-          "excadrill",
-          "tsareena",
-          "mawile",
-          "farigiraf",
-          "raichu",
-          "empoleon",
-          "kangaskhan",
-          "garchomp",
-          "rotomwash",
+          "thievul",
+          "liepard",
+          "pangoro",
           "arcaninehisui",
-          "torkoal",
-          "milotic"
+          "runerigus",
+          "gourgeistsmall",
+          "tsareena",
+          "excadrill",
+          "mudsdale",
+          "taurospaldeacombat",
+          "aromatisse",
+          "gourgeist"
         ],
         "requiredMargin": 0.025
       }
@@ -1627,11 +1614,11 @@
       "fixture": "team-preview-test-3",
       "slot": 4,
       "expected": "whimsicott",
-      "matched": "whimsicott",
-      "confidence": 0.7042,
-      "margin": 0.0932,
-      "requiredMargin": 0.03,
-      "altSpeciesId": "torkoal",
+      "matched": null,
+      "confidence": 0.6219,
+      "margin": 0.0013,
+      "requiredMargin": 0.06,
+      "altSpeciesId": "appletun",
       "detectedTypes": [],
       "typeScores": [
         {
@@ -1643,79 +1630,79 @@
           "score": 0.5444
         }
       ],
-      "reason": "ok",
-      "ok": true,
+      "reason": "MARGIN_TOO_SMALL",
+      "ok": false,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 22,
-        "ahashHamExpected": 14,
-        "ahashCandCount": 40,
+        "ahashRankExpected": 210,
+        "ahashHamExpected": 18,
+        "ahashCandCount": 219,
         "expectedInAhashCands": true,
         "topCandidates": [
           {
             "speciesId": "whimsicott",
-            "confidence": 0.7042,
+            "confidence": 0.6219,
             "types": [
               "fairy",
               "grass"
             ]
           },
           {
-            "speciesId": "torkoal",
-            "confidence": 0.6109,
+            "speciesId": "appletun",
+            "confidence": 0.6207,
             "types": [
-              "fire"
+              "dragon",
+              "grass"
+            ]
+          },
+          {
+            "speciesId": "lopunny",
+            "confidence": 0.5635,
+            "types": [
+              "normal"
+            ]
+          },
+          {
+            "speciesId": "slurpuff",
+            "confidence": 0.5626,
+            "types": [
+              "fairy"
+            ]
+          },
+          {
+            "speciesId": "wyrdeer",
+            "confidence": 0.5558,
+            "types": [
+              "normal",
+              "psychic"
             ]
           },
           {
             "speciesId": "pelipper",
-            "confidence": 0.5336,
+            "confidence": 0.5484,
             "types": [
               "flying",
               "water"
             ]
           },
           {
-            "speciesId": "arcaninehisui",
-            "confidence": 0.526,
+            "speciesId": "gourgeistsmall",
+            "confidence": 0.543,
             "types": [
-              "fire",
-              "rock"
-            ]
-          },
-          {
-            "speciesId": "tsareena",
-            "confidence": 0.5203,
-            "types": [
+              "ghost",
               "grass"
             ]
           },
           {
-            "speciesId": "politoed",
-            "confidence": 0.5185,
+            "speciesId": "hippowdon",
+            "confidence": 0.5365,
             "types": [
-              "water"
-            ]
-          },
-          {
-            "speciesId": "mawile",
-            "confidence": 0.5183,
-            "types": [
-              "fairy",
-              "steel"
-            ]
-          },
-          {
-            "speciesId": "talonflame",
-            "confidence": 0.5136,
-            "types": [
-              "fire",
-              "flying"
+              "ground"
             ]
           }
         ],
         "typeVetoed": [],
-        "requiredMargin": 0.03
+        "requiredMargin": 0.06
       }
     },
     {
@@ -1723,10 +1710,10 @@
       "slot": 5,
       "expected": "charizard",
       "matched": "charizard",
-      "confidence": 0.5509,
-      "margin": 0.1224,
+      "confidence": 0.5508,
+      "margin": 0.5508,
       "requiredMargin": 0.055,
-      "altSpeciesId": "talonflame",
+      "altSpeciesId": null,
       "detectedTypes": [
         "fire",
         "flying"
@@ -1745,90 +1732,693 @@
       "ok": true,
       "wrongSpecies": false,
       "debug": {
-        "ahashRankExpected": 1,
-        "ahashHamExpected": 15,
+        "ahashRankExpected": 5,
+        "ahashHamExpected": 16,
         "ahashCandCount": 40,
         "expectedInAhashCands": true,
         "topCandidates": [
           {
+            "speciesId": "pincurchin",
+            "confidence": 0.5715,
+            "types": [
+              "electric"
+            ]
+          },
+          {
+            "speciesId": "feraligatr",
+            "confidence": 0.5666,
+            "types": [
+              "water"
+            ]
+          },
+          {
             "speciesId": "charizard",
-            "confidence": 0.5509,
+            "confidence": 0.5508,
             "types": [
               "fire",
               "flying"
             ]
           },
           {
-            "speciesId": "primarina",
-            "confidence": 0.5415,
+            "speciesId": "aromatisse",
+            "confidence": 0.5476,
             "types": [
-              "fairy",
-              "water"
+              "fairy"
             ]
           },
           {
-            "speciesId": "incineroar",
-            "confidence": 0.5316,
+            "speciesId": "garbodor",
+            "confidence": 0.4965,
             "types": [
-              "dark",
+              "poison"
+            ]
+          },
+          {
+            "speciesId": "leafeon",
+            "confidence": 0.4817,
+            "types": [
+              "grass"
+            ]
+          },
+          {
+            "speciesId": "flareon",
+            "confidence": 0.476,
+            "types": [
               "fire"
             ]
           },
           {
-            "speciesId": "dragonite",
-            "confidence": 0.5291,
+            "speciesId": "malamar",
+            "confidence": 0.4734,
             "types": [
-              "dragon",
-              "flying"
+              "dark",
+              "psychic"
+            ]
+          }
+        ],
+        "typeVetoed": [
+          "pincurchin",
+          "feraligatr",
+          "aromatisse",
+          "garbodor",
+          "leafeon",
+          "flareon",
+          "malamar",
+          "vileplume",
+          "forretress",
+          "incineroar",
+          "golisopod",
+          "camerupt"
+        ],
+        "requiredMargin": 0.055
+      }
+    },
+    {
+      "fixture": "team-preview-live-latest",
+      "slot": 0,
+      "expected": "froslass",
+      "matched": "froslass",
+      "confidence": 0.7168,
+      "margin": 0.1975,
+      "requiredMargin": 0.03,
+      "altSpeciesId": "weavile",
+      "detectedTypes": [
+        "ice"
+      ],
+      "typeScores": [
+        {
+          "id": "ice",
+          "score": 0.6235
+        }
+      ],
+      "reason": "ok",
+      "ok": true,
+      "wrongSpecies": false,
+      "debug": {
+        "ahashRankExpected": 6,
+        "ahashHamExpected": 8,
+        "ahashCandCount": 223,
+        "expectedInAhashCands": true,
+        "topCandidates": [
+          {
+            "speciesId": "froslass",
+            "confidence": 0.7168,
+            "types": [
+              "ghost",
+              "ice"
             ]
           },
           {
-            "speciesId": "milotic",
-            "confidence": 0.5279,
+            "speciesId": "feraligatr",
+            "confidence": 0.5715,
             "types": [
               "water"
             ]
           },
           {
+            "speciesId": "furfrou",
+            "confidence": 0.571,
+            "types": [
+              "normal"
+            ]
+          },
+          {
+            "speciesId": "decidueye",
+            "confidence": 0.5434,
+            "types": [
+              "ghost",
+              "grass"
+            ]
+          },
+          {
+            "speciesId": "sinistcha",
+            "confidence": 0.5427,
+            "types": [
+              "ghost",
+              "grass"
+            ]
+          },
+          {
+            "speciesId": "annihilape",
+            "confidence": 0.5413,
+            "types": [
+              "fighting",
+              "ghost"
+            ]
+          },
+          {
+            "speciesId": "orthworm",
+            "confidence": 0.5393,
+            "types": [
+              "steel"
+            ]
+          },
+          {
+            "speciesId": "gourgeistsmall",
+            "confidence": 0.5391,
+            "types": [
+              "ghost",
+              "grass"
+            ]
+          }
+        ],
+        "typeVetoed": [
+          "feraligatr",
+          "furfrou",
+          "decidueye",
+          "sinistcha",
+          "annihilape",
+          "orthworm",
+          "gourgeistsmall",
+          "slowkinggalar",
+          "slowbrogalar",
+          "roserade",
+          "hatterene",
+          "toxapex"
+        ],
+        "requiredMargin": 0.03
+      }
+    },
+    {
+      "fixture": "team-preview-live-latest",
+      "slot": 1,
+      "expected": "garchomp",
+      "matched": "garchomp",
+      "confidence": 0.7738,
+      "margin": 0.1627,
+      "requiredMargin": 0.025,
+      "altSpeciesId": "samurotthisui",
+      "detectedTypes": [],
+      "typeScores": [
+        {
+          "id": "dragon",
+          "score": 0.4866
+        },
+        {
+          "id": "ground",
+          "score": 0.4823
+        }
+      ],
+      "reason": "ok",
+      "ok": true,
+      "wrongSpecies": false,
+      "debug": {
+        "ahashRankExpected": 93,
+        "ahashHamExpected": 14,
+        "ahashCandCount": 216,
+        "expectedInAhashCands": true,
+        "topCandidates": [
+          {
+            "speciesId": "garchomp",
+            "confidence": 0.7738,
+            "types": [
+              "dragon",
+              "ground"
+            ]
+          },
+          {
+            "speciesId": "samurotthisui",
+            "confidence": 0.6111,
+            "types": [
+              "dark",
+              "water"
+            ]
+          },
+          {
+            "speciesId": "pangoro",
+            "confidence": 0.6001,
+            "types": [
+              "dark",
+              "fighting"
+            ]
+          },
+          {
+            "speciesId": "grimmsnarl",
+            "confidence": 0.5992,
+            "types": [
+              "dark",
+              "fairy"
+            ]
+          },
+          {
+            "speciesId": "glimmora",
+            "confidence": 0.5964,
+            "types": [
+              "poison",
+              "rock"
+            ]
+          },
+          {
+            "speciesId": "gengar",
+            "confidence": 0.5898,
+            "types": [
+              "ghost",
+              "poison"
+            ]
+          },
+          {
+            "speciesId": "rhyperior",
+            "confidence": 0.5853,
+            "types": [
+              "ground",
+              "rock"
+            ]
+          },
+          {
+            "speciesId": "krookodile",
+            "confidence": 0.5755,
+            "types": [
+              "dark",
+              "ground"
+            ]
+          }
+        ],
+        "typeVetoed": [],
+        "requiredMargin": 0.025
+      }
+    },
+    {
+      "fixture": "team-preview-live-latest",
+      "slot": 2,
+      "expected": "basculegion",
+      "matched": "basculegion",
+      "confidence": 0.8277,
+      "margin": 0.1975,
+      "requiredMargin": 0.025,
+      "altSpeciesId": "basculegionf",
+      "detectedTypes": [
+        "water"
+      ],
+      "typeScores": [
+        {
+          "id": "water",
+          "score": 0.7705
+        }
+      ],
+      "reason": "ok",
+      "ok": true,
+      "wrongSpecies": false,
+      "debug": {
+        "ahashRankExpected": 1,
+        "ahashHamExpected": 6,
+        "ahashCandCount": 163,
+        "expectedInAhashCands": true,
+        "topCandidates": [
+          {
+            "speciesId": "basculegion",
+            "confidence": 0.8277,
+            "types": [
+              "ghost",
+              "water"
+            ]
+          },
+          {
+            "speciesId": "basculegionf",
+            "confidence": 0.6302,
+            "types": [
+              "ghost",
+              "water"
+            ]
+          },
+          {
+            "speciesId": "venusaur",
+            "confidence": 0.5918,
+            "types": [
+              "grass",
+              "poison"
+            ]
+          },
+          {
+            "speciesId": "hawlucha",
+            "confidence": 0.5835,
+            "types": [
+              "fighting",
+              "flying"
+            ]
+          },
+          {
+            "speciesId": "mawile",
+            "confidence": 0.5738,
+            "types": [
+              "fairy",
+              "steel"
+            ]
+          },
+          {
+            "speciesId": "rillaboom",
+            "confidence": 0.5685,
+            "types": [
+              "grass"
+            ]
+          },
+          {
+            "speciesId": "krookodile",
+            "confidence": 0.5611,
+            "types": [
+              "dark",
+              "ground"
+            ]
+          },
+          {
+            "speciesId": "floette",
+            "confidence": 0.5605,
+            "types": [
+              "fairy"
+            ]
+          }
+        ],
+        "typeVetoed": [
+          "venusaur",
+          "hawlucha",
+          "mawile",
+          "rillaboom",
+          "krookodile",
+          "floette",
+          "salamence",
+          "torterra",
+          "rhyperior",
+          "kleavor",
+          "aromatisse",
+          "decidueyehisui"
+        ],
+        "requiredMargin": 0.025
+      }
+    },
+    {
+      "fixture": "team-preview-live-latest",
+      "slot": 3,
+      "expected": "kingambit",
+      "matched": "kingambit",
+      "confidence": 0.6887,
+      "margin": 0.1343,
+      "requiredMargin": 0.03,
+      "altSpeciesId": "gourgeistsmall",
+      "detectedTypes": [],
+      "typeScores": [
+        {
+          "id": "dark",
+          "score": 0.4704
+        }
+      ],
+      "reason": "ok",
+      "ok": true,
+      "wrongSpecies": false,
+      "debug": {
+        "ahashRankExpected": 25,
+        "ahashHamExpected": 23,
+        "ahashCandCount": 40,
+        "expectedInAhashCands": true,
+        "topCandidates": [
+          {
+            "speciesId": "kingambit",
+            "confidence": 0.6887,
+            "types": [
+              "dark",
+              "steel"
+            ]
+          },
+          {
+            "speciesId": "gourgeistsmall",
+            "confidence": 0.5544,
+            "types": [
+              "ghost",
+              "grass"
+            ]
+          },
+          {
+            "speciesId": "gourgeist",
+            "confidence": 0.5429,
+            "types": [
+              "ghost",
+              "grass"
+            ]
+          },
+          {
+            "speciesId": "gourgeistsuper",
+            "confidence": 0.5347,
+            "types": [
+              "ghost",
+              "grass"
+            ]
+          },
+          {
+            "speciesId": "gourgeistlarge",
+            "confidence": 0.5341,
+            "types": [
+              "ghost",
+              "grass"
+            ]
+          },
+          {
+            "speciesId": "scrafty",
+            "confidence": 0.525,
+            "types": [
+              "dark",
+              "fighting"
+            ]
+          },
+          {
+            "speciesId": "scolipede",
+            "confidence": 0.5225,
+            "types": [
+              "bug",
+              "poison"
+            ]
+          },
+          {
+            "speciesId": "delphox",
+            "confidence": 0.5118,
+            "types": [
+              "fire",
+              "psychic"
+            ]
+          }
+        ],
+        "typeVetoed": [],
+        "requiredMargin": 0.03
+      }
+    },
+    {
+      "fixture": "team-preview-live-latest",
+      "slot": 4,
+      "expected": "sneasler",
+      "matched": "sneasler",
+      "confidence": 0.84,
+      "margin": 0.2328,
+      "requiredMargin": 0.025,
+      "altSpeciesId": "scolipede",
+      "detectedTypes": [],
+      "typeScores": [
+        {
+          "id": "poison",
+          "score": 0.5631
+        },
+        {
+          "id": "fighting",
+          "score": 0.5361
+        }
+      ],
+      "reason": "ok",
+      "ok": true,
+      "wrongSpecies": false,
+      "debug": {
+        "ahashRankExpected": 31,
+        "ahashHamExpected": 16,
+        "ahashCandCount": 57,
+        "expectedInAhashCands": true,
+        "topCandidates": [
+          {
+            "speciesId": "sneasler",
+            "confidence": 0.84,
+            "types": [
+              "fighting",
+              "poison"
+            ]
+          },
+          {
+            "speciesId": "scolipede",
+            "confidence": 0.6072,
+            "types": [
+              "bug",
+              "poison"
+            ]
+          },
+          {
             "speciesId": "empoleon",
-            "confidence": 0.4948,
+            "confidence": 0.607,
             "types": [
               "steel",
               "water"
             ]
           },
           {
-            "speciesId": "swampert",
-            "confidence": 0.4756,
+            "speciesId": "wyrdeer",
+            "confidence": 0.607,
             "types": [
-              "ground",
+              "normal",
+              "psychic"
+            ]
+          },
+          {
+            "speciesId": "lucario",
+            "confidence": 0.6062,
+            "types": [
+              "fighting",
+              "steel"
+            ]
+          },
+          {
+            "speciesId": "furfrou",
+            "confidence": 0.606,
+            "types": [
+              "normal"
+            ]
+          },
+          {
+            "speciesId": "toxtricitylowkey",
+            "confidence": 0.6049,
+            "types": [
+              "electric",
+              "poison"
+            ]
+          },
+          {
+            "speciesId": "aurorus",
+            "confidence": 0.6023,
+            "types": [
+              "ice",
+              "rock"
+            ]
+          }
+        ],
+        "typeVetoed": [],
+        "requiredMargin": 0.025
+      }
+    },
+    {
+      "fixture": "team-preview-live-latest",
+      "slot": 5,
+      "expected": "golisopod",
+      "matched": "golisopod",
+      "confidence": 0.8706,
+      "margin": 0.2912,
+      "requiredMargin": 0.025,
+      "altSpeciesId": "feraligatr",
+      "detectedTypes": [
+        "water"
+      ],
+      "typeScores": [
+        {
+          "id": "water",
+          "score": 0.69
+        }
+      ],
+      "reason": "ok",
+      "ok": true,
+      "wrongSpecies": false,
+      "debug": {
+        "ahashRankExpected": 1,
+        "ahashHamExpected": 9,
+        "ahashCandCount": 97,
+        "expectedInAhashCands": true,
+        "topCandidates": [
+          {
+            "speciesId": "golisopod",
+            "confidence": 0.8706,
+            "types": [
+              "bug",
               "water"
             ]
           },
           {
-            "speciesId": "rotomwash",
-            "confidence": 0.4703,
+            "speciesId": "slowkinggalar",
+            "confidence": 0.5856,
             "types": [
-              "electric",
+              "poison",
+              "psychic"
+            ]
+          },
+          {
+            "speciesId": "feraligatr",
+            "confidence": 0.5794,
+            "types": [
               "water"
+            ]
+          },
+          {
+            "speciesId": "aromatisse",
+            "confidence": 0.5698,
+            "types": [
+              "fairy"
+            ]
+          },
+          {
+            "speciesId": "abomasnow",
+            "confidence": 0.5533,
+            "types": [
+              "grass",
+              "ice"
+            ]
+          },
+          {
+            "speciesId": "bellibolt",
+            "confidence": 0.5484,
+            "types": [
+              "electric"
+            ]
+          },
+          {
+            "speciesId": "roserade",
+            "confidence": 0.5367,
+            "types": [
+              "grass",
+              "poison"
+            ]
+          },
+          {
+            "speciesId": "forretress",
+            "confidence": 0.5364,
+            "types": [
+              "bug",
+              "steel"
             ]
           }
         ],
         "typeVetoed": [
-          "primarina",
-          "incineroar",
-          "dragonite",
-          "milotic",
-          "empoleon",
-          "swampert",
-          "rotomwash",
-          "blaziken",
-          "kingambit",
-          "kangaskhan",
-          "excadrill",
-          "basculegion"
+          "slowkinggalar",
+          "aromatisse",
+          "abomasnow",
+          "bellibolt",
+          "roserade",
+          "forretress",
+          "appletun",
+          "spiritomb",
+          "machamp",
+          "zoroark",
+          "passimian",
+          "krookodile"
         ],
-        "requiredMargin": 0.055
+        "requiredMargin": 0.025
       }
     }
   ]

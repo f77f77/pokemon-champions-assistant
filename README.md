@@ -18,7 +18,7 @@ npm run typecheck
 Without GC551:
 
 - Use static select-screen load button (or drag-drop onto the 16:9 preview)
-- Use test-fixture button to cycle `public/fixtures/team-preview-test-{1,2,3}.png`
+- Use test-fixture button to cycle `public/fixtures/team-preview-test-{1,2,3}.png` + `team-preview-live-latest.jpg`
 
 Same contentRect → ROI → thumb → recognize pipeline + green/yellow debug overlay. Still image overrides the preview until you re-open the camera.
 
@@ -67,7 +67,7 @@ Pipeline (local only, no cloud) — **prefer `null`/未識別 over wrong species
 5. Multi-scale / micro-shift grayscale match vs in-memory crops from `public/sprites/sprite_poke.png` (atlas keyed by **nationalDex**, e.g. `6` / `38-1`)
 6. Score = NCC×0.55 + SSD×0.25 + aHash×0.20; coarse hue hist soft ×0.85 if far from template
 7. **Second gate (type hard veto):** crop card top-right type icons → match `public/types/{id}.png`; when type detection conf ≥ `TYPE_MATCH_THR` (0.58), candidate types from `pokemon.json` must be a **superset** of detected set (e.g. Flying → reject Incineroar). Low type conf → skip hard veto.
-8. Accept only if `top1.conf ≥ CONFIDENCE_THRESHOLD (0.54)` **and** `(top1−top2) ≥ requiredMargin(conf)` (dynamic: ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.035, ≥0.54→0.055, else 0.08); else `speciesId=null`
+8. Accept only if `top1.conf ≥ CONFIDENCE_THRESHOLD (0.54)` **and** `(top1−top2) ≥ requiredMargin(conf)` (dynamic: ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.06, ≥0.54→0.055, else 0.08); else `speciesId=null`
 
 Debug fixtures: `/workspace/.venv-pkmn/bin/python scripts/match-test-fixtures.py --debug` → `docs/match-debug.md`
 
@@ -75,7 +75,7 @@ Do not guess held items. Templates must be Team Preview / sprite_poke_3 small th
 
 ### Sprite sheet library (nationalDex keys)
 
-Matching loads `public/sprites/sprite_poke.png` **once** and crops cells in memory from `atlas.json` (parsed from `sprite_poke.css` percent positions).
+Matching loads `public/sprites/sprite_poke.png` **once** and crops cells in memory from `atlas.json` (parsed from `sprite_poke.css` percent positions). Current commit uses the **official Champions sheet** (2208×2078 → **262** allowlisted dex-keyed cells).
 
 | Key | Meaning |
 |-----|---------|
@@ -90,7 +90,7 @@ Forms / Mega / shiny need their own CSS cell (dex + form), not a second filename
 
 ### How to ingest / refresh the sheet
 
-When you have the official master sheet + CSS:
+Re-ingest / refresh from official sheet + CSS:
 
 ```bash
 python3 scripts/build-sprite-atlas.py \
@@ -135,13 +135,13 @@ node scripts/fetch-cbd-templates.mjs --ids=noivern,lycanroc
 - PNGs are gitignored; see `assets/CREDITS.md`
 - **Recognition default** remains `public/sprites/` sheet crops (`nationalDex` keys); CBD only fills gaps
 - CBD menu-style art often mismatches Team Preview thumbs — keep as optional secondary
-- Never HOME / official-artwork; ask before expanding beyond top50∪test set
+- Never HOME / official-artwork; atlas is the 262 Champions legal allowlist
 
 Offline match:
 
 ```bash
 python scripts/match-seed-templates.py                        # 圖二 ~6/6
-/workspace/.venv-pkmn/bin/python scripts/match-test-fixtures.py  # test-1/2/3 → docs/match-test-fixtures-results.md
+/workspace/.venv-pkmn/bin/python scripts/match-test-fixtures.py  # test-1/2/3 + live-latest → docs/match-test-fixtures-results.md
 ```
 
 Results: `docs/match-seed-results.md`

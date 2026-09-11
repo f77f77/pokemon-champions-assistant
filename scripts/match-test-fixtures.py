@@ -53,7 +53,7 @@ TARGET_ASPECT = 16 / 9
 
 CONFIDENCE_THRESHOLD = 0.54
 MIN_MARGIN = 0.08  # fallback / floor for required_margin()
-AHASH_TOP_K = 40  # smallest K with ≥12/18 correct & wrong=0 on fixtures
+AHASH_TOP_K = 40  # fixture-tuned; prefer null over wrong on full 262 atlas
 AHASH_MAX_HAM = 18
 HUE_BINS = 8
 HUE_DIST_THR = 0.75
@@ -70,7 +70,7 @@ MATCH_SHIFTS = (-8, -4, 0, 4, 8)
 def required_margin(confidence: float) -> float:
     """Dynamic top1−top2 margin: high conf → smaller required gap (fixture-tuned).
 
-    ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.035, ≥0.54→0.055, else MIN_MARGIN(0.08).
+    ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.06, ≥0.54→0.055, else MIN_MARGIN(0.08).
     Never loosens enough to reintroduce wrong-species FPs on the test fixtures.
     """
     if confidence >= 0.75:
@@ -78,7 +78,7 @@ def required_margin(confidence: float) -> float:
     if confidence >= 0.68:
         return 0.03
     if confidence >= 0.60:
-        return 0.035
+        return 0.06
     if confidence >= 0.54:
         return 0.055
     return MIN_MARGIN
@@ -91,7 +91,7 @@ FIXTURES = [
         "expected": [
             "charizard",
             "aerodactyl",
-            "meowscarada",
+            "sneasler",  # Fighting/Poison card (was mislabeled meowscarada)
             "garchomp",
             "rotomwash",
             "aegislash",
@@ -119,6 +119,18 @@ FIXTURES = [
             "staraptor",
             "whimsicott",
             "charizard",
+        ],
+    },
+    {
+        "path": ROOT / "public/fixtures/team-preview-live-latest.jpg",
+        "label": "team-preview-live-latest",
+        "expected": [
+            "froslass",
+            "garchomp",
+            "basculegion",
+            "kingambit",
+            "sneasler",
+            "golisopod",
         ],
     },
 ]
@@ -752,7 +764,7 @@ def main() -> int:
     )
     print(
         f"Guards: thr={CONFIDENCE_THRESHOLD} dynMargin "
-        f"(≥0.75→0.025,≥0.68→0.03,≥0.60→0.035,≥0.54→0.055,else {MIN_MARGIN}) "
+        f"(≥0.75→0.025,≥0.68→0.03,≥0.60→0.06,≥0.54→0.055,else {MIN_MARGIN}) "
         f"aHash top{AHASH_TOP_K}|≤{AHASH_MAX_HAM} hue×{HUE_PENALTY}@{HUE_DIST_THR} "
         f"type hard≥{TYPE_MATCH_THR} cropRightExclude={MATCH_CROP_RIGHT_EXCLUDE_FRAC}"
     )
@@ -815,12 +827,12 @@ def main() -> int:
     out_md.parent.mkdir(parents=True, exist_ok=True)
 
     margin_rule = (
-        "dyn ≥0.75→0.025 / ≥0.68→0.03 / ≥0.60→0.035 / ≥0.54→0.055 / else 0.08"
+        "dyn ≥0.75→0.025 / ≥0.68→0.03 / ≥0.60→0.06 / ≥0.54→0.055 / else 0.08"
     )
     lines = [
         "# Test fixture match results",
         "",
-        f"- Fixtures: `public/fixtures/team-preview-test-1/2/3.png`",
+        f"- Fixtures: `public/fixtures/team-preview-test-1/2/3.png` + `team-preview-live-latest.jpg`",
         f"- Templates: `public/sprites/sprite_poke.png` + `atlas.json` (nationalDex-keyed in-memory crops; {len(templates)} cells / {n_ids} ids)",
         f"- Matcher: crop cleanup (right {MATCH_CROP_RIGHT_EXCLUDE_FRAC}) + BG suppress + content-aware recenter + aHash prefilter + multi-scale/shift; NCC×0.55 + SSD×0.25 + aHash×0.20",
         f"- Guards (v1.4): `CONFIDENCE_THRESHOLD={CONFIDENCE_THRESHOLD}`, `{margin_rule}`, "
@@ -882,12 +894,11 @@ def main() -> int:
         "- Coarse hue filter is conservative (×0.85) so shinies without shiny templates are not hard-killed.",
         "- `recognize.ts` mirrors this pipeline (`cardRect` → type crop + `thumbRectInSlot` match).",
         f"- Result: **correct {accuracy}, wrong={wrong}, null={null_n}**.",
-        "- Current committed sheet is a lossless pack of the 50 leftover sprite_poke_3 cells "
-        "(official full-roster `sprite_sheet.png` + CSS were not available). Re-ingest with "
-        "`scripts/build-sprite-atlas.py --sheet … --css …` when those files land; do not explode "
-        "back into per-species PNGs.",
-        "- Pack must copy RGBA pixels (no Pillow `paste(..., mask=src)` blend). Blended edges "
-        "previously ranked Talonflame over Meowscarada on test-1 slot 2.",
+        "- Atlas: official full-roster `sprite_sheet.png` + `sprite_poke.css` → "
+        f"{len(templates)} dex-keyed in-memory crops (no per-species PNG dump).",
+        "- Live fixture `team-preview-live-latest.jpg` is a real Champions Team Preview capture.",
+        "- test-1 slot 2 ground truth is Sneasler (Fighting/Poison); older label meowscarada was wrong.",
+        "- dyn ≥0.60 margin raised to 0.06 so full-atlas FPs (e.g. whimsicott→appletun) stay null.",
         "",
     ]
     out_md.write_text("\n".join(lines), encoding="utf-8")
@@ -909,7 +920,7 @@ def main() -> int:
                 "dynamicMargin": {
                     "0.75": 0.025,
                     "0.68": 0.03,
-                    "0.60": 0.035,
+                    "0.60": 0.06,
                     "0.54": 0.055,
                     "else": MIN_MARGIN,
                 },

@@ -85,7 +85,7 @@ export const MATCH_CROP_RIGHT_EXCLUDE_FRAC = 0.05;
 export function requiredMargin(confidence: number): number {
   if (confidence >= 0.75) return 0.025;
   if (confidence >= 0.68) return 0.03;
-  if (confidence >= 0.6) return 0.035;
+  if (confidence >= 0.6) return 0.06;
   if (confidence >= 0.54) return 0.055;
   return MIN_MARGIN;
 }
