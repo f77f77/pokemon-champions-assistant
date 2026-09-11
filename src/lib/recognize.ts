@@ -4,8 +4,8 @@
  * 流程：抓一幀 → contentRect（去黑邊）→ 敵方面板 ROI → 6 pitch → 紅卡本體（留 gap）→
  * 每格黃框正方形（邊長=紅卡本體高，左側精靈）→ 抑制紅卡底 → content-aware 重對齊 →
  * crop cleanup（黃框右側 type/gender 滲入排除；黃框幾何不變）→
- * aHash prefilter → 64×64 多尺度／微位移灰階比對（mask = 模板 alpha ∩ query 非黑）→
- * 粗 hue 軟懲罰 → 卡右側 type icon 硬否決（低信心則跳過）→ dynamic margin + threshold。
+ * aHash prefilter（query+template 皆 8×8 block-mean，對齊 Python）→ 64×64 多尺度／微位移灰階比對（mask = 模板 alpha ∩ query 非黑）→
+ * 粗 hue 軟懲罰 → 卡右側 type icon 硬否決（僅主屬性；Ghost/Poison 紫色互認）→ dynamic margin + threshold。
  *
  * 模板庫：public/sprites/sprite_poke.png + atlas.json（nationalDex 主鍵）。
  * 整張 sheet 載入一次，依 CSS/atlas 座標記憶體裁切 — 不落地數百張小 PNG。
@@ -77,6 +77,13 @@ export const HUE_DIST_THR = 0.75;
 export const HUE_PENALTY = 0.85;
 /** 右側 type icon 硬否決門檻（低於此 → type unknown，跳過硬否決） */
 export const TYPE_MATCH_THR = 0.58;
+/**
+ * 第二屬性硬否決門檻。Ghost / Poison 圖示都是紫色，canvas NCC 常把
+ * 幽尾玄魚 Water/Ghost 誤成 water+poison；第二屬性需更高分才進入硬集合。
+ */
+export const TYPE_MATCH_SECOND_THR = 0.66;
+/** aHash rescue: 已偵測到主屬性時，允許 ham 比 TOP_K 再寬一點把同屬性模板拉回 */
+export const AHASH_TYPE_RESCUE_EXTRA_HAM = 8;
 export const TYPE_ICON_FRACS = [0.36, 0.42, 0.48] as const;
 /** Zero right edge of yellow match crop (type bleed). Yellow ROI geometry unchanged. */
 export const MATCH_CROP_RIGHT_EXCLUDE_FRAC = 0.05;
@@ -225,8 +232,19 @@ function averageHash(data: ImageData, size = 8): string {
 function toGray(data: ImageData): Float32Array {
   const { width, height, data: px } = data;
   const out = new Float32Array(width * height);
+  let opaque = 0;
   for (let i = 0, j = 0; i < px.length; i += 4, j++) {
-    out[j] = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+    const a = px[i + 3];
+    const g = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+    if (a > 12) opaque++;
+    // Transparent pad → 0 (mirror scripts/match-test-fixtures.py to_gray_and_mask).
+    out[j] = a > 12 ? g : 0;
+  }
+  // Fully opaque sheet cells: also zero near-black so aHash matches Python.
+  if (opaque / Math.max(1, width * height) >= 0.98) {
+    for (let j = 0; j < out.length; j++) {
+      if (out[j] <= 12) out[j] = 0;
+    }
   }
   return out;
 }
@@ -482,6 +500,7 @@ function thumbFromImageData(
     entry.speciesNameZh ??
     SEED_META[entry.speciesId] ??
     entry.speciesId;
+  const gray = toGray(imageData);
   return {
     speciesId: resolvedId,
     speciesNameZh: zh,
@@ -489,8 +508,8 @@ function thumbFromImageData(
     nationalDex: entry.nationalDex,
     form: entry.form ?? 0,
     formKey: entry.formKey,
-    aHash: averageHash(imageData),
-    gray: toGray(imageData),
+    gray,
+    aHash: averageHashGray(gray),
     mask: alphaMaskFromImageData(imageData),
     hue: hueHistFromImageData(imageData),
     types: (() => {
@@ -843,8 +862,15 @@ function detectCardTypes(
     picked.push(h);
     if (picked.length >= 2) break;
   }
-  // Hard second gate: only confident type hits
-  return picked.filter((p) => p.sc >= TYPE_MATCH_THR).map((p) => p.id);
+  // Hard second gate: only confident type hits. 2nd icon needs a higher
+  // score — Ghost vs Poison purple sprites otherwise both pass TYPE_MATCH_THR.
+  const confident = picked.filter((p) => p.sc >= TYPE_MATCH_THR);
+  if (confident.length === 0) return [];
+  const ids = [confident[0].id];
+  if (confident[1] && confident[1].sc >= TYPE_MATCH_SECOND_THR) {
+    ids.push(confident[1].id);
+  }
+  return ids;
 }
 
 /**
@@ -1112,24 +1138,47 @@ function cropResizeToTemplate(
   };
 }
 
-function ahashPrefilter(queryHash: string, templates: ThumbTemplate[]): ThumbTemplate[] {
+function ahashPrefilter(
+  queryHash: string,
+  templates: ThumbTemplate[],
+  detectedTypes: string[] = [],
+): ThumbTemplate[] {
   const scored = templates
     .map((t) => ({ ham: hamming(queryHash, t.aHash), t }))
     .sort((a, b) => a.ham - b.ham);
   const out: ThumbTemplate[] = [];
   const seen = new Set<ThumbTemplate>();
+  const push = (t: ThumbTemplate) => {
+    if (seen.has(t)) return;
+    seen.add(t);
+    out.push(t);
+  };
   for (const { ham, t } of scored) {
     if (ham <= AHASH_MAX_HAM || out.length < AHASH_TOP_K) {
-      if (!seen.has(t)) {
-        out.push(t);
-        seen.add(t);
-      }
+      push(t);
     } else if (out.length >= AHASH_TOP_K) {
       break;
     }
   }
   if (out.length < AHASH_TOP_K) {
-    return scored.slice(0, AHASH_TOP_K).map((s) => s.t);
+    for (const s of scored.slice(0, AHASH_TOP_K)) push(s.t);
+  }
+  // Type rescue: canvas aHash can drop long/striped sprites (Basculegion-M).
+  // If a type icon was confidently read, pull same-type templates back in
+  // with a slightly wider Hamming allowance — NCC/margin still decide.
+  const primary = detectedTypes[0];
+  if (primary) {
+    const extraCap = 16;
+    let extra = 0;
+    const limit = AHASH_MAX_HAM + AHASH_TYPE_RESCUE_EXTRA_HAM;
+    for (const { ham, t } of scored) {
+      if (extra >= extraCap) break;
+      if (seen.has(t)) continue;
+      if (ham <= limit && t.types.includes(primary)) {
+        push(t);
+        extra += 1;
+      }
+    }
   }
   return out;
 }
@@ -1141,6 +1190,10 @@ export interface MatchTemplateResult {
   altSpeciesId?: string | null;
   margin?: number;
   detectedTypes?: string[];
+  rejectReason?: string | null;
+  topCandidates?: { speciesId: string; confidence: number; types: string[] }[];
+  ahashHit?: boolean;
+  ahashCandCount?: number;
 }
 
 /**
@@ -1155,10 +1208,17 @@ function matchTemplate(
 ): MatchTemplateResult {
   if (PREVIEW_THUMB_TEMPLATES.length === 0) {
     const confidence = 0.12 + (hash.split('1').length % 7) * 0.01;
-    return { speciesId: null, speciesNameZh: null, confidence, detectedTypes };
+    return {
+      speciesId: null,
+      speciesNameZh: null,
+      confidence,
+      detectedTypes,
+      rejectReason: 'no-templates',
+    };
   }
 
-  const cands = ahashPrefilter(hash, PREVIEW_THUMB_TEMPLATES);
+  const cands = ahashPrefilter(hash, PREVIEW_THUMB_TEMPLATES, detectedTypes);
+  const ahashIds = new Set(cands.map((t) => t.speciesId));
   const bestBySpecies = new Map<
     string,
     { speciesId: string; speciesNameZh: string; confidence: number; types: string[] }
@@ -1191,12 +1251,40 @@ function matchTemplate(
 
   const ranked = [...bestBySpecies.values()].sort((a, b) => b.confidence - a.confidence);
   const det = detectedTypes;
-  // Hard second gate when types confidently detected; empty det → low-conf → skip veto
-  const accepted = ranked.filter((c) => {
-    if (det.length === 0) return true;
-    if (!c.types.length) return true; // unknown species types → do not veto
-    return det.every((d) => c.types.includes(d));
-  });
+  const topCandidates = ranked.slice(0, 8).map((c) => ({
+    speciesId: c.speciesId,
+    confidence: Number(c.confidence.toFixed(4)),
+    types: c.types,
+  }));
+  const primary = det[0];
+  /** Ghost/Poison icons are both purple; treat as interchangeable for the 2nd slot. */
+  const typeAliases = (id: string): string[] =>
+    id === 'ghost' || id === 'poison' ? ['ghost', 'poison'] : [id];
+  const hasType = (c: { types: string[] }, id: string) =>
+    typeAliases(id).some((x) => c.types.includes(x));
+
+  // Hard veto: the *primary* (highest-score) type icon must be on the species.
+  // Extra icons are a preference only — requiring every detected id caused
+  // Water/Ghost Basculegion to be dropped when canvas NCC read Ghost as Poison.
+  const accepted = ranked
+    .filter((c) => {
+      if (!primary) return true;
+      if (!c.types.length) return true;
+      return hasType(c, primary);
+    })
+    .sort((a, b) => {
+      const extra = (c: { types: string[] }) =>
+        det.slice(1).reduce((n, id) => n + (hasType(c, id) ? 1 : 0), 0);
+      const de = extra(b) - extra(a);
+      if (de) return de;
+      return b.confidence - a.confidence;
+    });
+
+  const debug = {
+    topCandidates,
+    ahashHit: ahashIds.has('basculegion') || ahashIds.has('basculegionf'),
+    ahashCandCount: cands.length,
+  };
 
   if (accepted.length === 0) {
     const top = ranked[0];
@@ -1207,6 +1295,8 @@ function matchTemplate(
       altSpeciesId: top?.speciesId ?? null,
       margin: 0,
       detectedTypes: det,
+      rejectReason: 'type-veto',
+      ...debug,
     };
   }
 
@@ -1222,6 +1312,8 @@ function matchTemplate(
       altSpeciesId: top2?.speciesId ?? null,
       margin,
       detectedTypes: det,
+      rejectReason: null,
+      ...debug,
     };
   }
   return {
@@ -1231,6 +1323,8 @@ function matchTemplate(
     altSpeciesId: top2?.speciesId ?? top1.speciesId,
     margin,
     detectedTypes: det,
+    rejectReason: top1.confidence < CONFIDENCE_THRESHOLD ? 'below-threshold' : 'below-margin',
+    ...debug,
   };
 }
 
@@ -1270,7 +1364,7 @@ export async function recognizeEnemyTeamFromCanvas(
         const detectedTypes = detectCardTypes(ctx, card);
         const tRect = thumbRectInSlot(card);
         const { imageData, dataUrl, gray, hue } = cropResizeToTemplate(ctx, tRect);
-        const hash = averageHash(imageData);
+        const hash = averageHashGray(gray);
         const matched = matchTemplate(hash, gray, hue, detectedTypes);
         let speciesId = canonicalSpeciesId(matched.speciesId);
         let speciesNameZh = matched.speciesNameZh;
@@ -1293,6 +1387,9 @@ export async function recognizeEnemyTeamFromCanvas(
           altSpeciesId: matched.altSpeciesId,
           margin: matched.margin,
           detectedTypes: matched.detectedTypes,
+          rejectReason: matched.rejectReason,
+          topCandidates: matched.topCandidates,
+          ahashHit: matched.ahashHit,
         });
       } catch {
         results.push({

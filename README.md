@@ -66,10 +66,13 @@ Pipeline (local only, no cloud) — **prefer `null`/未識別 over wrong species
 4. aHash Hamming prefilter → top **40** (or all ham≤18) — fixture-tuned; prefer `null` over wrong species
 5. Multi-scale / micro-shift grayscale match vs in-memory crops from `public/sprites/sprite_poke.png` (atlas keyed by **nationalDex**, e.g. `6` / `38-1`)
 6. Score = NCC×0.55 + SSD×0.25 + aHash×0.20; coarse hue hist soft ×0.85 if far from template
-7. **Second gate (type hard veto):** crop card top-right type icons → match `public/types/{id}.png`; when type detection conf ≥ `TYPE_MATCH_THR` (0.58), candidate types from `pokemon.json` must be a **superset** of detected set (e.g. Flying → reject Incineroar). Low type conf → skip hard veto.
-8. Accept only if `top1.conf ≥ CONFIDENCE_THRESHOLD (0.54)` **and** `(top1−top2) ≥ requiredMargin(conf)` (dynamic: ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.06, ≥0.54→0.055, else 0.08); else `speciesId=null`
+7. **Second gate (type hard veto):** crop card top-right type icons → match `public/types/{id}.png`. Hard veto uses the **primary** (highest-score) type ≥ `TYPE_MATCH_THR` (0.58). A 2nd icon must reach `TYPE_MATCH_SECOND_THR` (0.66) — canvas NCC confuses **Ghost vs Poison** (both purple) and used to require `water+poison` ⊂ species types, which vetoed Water/Ghost Basculegion-M. Ghost/Poison are interchangeable for the extra slot. Low type conf → skip hard veto.
+8. aHash is **8×8 block-mean** on query and templates (same as `scripts/match-test-fixtures.py`). If a type icon was read, same-type templates with ham ≤ 18+8 are rescued into the candidate set (NCC/margin still decide).
+9. Accept only if `top1.conf ≥ CONFIDENCE_THRESHOLD (0.54)` **and** `(top1−top2) ≥ requiredMargin(conf)` (dynamic: ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.06, ≥0.54→0.055, else 0.08); else `speciesId=null`
 
-Debug fixtures: `/workspace/.venv-pkmn/bin/python scripts/match-test-fixtures.py --debug` → `docs/match-debug.md`
+Browser path (same code as GitHub Pages): `npx vite` then `node scripts/match-recognize-browser.mjs`. Python: `npm run match:fixtures`. Both must keep **wrong=0**; Basculegion-M is slot 2 on `team-preview-live-latest.jpg` (the scene from the Pages 未識別 report).
+
+Debug fixtures: `python3 scripts/match-test-fixtures.py --debug` → `docs/match-debug.md`
 
 Do not guess held items. Templates must be Team Preview / sprite_poke_3 small thumbs, NOT large art / HOME art.
 

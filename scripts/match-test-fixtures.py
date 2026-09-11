@@ -59,6 +59,9 @@ HUE_BINS = 8
 HUE_DIST_THR = 0.75
 HUE_PENALTY = 0.85
 TYPE_MATCH_THR = 0.58  # hard veto only when type-icon score ≥ this (else skip)
+# 2nd icon needs a higher score (Ghost vs Poison purple FP on Basculegion-M).
+TYPE_MATCH_SECOND_THR = 0.66
+AHASH_TYPE_RESCUE_EXTRA_HAM = 8
 TYPE_ICON_FRACS = (0.36, 0.42, 0.48)
 # Zero right edge of yellow match crop (type panel bleed). Does NOT change yellow ROI.
 MATCH_CROP_RIGHT_EXCLUDE_FRAC = 0.05
@@ -557,12 +560,29 @@ def detect_card_types(card: Image.Image, type_ids: list[str]) -> list[tuple[str,
     return [(tid, float(sc)) for sc, tid, _, _, _ in picked]
 
 
+def type_aliases(tid: str) -> set[str]:
+    """Ghost/Poison icons are both purple; interchangeable for the 2nd slot."""
+    if tid in ("ghost", "poison"):
+        return {"ghost", "poison"}
+    return {tid}
+
+
 def hard_detected_types(scored: list[tuple[str, float]]) -> list[str]:
-    """Hard second gate input: only types with score ≥ TYPE_MATCH_THR."""
-    return [tid for tid, sc in scored if sc >= TYPE_MATCH_THR]
+    """Hard second gate: primary type ≥ TYPE_MATCH_THR; 2nd type ≥ SECOND_THR."""
+    conf = [(tid, sc) for tid, sc in scored if sc >= TYPE_MATCH_THR]
+    if not conf:
+        return []
+    out = [conf[0][0]]
+    if len(conf) > 1 and conf[1][1] >= TYPE_MATCH_SECOND_THR:
+        out.append(conf[1][0])
+    return out
 
 
-def ahash_prefilter(gray0: np.ndarray, templates: list[dict]) -> list[dict]:
+def ahash_prefilter(
+    gray0: np.ndarray,
+    templates: list[dict],
+    detected_types: list[str] | None = None,
+) -> list[dict]:
     """Hamming top-K, or all with ham ≤ AHASH_MAX_HAM (union, unique files)."""
     qh = average_hash(gray0)
     scored = sorted(((hamming(qh, t["hash"]), t) for t in templates), key=lambda x: x[0])
@@ -578,6 +598,20 @@ def ahash_prefilter(gray0: np.ndarray, templates: list[dict]) -> list[dict]:
             break
     if len(out) < AHASH_TOP_K:
         out = [t for _, t in scored[:AHASH_TOP_K]]
+        seen = {id(t) for t in out}
+    primary = (detected_types or [None])[0]
+    if primary:
+        extra = 0
+        limit = AHASH_MAX_HAM + AHASH_TYPE_RESCUE_EXTRA_HAM
+        for ham, t in scored:
+            if extra >= 16:
+                break
+            if id(t) in seen:
+                continue
+            if ham <= limit and primary in t["types"]:
+                out.append(t)
+                seen.add(id(t))
+                extra += 1
     return out
 
 
@@ -592,7 +626,7 @@ def match_slot(
 ) -> dict:
     qh = average_hash(gray0)
     scored_ah = sorted(((hamming(qh, t["hash"]), t) for t in templates), key=lambda x: x[0])
-    cands = ahash_prefilter(gray0, templates)
+    cands = ahash_prefilter(gray0, templates, detected_types)
     cand_ids = [t["speciesId"] for t in cands]
     ahash_rank = None
     ahash_ham = None
@@ -618,16 +652,28 @@ def match_slot(
                 best[sid] = {"conf": c, "types": t["types"]}
 
     ranked = sorted(best.items(), key=lambda x: -x[1]["conf"])
-    det = set(detected_types)
+    det_list = list(detected_types)
+    primary = det_list[0] if det_list else None
+
+    def has_type(info_types: set[str] | list[str], tid: str) -> bool:
+        return bool(type_aliases(tid) & set(info_types))
+
     accepted: list[tuple[str, float]] = []
     vetoed: list[str] = []
     for sid, info in ranked:
         ctypes = info["types"]
-        # Hard second gate when types confidently detected; skip if det empty (low-conf)
-        if det and ctypes and not det.issubset(ctypes):
+        # Primary type icon must match; extra icons do not hard-veto (Ghost/Poison FP).
+        if primary and ctypes and not has_type(ctypes, primary):
             vetoed.append(sid)
             continue
         accepted.append((sid, float(info["conf"])))
+    accepted.sort(
+        key=lambda pair: (
+            sum(1 for tid in det_list[1:] if has_type(best[pair[0]]["types"], tid)),
+            pair[1],
+        ),
+        reverse=True,
+    )
 
     top_cands = [
         {"speciesId": sid, "confidence": round(float(info["conf"]), 4), "types": sorted(info["types"])}
@@ -651,7 +697,7 @@ def match_slot(
             "confidence": top1_conf,
             "altSpeciesId": top1_sid,
             "margin": 0.0,
-            "detectedTypes": sorted(det),
+            "detectedTypes": list(det_list),
             "reason": "TYPE_VALIDATION",
         }
         if debug:
@@ -670,7 +716,7 @@ def match_slot(
             "confidence": top1_conf,
             "altSpeciesId": top2_sid,
             "margin": margin,
-            "detectedTypes": sorted(det),
+            "detectedTypes": list(det_list),
             "reason": "ok",
         }
         if debug:
@@ -684,7 +730,7 @@ def match_slot(
         "confidence": top1_conf,
         "altSpeciesId": top2_sid or top1_sid,
         "margin": margin,
-        "detectedTypes": sorted(det),
+        "detectedTypes": list(det_list),
         "reason": reason,
     }
     if debug:
