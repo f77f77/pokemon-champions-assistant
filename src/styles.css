@@ -46,8 +46,10 @@ button, input, select, textarea {
   position: relative;
   z-index: 30;
 }
+.app-header__left { display: flex; gap: 0.45rem; align-items: center; min-width: 0; }
 .app-header__brand { display: flex; gap: 0.75rem; align-items: baseline; }
 .app-header__nav { display: flex; gap: 0.55rem; align-items: center; color: var(--muted); }
+.team-dock-toggle { flex-shrink: 0; }
 .app-header__link {
   color: var(--accent-3);
   text-decoration: none;
@@ -190,9 +192,15 @@ button, input, select, textarea {
   gap: 0.3rem;
 }
 .pkmn-card__col--identity {
-  flex: 0 1 10.75rem;
-  max-width: 11.25rem;
-  width: 11.25rem;
+  flex: 0 1 15.25rem;
+  max-width: 16.25rem;
+  width: 16.25rem;
+}
+.pkmn-card--my .pkmn-card__col--identity {
+  flex: 1 1 16.5rem;
+  max-width: none;
+  width: auto;
+  min-width: 15.5rem;
 }
 .pkmn-card__col--matchup {
   flex: 1 1 0;
@@ -204,7 +212,14 @@ button, input, select, textarea {
   display: grid; place-items: center; font-size: 0.7rem; font-weight: 700; color: var(--accent-3);
 }
 .pkmn-card__title { flex: 1; min-width: 0; }
-.pkmn-card__title h3 { margin: 0; font-size: 0.92rem; }
+.pkmn-card__title h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
 .pkmn-card__form {
   display: inline-block; margin-left: 0.35rem;
   font-size: 0.7rem; color: var(--accent); border: 1px solid #4a6b2a; border-radius: 4px; padding: 0 0.3rem;
@@ -214,12 +229,14 @@ button, input, select, textarea {
 .pkmn-card__types { display: flex; flex-direction: row; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
 .pkmn-card__species-select {
   width: 100%;
-  max-width: 9.5rem;
+  max-width: none;
+  min-width: 0;
   background: #0e1118;
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.15rem 0.25rem;
   font-size: 0.75rem;
+  text-overflow: clip;
 }
 .pkmn-card__speed-input {
   display: flex; justify-content: space-between; align-items: center;
@@ -269,6 +286,9 @@ button, input, select, textarea {
 }
 .pkmn-card__stats {
   max-width: 10.5rem;
+}
+.pkmn-card--my .pkmn-card__stats {
+  max-width: none;
 }
 .stat-row__bar { height: 6px; background: #0e1118; border-radius: 99px; overflow: hidden; }
 .stat-row__fill { height: 100%; background: linear-gradient(90deg, var(--accent-3), var(--accent)); }
@@ -325,6 +345,9 @@ button, input, select, textarea {
   display: flex; align-items: center; gap: 0.25rem;
   margin-top: 0.2rem; font-size: 0.66rem;
   max-width: 9.5rem;
+}
+.pkmn-card--my .pkmn-card__form-select-wrap {
+  max-width: none;
 }
 .pkmn-card__form-select {
   flex: 1; min-width: 0;
@@ -384,10 +407,6 @@ button, input, select, textarea {
 .panel__header--speed .speed-axis__toggles {
   margin-left: auto;
 }
-.layout--team-open .panel--speed {
-  /* Keep 順風 toggles / axis usable; overlay covers capture only */
-  margin-left: min(22rem, 36vw);
-}
 .speed-axis__toggles {
   display: flex;
   flex-wrap: wrap;
@@ -423,10 +442,20 @@ button, input, select, textarea {
 .speed-axis__scale-track span { position: absolute; top: 0; transform: translateX(-50%); }
 .speed-row {
   /* Label + track only — Spe value overlays inside track so all tracks share width */
-  display: grid; grid-template-columns: 5.2rem minmax(0, 1fr); gap: 0.35rem; align-items: center; margin-bottom: 0.35rem;
+  display: grid;
+  grid-template-columns: minmax(8.75rem, 11.5rem) minmax(0, 1fr);
+  gap: 0.35rem;
+  align-items: center;
+  margin-bottom: 0.35rem;
 }
 .speed-row__label {
-  font-size: 0.72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted);
+  font-size: 0.72rem;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  overflow-wrap: anywhere;
+  line-height: 1.2;
+  color: var(--muted);
 }
 .speed-row__track {
   position: relative; height: 18px; width: 100%; min-width: 0;
@@ -510,17 +539,19 @@ button, input, select, textarea {
 @media (max-width: 1100px) {
   .layout { grid-template-columns: 1fr; }
   .panel--team.panel--overlay {
-    width: min(22rem, calc(100% - 1.5rem));
+    width: min(34rem, calc(100% - 1.5rem));
+    min-width: 0;
   }
 }
 
-/* Floating 我方隊伍 overlay — does not consume layout grid width */
+/* Floating 我方隊伍 overlay — sits on top of capture + speed axis (full axis width) */
 .panel--team.panel--overlay {
   position: absolute;
   left: 0.75rem;
   top: 3.55rem;
   bottom: 2.2rem;
-  width: min(22rem, 36vw);
+  width: min(34rem, 50vw);
+  min-width: min(30rem, calc(100vw - 1.5rem));
   z-index: 12;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
   border-color: #3a4258;

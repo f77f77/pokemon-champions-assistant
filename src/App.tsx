@@ -422,11 +422,23 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <div className="app-header__brand">
-          <strong>{APP_NAME}</strong>
-          <span className="muted">
-            {appVersion} · Doubles
-          </span>
+        <div className="app-header__left">
+          <button
+            type="button"
+            className={`icon-btn team-dock-toggle ${teamOpen ? 'is-active' : ''}`}
+            aria-pressed={teamOpen}
+            aria-label={teamOpen ? '隱藏我方隊伍' : '顯示我方隊伍'}
+            title={teamOpen ? '隱藏我方隊伍' : '顯示我方隊伍'}
+            onClick={toggleTeamPanel}
+          >
+            <TeamPanelIcon />
+          </button>
+          <div className="app-header__brand">
+            <strong>{APP_NAME}</strong>
+            <span className="muted">
+              {appVersion} · Doubles
+            </span>
+          </div>
         </div>
         <nav className="app-header__nav">
           <a
@@ -437,16 +449,6 @@ export default function App() {
           >
             Showdown 組隊
           </a>
-          <button
-            type="button"
-            className={`icon-btn ${teamOpen ? 'is-active' : ''}`}
-            aria-pressed={teamOpen}
-            aria-label={teamOpen ? '隱藏我方隊伍' : '顯示我方隊伍'}
-            title={teamOpen ? '隱藏我方隊伍' : '顯示我方隊伍'}
-            onClick={toggleTeamPanel}
-          >
-            <TeamPanelIcon />
-          </button>
           <details className="settings">
             <summary className="settings__summary icon-btn" aria-label="設置" title="設置">
               <GearIcon />

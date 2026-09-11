@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { PokemonSet } from '../types';
+import { formatSpeciesLabel } from '../lib/species';
 import {
   SPEED_AXIS_MAX,
   SPEED_AXIS_MAX_TAILWIND,
@@ -33,10 +34,11 @@ function EnemySpeedRow({
   tailwind: boolean;
   axisMax: number;
 }) {
+  const label = formatSpeciesLabel(pokemon);
   if (!pokemon.identified || !pokemon.baseStats.spe) {
     return (
       <div className="speed-row speed-row--empty">
-        <span className="speed-row__label">{pokemon.species}</span>
+        <span className="speed-row__label">{label}</span>
         <div className="speed-row__track" />
       </div>
     );
@@ -51,8 +53,8 @@ function EnemySpeedRow({
   const n32 = bands[2].value;
   return (
     <div className="speed-row">
-      <span className="speed-row__label" title={pokemon.species}>
-        {pokemon.species}
+      <span className="speed-row__label" title={label}>
+        {label}
       </span>
       <div className="speed-row__track">
         <div
@@ -95,10 +97,11 @@ function AllySpeedRow({
   const raw = mySpeedPoint(pokemon.baseStats.spe, pokemon.speed || undefined);
   const spe = applyTailwind(raw, tailwind);
   const entered = pokemon.speed != null && pokemon.speed > 0;
+  const label = formatSpeciesLabel(pokemon);
   return (
     <div className="speed-row speed-row--mine speed-row--selected-ally">
-      <span className="speed-row__label" title={pokemon.species}>
-        {pokemon.species}
+      <span className="speed-row__label" title={label}>
+        {label}
       </span>
       <div className="speed-row__track">
         {entered && spe > 0 && (
