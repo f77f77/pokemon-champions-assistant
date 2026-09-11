@@ -18,7 +18,7 @@ npm run typecheck
 Without GC551:
 
 - Use static select-screen load button (or drag-drop onto the 16:9 preview)
-- Use test-fixture button to cycle `public/fixtures/team-preview-test-{1,2,3}.png`
+- Use test-fixture button to load `public/fixtures/team-preview-live-latest.jpg`（最新實機畫面）
 
 Same contentRect → ROI → thumb → recognize pipeline + green/yellow debug overlay. Still image overrides the preview until you re-open the camera.
 
@@ -63,49 +63,47 @@ Pipeline (local only, no cloud) — **prefer `null`/未識別 over wrong species
 1. Crop yellow square thumb with locked ROI (`cardRect` → `thumbRectInSlot`) — geometry unchanged
 2. Match-crop cleanup: zero right `MATCH_CROP_RIGHT_EXCLUDE_FRAC` (0.05) to drop type/gender bleed (type icons still read from full card top-right)
 3. Suppress maroon card BG → content-aware recenter → 64×64
-4. aHash Hamming prefilter → top **40** (or all ham≤18) — smallest K with ≥12/18 & wrong=0 on fixtures
-5. Multi-scale / micro-shift grayscale match vs `public/templates/{showdownId}.png`
+4. aHash Hamming prefilter → top **40** (or all ham≤18) — fixture-tuned; prefer `null` over wrong species
+5. Multi-scale / micro-shift grayscale match vs in-memory crops from `public/sprites/sprite_poke.png` (atlas keyed by **nationalDex**, e.g. `6` / `38-1`)
 6. Score = NCC×0.55 + SSD×0.25 + aHash×0.20; coarse hue hist soft ×0.85 if far from template
 7. **Second gate (type hard veto):** crop card top-right type icons → match `public/types/{id}.png`; when type detection conf ≥ `TYPE_MATCH_THR` (0.58), candidate types from `pokemon.json` must be a **superset** of detected set (e.g. Flying → reject Incineroar). Low type conf → skip hard veto.
-8. Accept only if `top1.conf ≥ CONFIDENCE_THRESHOLD (0.54)` **and** `(top1−top2) ≥ requiredMargin(conf)` (dynamic: ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.035, ≥0.54→0.055, else 0.08); else `speciesId=null`
+8. Accept only if `top1.conf ≥ CONFIDENCE_THRESHOLD (0.54)` **and** `(top1−top2) ≥ requiredMargin(conf)` (dynamic: ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.06, ≥0.54→0.055, else 0.08); else `speciesId=null`
 
 Debug fixtures: `/workspace/.venv-pkmn/bin/python scripts/match-test-fixtures.py --debug` → `docs/match-debug.md`
 
 Do not guess held items. Templates must be Team Preview / sprite_poke_3 small thumbs, NOT large art / HOME art.
 
-### Seed library (figure 2 crops via locked ROI)
+### Sprite sheet library (nationalDex keys)
 
-| File | showdownId | Notes |
-|------|------------|-------|
-| noivern.png | noivern | 圖二 |
-| lycanroc.png | lycanroc | Midday / day · 圖二 |
-| politoed.png | politoed | 圖二 |
-| rotom.png | rotom | base form (not appliances) · 圖二 |
-| kangaskhan.png | kangaskhan | 圖二 |
-| hippowdon.png | hippowdon | 圖二 |
-| gengar.png … sinistcha.png | test-1 enemy | ROI crops from `team-preview-test-1` |
-| charizard.png … blastoise.png + `sableye-test2.png` | test-2 enemy | ROI crops from `team-preview-test-2` (sableye has 2 variants) |
+Matching loads `public/sprites/sprite_poke.png` **once** and crops cells in memory from `atlas.json` (parsed from `sprite_poke.css` percent positions). Current commit uses the **official Champions sheet** (2208×2078 → **262** allowlisted dex-keyed cells).
 
-manifest: `public/templates/manifest.json` (entries may share a showdownId across multiple files).
+| Key | Meaning |
+|-----|---------|
+| `6` | Charizard (form 0) |
+| `38-1` / `38-alola` | Alolan Ninetales |
+| `479-2` / `479-wash` | Rotom-Wash |
+| `6-mega-x` | alias on `dexAliases` when present |
 
-Forms / Mega / shiny, Rotom appliances, Lycanroc day/night, Hippowdon gender colors need separate template files when expanded. Do not scrape/download from the web without an authorized VGC source.
+Do **not** commit hundreds of per-species `{englishName}.png` files. `public/templates/` is deprecated.
 
-### How to add more templates
+Forms / Mega / shiny need their own CSS cell (dex + form), not a second filename. Do not scrape/download from the web without an authorized VGC source.
 
-When VGC provides an authorized Team Preview source screenshot:
+### How to ingest / refresh the sheet
 
-1. Save the 16:9 shot (enemy column on the right).
-2. Run: `python scripts/crop-preview-templates.py path/to/shot.png public/templates --slots=id1,id2,id3,id4,id5,id6 --merge`
-   (same panel/thumb constants as `src/lib/roi.ts` — **do not change ROI**).
-3. Keep/rename files as `public/templates/{showdownId}.png` (or `{showdownId}-variant.png` for pose variants).
-4. `recognize.ts` loads **all** `manifest.json` ROI-crop entries automatically; add `SPECIES_DB` fallback if the species is missing from `pokemon.json`.
-5. Reload; templates load once via `loadPreviewThumbTemplates()`.
+Re-ingest / refresh from official sheet + CSS:
+
+```bash
+python3 scripts/build-sprite-atlas.py \
+  --sheet sprite-sheet-handoff/sprite_sheet.png \
+  --css sprite-sheet-handoff/sprite_poke.css \
+  --delete-legacy-pngs
+```
+
+`recognize.ts` loads every atlas entry via `loadPreviewThumbTemplates()` (one sheet decode).
 
 Acceptance:
-- 圖二 fixture → `python scripts/match-seed-templates.py` (~6/6)
-- test fixtures → `/workspace/.venv-pkmn/bin/python scripts/match-test-fixtures.py`
+- sole fixture `public/fixtures/team-preview-live-latest.jpg` → `python3 scripts/match-test-fixtures.py`
   - **wrong species count = 0** (null/未識別 OK; never return a wrong id)
-  - test-2 / test-3: keep 6/6 or only become unidentified — no new wrong species
   - Results: `docs/match-test-fixtures-results.md`
 
 ## Type / Tera icons
@@ -134,15 +132,15 @@ node scripts/fetch-cbd-templates.mjs --ids=noivern,lycanroc
 
 - Output: `assets/templates/preview-thumbs/{showdownId}.png` + `manifest.jsonl` (`source: cbd`)
 - PNGs are gitignored; see `assets/CREDITS.md`
-- **Recognition default** remains `public/templates/` ROI crops (`source: roi-crop`); CBD only fills gaps
+- **Recognition default** remains `public/sprites/` sheet crops (`nationalDex` keys); CBD only fills gaps
 - CBD menu-style art often mismatches Team Preview thumbs — keep as optional secondary
-- Never HOME / official-artwork; ask before expanding beyond top50∪test set
+- Never HOME / official-artwork; atlas is the 262 Champions legal allowlist
 
 Offline match:
 
 ```bash
 python scripts/match-seed-templates.py                        # 圖二 ~6/6
-/workspace/.venv-pkmn/bin/python scripts/match-test-fixtures.py  # test-1/2/3 → docs/match-test-fixtures-results.md
+/workspace/.venv-pkmn/bin/python scripts/match-test-fixtures.py  # live-latest only → docs/match-test-fixtures-results.md
 ```
 
 Results: `docs/match-seed-results.md`

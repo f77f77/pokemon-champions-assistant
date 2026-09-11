@@ -1,33 +1,15 @@
 import type { PokemonSet } from '../types';
 import { PokemonCard } from './PokemonCard';
-import { SPECIES_DB, formatSpeciesLabel } from '../lib/species';
+import { legalSpeciesOptions } from '../lib/species';
 
 interface Props {
   team: PokemonSet[];
   onSpeciesOverride: (index: number, speciesKey: string) => void;
-  onFormChange?: (index: number, formKey: string) => void;
-}
-
-function compareSpeciesOptions(
-  a: (typeof SPECIES_DB)[number],
-  b: (typeof SPECIES_DB)[number],
-): number {
-  const da = a.nationalDex ?? Number.POSITIVE_INFINITY;
-  const db = b.nationalDex ?? Number.POSITIVE_INFINITY;
-  if (da !== db) return da - db;
-  // Same dex (e.g. Paradox / Mega): stable secondary by formKey then key
-  const fa = a.formKey || a.key;
-  const fb = b.formKey || b.key;
-  const byForm = fa.localeCompare(fb);
-  if (byForm !== 0) return byForm;
-  return a.key.localeCompare(b.key);
+  onFormChange: (index: number, formKey: string) => void;
 }
 
 export function EnemyPanel({ team, onSpeciesOverride, onFormChange }: Props) {
-  const options = [...SPECIES_DB].sort(compareSpeciesOptions).map((s) => ({
-    key: s.key,
-    label: formatSpeciesLabel(s),
-  }));
+  const options = legalSpeciesOptions();
 
   return (
     <section className="panel panel--enemy">
@@ -43,7 +25,7 @@ export function EnemyPanel({ team, onSpeciesOverride, onFormChange }: Props) {
             variant="enemy"
             speciesOptions={options}
             onSpeciesOverride={(key) => onSpeciesOverride(i, key)}
-            onFormChange={onFormChange ? (fk) => onFormChange(i, fk) : undefined}
+            onFormChange={(fk) => onFormChange(i, fk)}
           />
         ))}
       </div>

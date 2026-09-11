@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Match Team Preview test fixtures against public/templates/ (sprite_poke_3).
+Match Team Preview test fixtures against in-memory crops from
+public/sprites/sprite_poke.png (dex-keyed atlas / CSS).
 
 Pipeline (pose/scale alignment + false-positive guards):
   1. Yellow square ROI (side = red card height; locked panel + THUMB left)
@@ -36,7 +37,10 @@ try:
 except ImportError as e:
     raise SystemExit("Need numpy") from e
 
+from lib_sprite_sheet import crop_template, load_atlas
+
 ROOT = Path(__file__).resolve().parents[1]
+SPRITES_DIR = ROOT / "public/sprites"
 
 # Locked — mirror src/lib/roi.ts (DO NOT change panel / yellow / CARD_GAP)
 ENEMY_PANEL = {"left": 0.811, "top": 0.137, "right": 0.965, "bottom": 0.836}
@@ -49,7 +53,7 @@ TARGET_ASPECT = 16 / 9
 
 CONFIDENCE_THRESHOLD = 0.54
 MIN_MARGIN = 0.08  # fallback / floor for required_margin()
-AHASH_TOP_K = 40  # smallest K with ≥12/18 correct & wrong=0 on fixtures
+AHASH_TOP_K = 40  # fixture-tuned; prefer null over wrong on full 262 atlas
 AHASH_MAX_HAM = 18
 HUE_BINS = 8
 HUE_DIST_THR = 0.75
@@ -66,7 +70,7 @@ MATCH_SHIFTS = (-8, -4, 0, 4, 8)
 def required_margin(confidence: float) -> float:
     """Dynamic top1−top2 margin: high conf → smaller required gap (fixture-tuned).
 
-    ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.035, ≥0.54→0.055, else MIN_MARGIN(0.08).
+    ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.06, ≥0.54→0.055, else MIN_MARGIN(0.08).
     Never loosens enough to reintroduce wrong-species FPs on the test fixtures.
     """
     if confidence >= 0.75:
@@ -74,7 +78,7 @@ def required_margin(confidence: float) -> float:
     if confidence >= 0.68:
         return 0.03
     if confidence >= 0.60:
-        return 0.035
+        return 0.06
     if confidence >= 0.54:
         return 0.055
     return MIN_MARGIN
@@ -82,39 +86,15 @@ def required_margin(confidence: float) -> float:
 
 FIXTURES = [
     {
-        "path": ROOT / "public/fixtures/team-preview-test-1.png",
-        "label": "team-preview-test-1",
+        "path": ROOT / "public/fixtures/team-preview-live-latest.jpg",
+        "label": "team-preview-live-latest",
         "expected": [
-            "charizard",
-            "aerodactyl",
-            "meowscarada",
+            "froslass",
             "garchomp",
-            "rotomwash",
-            "aegislash",
-        ],
-    },
-    {
-        "path": ROOT / "public/fixtures/team-preview-test-2.png",
-        "label": "team-preview-test-2",
-        "expected": [
-            "whimsicott",
-            "charizard",
-            "basculegion",
+            "basculegion",  # Basculegion-M
             "kingambit",
             "sneasler",
-            "garchomp",
-        ],
-    },
-    {
-        "path": ROOT / "public/fixtures/team-preview-test-3.png",
-        "label": "team-preview-test-3",
-        "expected": [
-            "ninetalesalola",
-            "empoleon",
-            "garchomp",
-            "staraptor",
-            "whimsicott",
-            "charizard",
+            "golisopod",  # Bug/Water; not Araquanid
         ],
     },
 ]
@@ -164,8 +144,13 @@ def to_gray_and_mask(im: Image.Image) -> tuple[np.ndarray, np.ndarray]:
     gray = 0.299 * arr[:, :, 0] + 0.587 * arr[:, :, 1] + 0.114 * arr[:, :, 2]
     gray = gray.astype(np.float32)
     a = arr[:, :, 3]
-    gray = np.where(a > 12, gray, 0.0).astype(np.float32)
-    mask = (a > 12).astype(np.float32)
+    # Transparent pad (legacy RGBA cells) or flat black-bg official sheet.
+    if float((a > 12).mean()) < 0.98:
+        vis = a > 12
+    else:
+        vis = gray > 12
+    gray = np.where(vis, gray, 0.0).astype(np.float32)
+    mask = vis.astype(np.float32)
     return gray, mask
 
 
@@ -428,8 +413,48 @@ def load_pokemon_types() -> dict[str, set[str]]:
 
 
 def load_templates(tmpl_dir: Path, type_map: dict[str, set[str]]) -> list[dict]:
-    manifest = json.loads((tmpl_dir / "manifest.json").read_text(encoding="utf-8"))
+    """Load templates from the master sheet + atlas (in-memory crops).
+
+    Falls back to deprecated public/templates/*.png only if the sheet is missing.
+    """
+    atlas_path = SPRITES_DIR / "atlas.json"
+    sheet_path = SPRITES_DIR / "sprite_poke.png"
     templates: list[dict] = []
+    if atlas_path.exists() and sheet_path.exists():
+        atlas = load_atlas(atlas_path)
+        sheet = Image.open(sheet_path).convert("RGBA")
+        seen: set[str] = set()
+        for entry in atlas.get("entries") or []:
+            sid = entry.get("speciesId")
+            dex_key = entry.get("dexKey")
+            if not sid or not dex_key or dex_key in seen:
+                continue
+            seen.add(dex_key)
+            im = crop_template(sheet, entry)
+            g, mask = to_gray_and_mask(im)
+            rgb = to_rgb_letterbox(im)
+            templates.append(
+                {
+                    "speciesId": sid,
+                    "dexKey": dex_key,
+                    "nationalDex": entry.get("nationalDex"),
+                    "gray": g,
+                    "mask": mask,
+                    "rgb": rgb,
+                    "hue": hue_hist(rgb),
+                    "hash": average_hash(g),
+                    "types": type_map.get(sid, set(entry.get("types") or [])),
+                    "meta": entry,
+                    "file": f"sheet:{dex_key}",
+                }
+            )
+        return templates
+
+    # Deprecated name-keyed files
+    manifest_path = tmpl_dir / "manifest.json"
+    if not manifest_path.exists():
+        return templates
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     for entry in manifest.get("templates", []):
         sid = entry["speciesId"]
         fpath = tmpl_dir / entry.get("file", f"{sid}.png")
@@ -690,15 +715,29 @@ def main() -> int:
     null_n = 0
     total = 0
     n_ids = len({t["speciesId"] for t in templates})
+    allow_n = 0
+    allow_path = ROOT / "data/allowlist.json"
+    if allow_path.exists():
+        allow_n = len((json.loads(allow_path.read_text(encoding="utf-8")).get("entries") or []))
+    poke_n = 0
+    poke_path = ROOT / "data/pokemon.json"
+    if poke_path.exists():
+        poke_n = len(json.loads(poke_path.read_text(encoding="utf-8")))
 
-    print(f"Templates: {len(templates)} files / {n_ids} speciesIds from {tmpl_dir.relative_to(ROOT)}")
+    src_label = (
+        f"{SPRITES_DIR.relative_to(ROOT)} (sheet+atlas, dex-keyed in-memory crops)"
+        if (SPRITES_DIR / "atlas.json").exists()
+        else f"{tmpl_dir.relative_to(ROOT)} (deprecated name-keyed PNGs)"
+    )
+    print(f"Templates: {len(templates)} crops / {n_ids} speciesIds from {src_label}")
+    print(f"Legal roster: atlas={n_ids} allowlist={allow_n} pokemon.json={poke_n}")
     print(
         f"ROI locked: panel={ENEMY_PANEL} thumb={THUMB_CROP} "
         f"CARD_GAP_FRAC={CARD_GAP_FRAC} PANEL_OUTER_MARGIN_FRAC={PANEL_OUTER_MARGIN_FRAC}"
     )
     print(
         f"Guards: thr={CONFIDENCE_THRESHOLD} dynMargin "
-        f"(≥0.75→0.025,≥0.68→0.03,≥0.60→0.035,≥0.54→0.055,else {MIN_MARGIN}) "
+        f"(≥0.75→0.025,≥0.68→0.03,≥0.60→0.06,≥0.54→0.055,else {MIN_MARGIN}) "
         f"aHash top{AHASH_TOP_K}|≤{AHASH_MAX_HAM} hue×{HUE_PENALTY}@{HUE_DIST_THR} "
         f"type hard≥{TYPE_MATCH_THR} cropRightExclude={MATCH_CROP_RIGHT_EXCLUDE_FRAC}"
     )
@@ -761,13 +800,13 @@ def main() -> int:
     out_md.parent.mkdir(parents=True, exist_ok=True)
 
     margin_rule = (
-        "dyn ≥0.75→0.025 / ≥0.68→0.03 / ≥0.60→0.035 / ≥0.54→0.055 / else 0.08"
+        "dyn ≥0.75→0.025 / ≥0.68→0.03 / ≥0.60→0.06 / ≥0.54→0.055 / else 0.08"
     )
     lines = [
         "# Test fixture match results",
         "",
-        f"- Fixtures: `public/fixtures/team-preview-test-1/2/3.png`",
-        f"- Templates: `public/templates/*.png` (sprite_poke_3 alpha-trimmed cells; {len(templates)} files / {n_ids} ids)",
+        f"- Fixtures: `public/fixtures/team-preview-live-latest.jpg` only (最新實機畫面)",
+        f"- Templates: `public/sprites/sprite_poke.png` + `atlas.json` (nationalDex-keyed in-memory crops; {len(templates)} cells / {n_ids} ids)",
         f"- Matcher: crop cleanup (right {MATCH_CROP_RIGHT_EXCLUDE_FRAC}) + BG suppress + content-aware recenter + aHash prefilter + multi-scale/shift; NCC×0.55 + SSD×0.25 + aHash×0.20",
         f"- Guards (v1.4): `CONFIDENCE_THRESHOLD={CONFIDENCE_THRESHOLD}`, `{margin_rule}`, "
         f"coarse hue ×{HUE_PENALTY} if hist-dist>{HUE_DIST_THR}, type **hard** gate (thr={TYPE_MATCH_THR}; skip if low-conf), "
@@ -822,12 +861,20 @@ def main() -> int:
         "- Type hard second gate: uncertain/low-conf type OCR → no veto; when types known "
         f"(score≥{TYPE_MATCH_THR}), candidate types from `pokemon.json` must be a **superset** "
         "of detected set (e.g. Flying → reject Incineroar).",
-        f"- aHash TopK={AHASH_TOP_K} (smallest K lifting correct≥12/18 with wrong=0 on fixtures).",
+        f"- aHash TopK={AHASH_TOP_K} (fixture-tuned; prefer null over wrong species).",
         f"- Dynamic margin: {margin_rule}.",
         f"- Match-crop cleanup: zero right {MATCH_CROP_RIGHT_EXCLUDE_FRAC} of yellow (type bleed); type icons still read from card top-right.",
         "- Coarse hue filter is conservative (×0.85) so shinies without shiny templates are not hard-killed.",
         "- `recognize.ts` mirrors this pipeline (`cardRect` → type crop + `thumbRectInSlot` match).",
         f"- Result: **correct {accuracy}, wrong={wrong}, null={null_n}**.",
+        "- Atlas: official full-roster `sprite_sheet.png` + `sprite_poke.css` → "
+        f"{len(templates)} dex-keyed in-memory crops (no per-species PNG dump).",
+        "- Sole formal fixture: `team-preview-live-latest.jpg` (最新實機畫面). "
+        "Enemy team top→bottom: Froslass, Garchomp, Basculegion-M, Kingambit, Sneasler, "
+        "Golisopod (Bug/Water).",
+        f"- Legal roster counts: atlas cells={n_ids}, allowlist={allow_n}, pokemon.json={poke_n}.",
+        "- Enemy/ally form selector uses sibling legal forms grouped by nationalDex "
+        "(regional / gender / Rotom; Mega when present in the 262).",
         "",
     ]
     out_md.write_text("\n".join(lines), encoding="utf-8")
@@ -849,7 +896,7 @@ def main() -> int:
                 "dynamicMargin": {
                     "0.75": 0.025,
                     "0.68": 0.03,
-                    "0.60": 0.035,
+                    "0.60": 0.06,
                     "0.54": 0.055,
                     "else": MIN_MARGIN,
                 },

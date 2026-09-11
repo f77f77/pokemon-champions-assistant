@@ -49,6 +49,18 @@ function clampTune(v: number): number {
 function applyFormSync(prev: PokemonSet, formKey: string): PokemonSet | null {
   const form = prev.forms?.find((f) => f.formKey === formKey);
   if (!form) return null;
+  const sp = findSpecies(form.showdownId) || findSpecies(formKey);
+  if (sp) {
+    return speciesToSet(sp, prev.id, {
+      thumbnailDataUrl: prev.thumbnailDataUrl,
+      confidence: prev.confidence ?? 1,
+      identified: true,
+      item: prev.item,
+      ability: undefined,
+      moves: prev.moves,
+      speed: calcStat(form.baseStats.spe, 31, 0, 50, 1),
+    });
+  }
   return {
     ...prev,
     formKey: form.formKey,
@@ -174,6 +186,32 @@ export default function App() {
       const moves = await fetchMovesForForm(formKey, 6);
       setEnemyTeam((prev) =>
         prev.map((p, i) => (i === index && p.formKey === formKey ? { ...p, moves } : p)),
+      );
+    })();
+  }, []);
+
+  const onAllySpeciesChange = useCallback((index: number, speciesKey: string) => {
+    if (!speciesKey) return;
+    const sp = findSpecies(speciesKey);
+    if (!sp) return;
+    setMyTeam((prev) =>
+      prev.map((p, i) =>
+        i === index
+          ? speciesToSet(sp, p.id, {
+              speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
+              moves: top4ForCard([]),
+              item: p.item,
+              ability: p.ability,
+              thumbnailDataUrl: p.thumbnailDataUrl,
+            })
+          : p,
+      ),
+    );
+    setStatus(`已選擇種族：${sp.nameZh}`);
+    void (async () => {
+      const moves = top4ForCard(await fetchTopMoves(sp.key));
+      setMyTeam((prev) =>
+        prev.map((p, i) => (i === index && p.speciesKey === sp.key ? { ...p, moves } : p)),
       );
     })();
   }, []);
@@ -385,6 +423,7 @@ export default function App() {
           onTeamChange={onMyTeamChange}
           onSpeedChange={onSpeedChange}
           onFormChange={onAllyFormChange}
+          onSpeciesChange={onAllySpeciesChange}
           selectedIndex={selectedAllyIndex}
           onSelectAlly={onSelectAlly}
         />
