@@ -1,5 +1,8 @@
 node_modules/
 dist/
+scripts/__pycache__/
+__pycache__/
+*.pyc
 dist-electron/
 release/
 *.local

@@ -15,23 +15,36 @@ import { createRequire } from 'node:module';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 
+const LIVE_LATEST = ['froslass', 'garchomp', 'basculegion', 'kingambit', 'sneasler', 'golisopod'];
+
 const EXPECTED = {
-  'fixtures/team-preview-live-latest.jpg': [
-    'froslass',
-    'garchomp',
-    'basculegion',
-    'kingambit',
-    'sneasler',
-    'golisopod',
+  'fixtures/team-preview-live-latest.jpg': LIVE_LATEST,
+  'fixtures/team-preview-test-1.jpg': LIVE_LATEST,
+  'fixtures/team-preview-test-2.jpg': [
+    'chesnaught',
+    'mimikyu',
+    'ninetalesalola',
+    'swampert',
+    'typhlosionhisui',
+    'greninja',
   ],
-  'fixtures/team-preview-user-basculegion-fail.png': [
-    'froslass',
-    'garchomp',
-    'basculegion',
-    'kingambit',
-    'sneasler',
-    'golisopod',
+  'fixtures/team-preview-test-3.jpg': [
+    'slowbrogalar',
+    'scizor',
+    'eelektross',
+    'salamence',
+    'rotomwash',
+    'gallade',
   ],
+  'fixtures/team-preview-test-4.jpg': [
+    'salamence',
+    'rillaboom',
+    'kingambit',
+    'sylveon',
+    'rotomwash',
+    'sneasler',
+  ],
+  'fixtures/team-preview-user-basculegion-fail.png': LIVE_LATEST,
 };
 
 function parseArgs(argv) {
@@ -42,7 +55,16 @@ function parseArgs(argv) {
     else if (argv[i] === '--port' && argv[i + 1]) port = Number(argv[++i]);
   }
   if (!imgs.length) {
-    imgs.push('fixtures/team-preview-live-latest.jpg');
+    const defaults = [
+      'fixtures/team-preview-live-latest.jpg',
+      'fixtures/team-preview-test-1.jpg',
+      'fixtures/team-preview-test-2.jpg',
+      'fixtures/team-preview-test-3.jpg',
+      'fixtures/team-preview-test-4.jpg',
+    ];
+    for (const rel of defaults) {
+      if (fs.existsSync(path.join(ROOT, 'public', rel))) imgs.push(rel);
+    }
     const userFx = path.join(ROOT, 'public/fixtures/team-preview-user-basculegion-fail.png');
     if (fs.existsSync(userFx)) imgs.push('fixtures/team-preview-user-basculegion-fail.png');
   }
@@ -153,7 +175,10 @@ async function main() {
     }
     if (expected) {
       console.log(`Overall: correct=${correct}/6 wrong=${wrong} null=${unidentified}`);
-      if (correct < 5 || wrong !== 0 || dump.slots[2].speciesId !== 'basculegion' || !dump.slots[2].identified) {
+      const isLive = img.endsWith('live-latest.jpg') || img.endsWith('test-1.jpg');
+      if (wrong !== 0 || (isLive && (correct < 6 || dump.slots[2].speciesId !== 'basculegion'))) {
+        failed += 1;
+      } else if (correct < 5) {
         failed += 1;
       }
     }

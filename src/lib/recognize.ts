@@ -5,7 +5,8 @@
  * 每格黃框正方形（邊長=紅卡本體高，左側精靈）→ 抑制紅卡底 → content-aware 重對齊 →
  * crop cleanup（黃框右側 type/gender 滲入排除；黃框幾何不變）→
  * aHash prefilter（query+template 皆 8×8 block-mean，對齊 Python）→ 64×64 多尺度／微位移灰階比對（mask = 模板 alpha ∩ query 非黑）→
- * 粗 hue 軟懲罰 → 卡右側 type icon 硬否決（僅主屬性；Ghost/Poison 紫色互認）→ dynamic margin + threshold。
+ * 粗 hue 軟懲罰 → 卡右側 type icon 硬否決（僅主屬性；Ghost/Poison 紫、Fairy/Psychic 粉互認）→
+ * 軟屬性近平手加持 → dynamic margin + threshold。
  *
  * 模板庫：public/sprites/sprite_poke.png + atlas.json（nationalDex 主鍵）。
  * 整張 sheet 載入一次，依 CSS/atlas 座標記憶體裁切 — 不落地數百張小 PNG。
@@ -88,17 +89,22 @@ export const TYPE_ICON_FRACS = [0.36, 0.42, 0.48] as const;
 /** Zero right edge of yellow match crop (type bleed). Yellow ROI geometry unchanged. */
 export const MATCH_CROP_RIGHT_EXCLUDE_FRAC = 0.05;
 
+/** Soft type (below hard veto) may break a near-tie toward the matching species. */
+export const TYPE_SOFT_THR = 0.45;
+/** Max raw-top1 − typed gap for soft-type unique promote (Mimikyu vs Liepard). */
+export const TYPE_TIE_MAX_GAP = 0.03;
+
 /** Dynamic top1−top2 margin: high conf → smaller required gap (fixture-tuned). */
 export function requiredMargin(confidence: number): number {
   if (confidence >= 0.75) return 0.025;
   if (confidence >= 0.68) return 0.03;
-  if (confidence >= 0.6) return 0.06;
+  if (confidence >= 0.6) return 0.05;
   if (confidence >= 0.54) return 0.055;
   return MIN_MARGIN;
 }
 
 /** Query multi-scale / translation sweep (mirror scripts/match-test-fixtures.py) */
-export const MATCH_SCALES = [0.9, 1.0, 1.1, 1.2, 1.35] as const;
+export const MATCH_SCALES = [0.9, 1.0, 1.1, 1.2, 1.35, 1.55] as const;
 export const MATCH_SHIFTS = [-8, -4, 0, 4, 8] as const;
 
 /** @deprecated 舊 ROI 形狀；請改用 ENEMY_PANEL_DEFAULT + resolveEnemyPanel */
@@ -523,7 +529,8 @@ function visibleCount(data: ImageData): number {
   const px = data.data;
   let n = 0;
   for (let i = 0; i < px.length; i += 4) {
-    if (px[i + 3] > 12 && px[i] + px[i + 1] + px[i + 2] > 20) n++;
+    // Keep dark-but-colored bodies (Greninja); only drop near-black sheet BG.
+    if (px[i + 3] > 12 && px[i] + px[i + 1] + px[i + 2] > 8) n++;
   }
   return n;
 }
@@ -610,7 +617,7 @@ async function loadTemplatesFromSheet(): Promise<ThumbTemplate[]> {
       }),
     );
   }
-  sheet.close();
+  // Keep the sheet bitmap cached for card / ally-strip avatars (do not close).
   return loaded;
 }
 
@@ -776,15 +783,21 @@ function nccMaskedGray(a: Float32Array, b: Float32Array, mask: Float32Array): nu
   return ncc(a, b, mask);
 }
 
+export interface DetectedCardTypes {
+  hard: string[];
+  soft: string[];
+}
+
 /**
  * Type-icon scan on card top-right (1–2 icons). Hard veto only when score ≥ TYPE_MATCH_THR;
- * low-conf detections are omitted → skip hard veto.
+ * low-conf detections are omitted → skip hard veto. Soft ids (score ≥ TYPE_SOFT_THR)
+ * may break a near-tie toward the matching species.
  */
 function detectCardTypes(
   src: CanvasRenderingContext2D,
   card: { x: number; y: number; width: number; height: number },
-): string[] {
-  if (TYPE_ICON_TEMPLATES.length === 0) return [];
+): DetectedCardTypes {
+  if (TYPE_ICON_TEMPLATES.length === 0) return { hard: [], soft: [] };
   const x0 = Math.floor(card.x + card.width * 0.55);
   const x1 = Math.floor(card.x + card.width * 0.98);
   const y0 = Math.floor(card.y + card.height * 0.04);
@@ -795,7 +808,7 @@ function detectCardTypes(
   try {
     region = src.getImageData(x0, y0, rw, rh);
   } catch {
-    return [];
+    return { hard: [], soft: [] };
   }
   type Hit = { sc: number; id: string; x: number; y: number; sz: number };
   const hits: Hit[] = [];
@@ -865,12 +878,18 @@ function detectCardTypes(
   // Hard second gate: only confident type hits. 2nd icon needs a higher
   // score — Ghost vs Poison purple sprites otherwise both pass TYPE_MATCH_THR.
   const confident = picked.filter((p) => p.sc >= TYPE_MATCH_THR);
-  if (confident.length === 0) return [];
-  const ids = [confident[0].id];
-  if (confident[1] && confident[1].sc >= TYPE_MATCH_SECOND_THR) {
-    ids.push(confident[1].id);
+  const hard: string[] = [];
+  if (confident.length > 0) {
+    hard.push(confident[0].id);
+    if (confident[1] && confident[1].sc >= TYPE_MATCH_SECOND_THR) {
+      hard.push(confident[1].id);
+    }
   }
-  return ids;
+  const soft: string[] = [];
+  for (const p of picked) {
+    if (p.sc >= TYPE_SOFT_THR && !soft.includes(p.id)) soft.push(p.id);
+  }
+  return { hard, soft };
 }
 
 /**
@@ -906,14 +925,14 @@ function suppressCardBackground(data: ImageData): ImageData {
     const mx = Math.max(r, g, b);
     // Dark flat card paint only — spare bright orange/red sprite pixels.
     const maroon =
-      r > 55 &&
-      mx < 145 &&
-      g < 78 &&
-      b < 88 &&
-      r > g * 1.45 &&
-      r > b * 1.3 &&
-      r - g > 22 &&
-      r + g + b < 300;
+      r > 50 &&
+      mx < 175 &&
+      g < 90 &&
+      b < 110 &&
+      r > g * 1.35 &&
+      r > b * 1.15 &&
+      r - g > 18 &&
+      r + g + b < 360;
     if (maroon) {
       op[i] = op[i + 1] = op[i + 2] = 0;
       op[i + 3] = 255;
@@ -1205,6 +1224,7 @@ function matchTemplate(
   gray: Float32Array,
   queryHue: Float32Array,
   detectedTypes: string[] = [],
+  softTypes: string[] = [],
 ): MatchTemplateResult {
   if (PREVIEW_THUMB_TEMPLATES.length === 0) {
     const confidence = 0.12 + (hash.split('1').length % 7) * 0.01;
@@ -1257,9 +1277,12 @@ function matchTemplate(
     types: c.types,
   }));
   const primary = det[0];
-  /** Ghost/Poison icons are both purple; treat as interchangeable for the 2nd slot. */
-  const typeAliases = (id: string): string[] =>
-    id === 'ghost' || id === 'poison' ? ['ghost', 'poison'] : [id];
+  /** Near-identical Champions icons: Ghost/Poison (purple), Fairy/Psychic (pink). */
+  const typeAliases = (id: string): string[] => {
+    if (id === 'ghost' || id === 'poison') return ['ghost', 'poison'];
+    if (id === 'fairy' || id === 'psychic') return ['fairy', 'psychic'];
+    return [id];
+  };
   const hasType = (c: { types: string[] }, id: string) =>
     typeAliases(id).some((x) => c.types.includes(x));
 
@@ -1303,7 +1326,12 @@ function matchTemplate(
   const top1 = accepted[0];
   const top2 = accepted[1];
   const margin = top1.confidence - (top2?.confidence ?? 0);
-  const need = requiredMargin(top1.confidence);
+  let need = requiredMargin(top1.confidence);
+  const softPrimary = !primary ? softTypes[0] : undefined;
+  const typeHint = primary || softPrimary;
+  if (typeHint && hasType(top1, typeHint) && top1.confidence >= 0.6) {
+    need = Math.min(need, 0);
+  }
   if (top1.confidence >= CONFIDENCE_THRESHOLD && margin >= need) {
     return {
       speciesId: top1.speciesId,
@@ -1316,6 +1344,28 @@ function matchTemplate(
       ...debug,
     };
   }
+
+  // Soft type tie-break when hard veto did not fire and raw margin is too small.
+  if (softPrimary) {
+    const typed = accepted.slice(0, 8).filter((c) => hasType(c, softPrimary));
+    if (typed.length === 1) {
+      const pick = typed[0];
+      const gap = top1.confidence - pick.confidence;
+      if (pick.confidence >= CONFIDENCE_THRESHOLD && gap >= 0 && gap <= TYPE_TIE_MAX_GAP) {
+        return {
+          speciesId: pick.speciesId,
+          speciesNameZh: pick.speciesNameZh,
+          confidence: pick.confidence,
+          altSpeciesId: top1.speciesId !== pick.speciesId ? top1.speciesId : (top2?.speciesId ?? null),
+          margin: pick.confidence,
+          detectedTypes: det,
+          rejectReason: null,
+          ...debug,
+        };
+      }
+    }
+  }
+
   return {
     speciesId: null,
     speciesNameZh: null,
@@ -1361,11 +1411,12 @@ export async function recognizeEnemyTeamFromCanvas(
         // then square thumb via thumbRectInSlot (same geometry as thumbCssPercent).
         // Type veto uses full red card body (top-right icons) — panel geometry unchanged.
         const card = cardRect(panelPx, slot);
-        const detectedTypes = detectCardTypes(ctx, card);
+        const detected = detectCardTypes(ctx, card);
+        const detectedTypes = detected.hard;
         const tRect = thumbRectInSlot(card);
         const { imageData, dataUrl, gray, hue } = cropResizeToTemplate(ctx, tRect);
         const hash = averageHashGray(gray);
-        const matched = matchTemplate(hash, gray, hue, detectedTypes);
+        const matched = matchTemplate(hash, gray, hue, detectedTypes, detected.soft);
         let speciesId = canonicalSpeciesId(matched.speciesId);
         let speciesNameZh = matched.speciesNameZh;
         if (speciesId) {
@@ -1423,7 +1474,7 @@ export async function recognizeEnemyTeam(
   }
 }
 
-/** Built-in Team Preview fixture under public/fixtures/ (sole formal test image). */
+/** Built-in Team Preview fixtures under public/fixtures/ (「載入測試圖」 cycles test-1～4). */
 export const TEAM_PREVIEW_FIXTURES = [
   'fixtures/team-preview-test-1.jpg',
   'fixtures/team-preview-test-2.jpg',

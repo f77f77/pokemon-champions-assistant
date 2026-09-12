@@ -21,6 +21,8 @@ import {
   currentFixtureLabel,
   type RoiFineTune,
 } from '../lib/recognize';
+import { AllyIconStrip } from './AllyIconStrip';
+import type { PokemonSet } from '../types';
 
 interface Props {
   busy: boolean;
@@ -29,6 +31,9 @@ interface Props {
   statusText: string;
   fineTune: RoiFineTune;
   debugOverlay: boolean;
+  allyTeam?: PokemonSet[];
+  selectedAllyIndex?: number | null;
+  onSelectAlly?: (index: number) => void;
 }
 
 export function CapturePanel({
@@ -37,6 +42,9 @@ export function CapturePanel({
   statusText,
   fineTune,
   debugOverlay,
+  allyTeam,
+  selectedAllyIndex = null,
+  onSelectAlly,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const stillImgRef = useRef<HTMLImageElement>(null);
@@ -249,7 +257,7 @@ export function CapturePanel({
           className="btn btn--ghost"
           disabled={busy}
           onClick={loadFixtureStill}
-          title="載入 public/fixtures/team-preview-live-latest.jpg（最新實機畫面）"
+          title="循環載入 public/fixtures/team-preview-test-1.jpg～test-4.jpg"
         >
           載入測試圖
         </button>
@@ -335,6 +343,9 @@ export function CapturePanel({
             })}
           </>
         )}
+        {allyTeam && onSelectAlly ? (
+          <AllyIconStrip team={allyTeam} selectedIndex={selectedAllyIndex} onSelect={onSelectAlly} />
+        ) : null}
         {dragOver && (
           <div className="capture-preview__drop-hint" aria-hidden>
             放開以載入靜態選隊圖

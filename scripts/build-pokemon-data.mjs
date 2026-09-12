@@ -186,12 +186,14 @@ function parseArgs(argv) {
   let dryRun = false;
   let updateAllowlist = false;
   let usageOnly = false;
+  let flavorOnly = false;
   let topN = 50;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--dry-run') dryRun = true;
     else if (a === '--update-allowlist') updateAllowlist = true;
     else if (a === '--usage-only') usageOnly = true;
+    else if (a === '--flavor-only') flavorOnly = true;
     else if (a === '--top' || a.startsWith('--top=')) {
       const raw = a.startsWith('--top=') ? a.slice('--top='.length) : argv[++i];
       topN = Math.max(1, Number(raw) || 50);
@@ -200,7 +202,7 @@ function parseArgs(argv) {
       allowlistPath = path.resolve(ROOT, raw);
     } else if (a === '--help' || a === '-h') {
       console.log(
-        `Usage: node scripts/build-pokemon-data.mjs [--allowlist=data/allowlist.json] [--update-allowlist] [--top=50] [--usage-only] [--dry-run]`,
+        `Usage: node scripts/build-pokemon-data.mjs [--allowlist=data/allowlist.json] [--update-allowlist] [--top=50] [--usage-only] [--flavor-only] [--dry-run]`,
       );
       process.exit(0);
     } else {
@@ -208,7 +210,7 @@ function parseArgs(argv) {
       process.exit(1);
     }
   }
-  return { allowlistPath, dryRun, updateAllowlist, usageOnly, topN };
+  return { allowlistPath, dryRun, updateAllowlist, usageOnly, flavorOnly, topN };
 }
 
 /**
@@ -279,6 +281,22 @@ async function rateLimitedJsonOptional(url) {
 }
 
 /** PokéAPI language name → output locale key. */
+function pickFlavor(entries) {
+  const byLang = { en: null, 'zh-Hant': null, ja: null };
+  for (const e of entries || []) {
+    const lang = e.language?.name;
+    const text = String(e.flavor_text || '')
+      .replace(/\f/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!text) continue;
+    if (lang === 'en') byLang.en = text;
+    else if (lang === 'zh-Hant' || lang === 'zh-hant') byLang['zh-Hant'] = text;
+    else if (lang === 'ja' || lang === 'ja-Hrkt' || lang === 'ja-hrkt') byLang.ja = text;
+  }
+  return byLang;
+}
+
 function pickNames(nameEntries) {
   const byLang = new Map();
   for (const n of nameEntries || []) {
@@ -804,6 +822,7 @@ async function buildMoveRecord(displayOrSlug, cache) {
       power: data.power,
       accuracy: data.accuracy,
       pp: data.pp,
+      flavor: pickFlavor(data.flavor_text_entries),
     };
     cache.set(rec.id, rec);
     return rec;
@@ -818,6 +837,7 @@ async function buildMoveRecord(displayOrSlug, cache) {
       power: null,
       accuracy: null,
       pp: null,
+      flavor: { en: null, 'zh-Hant': null, ja: null },
     };
     cache.set(rec.id, rec);
     return rec;
@@ -945,8 +965,45 @@ async function refreshUsageOnly({ dryRun, allowlistPath }) {
   console.log(`Done (usage-only). pokemon=${pokemon.length} moves=${moves.length}`);
 }
 
+async function refreshFlavorOnly({ dryRun }) {
+  const movesPath = path.join(ROOT, 'data/moves.json');
+  const metaPath = path.join(ROOT, 'data/meta.json');
+  const moves = JSON.parse(fs.readFileSync(movesPath, 'utf8'));
+  const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+  console.log(`flavor-only: ${moves.length} moves from ${path.relative(ROOT, movesPath)}`);
+  let i = 0;
+  let filled = 0;
+  for (const rec of moves) {
+    i += 1;
+    const key = rec.pokeapiId || rec.id;
+    if (i % 25 === 1 || i === moves.length) {
+      console.log(`  [${i}/${moves.length}] ${rec.id} (${key})`);
+    }
+    try {
+      const data = await rateLimitedJson(`${POKEAPI}/move/${encodeURIComponent(key)}`);
+      rec.flavor = pickFlavor(data.flavor_text_entries);
+      if (rec.flavor?.['zh-Hant'] || rec.flavor?.en) filled += 1;
+      if (!rec.pokeapiId && data.id) rec.pokeapiId = data.id;
+    } catch (err) {
+      if (!rec.flavor) rec.flavor = { en: null, 'zh-Hant': null, ja: null };
+      console.warn(`  flavor miss ${rec.id}: ${err.message || err}`);
+    }
+  }
+  const generatedAt = new Date();
+  meta.generatedAt = generatedAt.toISOString();
+  meta.updatedAt = formatUsageDate(generatedAt);
+  meta.movesCount = moves.length;
+  meta.sources = {
+    ...(meta.sources || {}),
+    pokeapi: POKEAPI,
+    notes: `${meta.sources?.notes || ''} Move flavor_text from PokéAPI (zh-Hant / en / ja).`.trim(),
+  };
+  writeOutputs({ pokemon: JSON.parse(fs.readFileSync(path.join(ROOT, 'data/pokemon.json'), 'utf8')), moves, meta }, dryRun);
+  console.log(`Done (flavor-only). moves=${moves.length} withFlavor=${filled}`);
+}
+
 async function main() {
-  const { allowlistPath, dryRun, updateAllowlist, usageOnly, topN } = parseArgs(process.argv.slice(2));
+  const { allowlistPath, dryRun, updateAllowlist, usageOnly, flavorOnly, topN } = parseArgs(process.argv.slice(2));
 
   if (updateAllowlist) {
     const ranked = await fetchTopDoublesFromCbdIndex(topN);
@@ -959,6 +1016,11 @@ async function main() {
 
   if (usageOnly) {
     await refreshUsageOnly({ dryRun, allowlistPath });
+    return;
+  }
+
+  if (flavorOnly) {
+    await refreshFlavorOnly({ dryRun });
     return;
   }
 

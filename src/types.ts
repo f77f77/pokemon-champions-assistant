@@ -20,12 +20,15 @@ export interface MoveSlot {
   pp?: string;
   /** 使用率（可選；數字或已含 % 的字串） */
   usage?: string | number;
+  /** PokéAPI / baked move id (for tooltip lookup) */
+  id?: string;
 }
 
 /** CBD Doubles held-item usage row (not a guessed held item). */
 export interface HeldItemSlot {
   name: string;
   usage?: string | number;
+  id?: string;
 }
 
 /** Alternate form / Mega selectable on a card */

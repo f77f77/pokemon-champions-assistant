@@ -49,6 +49,8 @@ export interface GeneratedMoveRecord {
   power?: number | null;
   accuracy?: number | null;
   pp?: number | null;
+  /** PokéAPI flavor; UI shows zh-Hant only. EN/JA stored for later. */
+  flavor?: { en: string | null; 'zh-Hant': string | null; ja: string | null } | null;
 }
 
 export interface VgcDoublesMoveRow {
@@ -133,7 +135,23 @@ function resolveMoveSlot(row: VgcDoublesMoveRow): MoveSlot {
     row.usage != null && String(row.usage).trim() !== ''
       ? String(row.usage).trim()
       : undefined;
-  return usage ? { name, type, usage } : { name, type };
+  const id = rec?.id || row.id;
+  return usage ? { name, type, usage, id } : { name, type, id };
+}
+
+/** Lookup baked move catalog by id or ZH/EN display name. */
+export function getMoveDetails(nameOrId: string | undefined | null): GeneratedMoveRecord | null {
+  if (!nameOrId) return null;
+  const q = String(nameOrId).trim();
+  if (!q) return null;
+  const compact = q.replace(/[-_ ]+/g, '').toLowerCase();
+  const direct = MOVES_BY_ID.get(q) ?? MOVES_BY_ID.get(compact);
+  if (direct) return direct;
+  for (const rec of MOVES_BY_ID.values()) {
+    if (rec.names?.['zh-Hant'] === q || rec.names?.en === q || rec.names?.ja === q) return rec;
+    if ((rec.id || '').toLowerCase() === compact) return rec;
+  }
+  return null;
 }
 
 function unloadedSlots(count: number): MoveSlot[] {
@@ -289,14 +307,37 @@ function resolveItemSlot(row: VgcDoublesItemRow): HeldItemSlot {
     row.usage != null && String(row.usage).trim() !== ''
       ? String(row.usage).trim()
       : undefined;
-  return usage ? { name, usage } : { name };
+  return usage ? { name, usage, id: row.id } : { name, id: row.id };
+}
+
+/** Mega / 進化石 (not Eviolite / 進化的奇石). */
+export function isMegaStoneItem(item: { name?: string; id?: string; nameEn?: string; nameZh?: string }): boolean {
+  const id = String(item.id || '').toLowerCase().replace(/[-_ ]+/g, '');
+  const blob = `${item.name || ''} ${item.nameEn || ''} ${item.nameZh || ''} ${id}`;
+  if (/eviolite/i.test(blob) || /進化的奇石/.test(blob)) return false;
+  if (/進化石/.test(blob)) return true;
+  if (/ite[xy]?$/i.test(id)) return true;
+  const name = String(item.name || item.nameEn || item.nameZh || '');
+  if (/(ite|nite)(\s*[xy])?$/i.test(name.replace(/[-_ ]+/g, ''))) return true;
+  if (/-ite\b/i.test(name) || /\bite\b/i.test(name)) return true;
+  return false;
+}
+
+export function splitHeldItemUsage(
+  items: HeldItemSlot[] | undefined,
+  heldLimit = 2,
+): { megaStones: HeldItemSlot[]; held: HeldItemSlot[] } {
+  const rows = items ?? [];
+  const megaStones = rows.filter((it) => isMegaStoneItem(it));
+  const held = rows.filter((it) => !isMegaStoneItem(it)).slice(0, heldLimit);
+  return { megaStones, held };
 }
 
 /**
  * Top-2 Doubles held items by usage % from baked CBD meta.
  * Missing item rows → empty (UI shows —). Never invents a held item.
  */
-export async function fetchTopItems(speciesKey: string, limit = 2): Promise<HeldItemSlot[]> {
+export async function fetchTopItems(speciesKey: string, limit = 8): Promise<HeldItemSlot[]> {
   await ensureLoaded();
   const mem = ITEM_MEMORY.get(speciesKey);
   if (mem && mem.fetchedAt === todayKey()) return mem.items.slice(0, limit);
@@ -305,7 +346,7 @@ export async function fetchTopItems(speciesKey: string, limit = 2): Promise<Held
     ITEM_MEMORY.set(speciesKey, { fetchedAt: todayKey(), items: [] });
     return [];
   }
-  const items = sortByUsageDesc(rows).slice(0, Math.max(2, limit)).map(resolveItemSlot);
+  const items = sortByUsageDesc(rows).slice(0, Math.max(8, limit)).map(resolveItemSlot);
   ITEM_MEMORY.set(speciesKey, { fetchedAt: todayKey(), items });
   return items.slice(0, limit);
 }

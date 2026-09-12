@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react';
 import type { HeldItemSlot, PokemonFormOption, PokemonSet, PokemonType, StatKey } from '../types';
 import { ALL_TYPES, TYPE_COLORS, defensiveMatchups } from '../lib/typeChart';
 import { typeIconUrl } from '../lib/typeIcons';
 import { calcAllStats } from '../lib/speedCalc';
 import { formatSpeciesLabel } from '../lib/species';
-import { MOVES_SOURCE_LABEL, sortByUsageDesc } from '../lib/movesCache';
+import { getMoveDetails, MOVES_SOURCE_LABEL, sortByUsageDesc, splitHeldItemUsage } from '../lib/movesCache';
+import { sheetSpriteDataUrl } from '../lib/spriteSheet';
 
 const STAT_LABELS: { key: StatKey; label: string }[] = [
   { key: 'hp', label: 'HP' },
@@ -53,7 +55,7 @@ function formatUsage(usage: string | number | undefined): string | null {
 }
 
 function formatItemUsageLine(items: HeldItemSlot[] | undefined, fallback: string): string {
-  const top = (items ?? []).slice(0, 2);
+  const top = items ?? [];
   if (!top.length) return fallback;
   return top
     .map((it) => {
@@ -61,6 +63,54 @@ function formatItemUsageLine(items: HeldItemSlot[] | undefined, fallback: string
       return u ? `${it.name} ${u}` : it.name;
     })
     .join(' · ');
+}
+
+function useSheetSprite(pokemon: PokemonSet): string | null {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!pokemon.identified || !pokemon.speciesKey) {
+      setUrl(null);
+      return;
+    }
+    let cancelled = false;
+    void sheetSpriteDataUrl({
+      speciesId: pokemon.speciesKey,
+      formKey: pokemon.formKey,
+      nationalDex: pokemon.nationalDex,
+    }).then((next) => {
+      if (!cancelled) setUrl(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pokemon.identified, pokemon.speciesKey, pokemon.formKey, pokemon.nationalDex]);
+  return url;
+}
+
+function MoveTooltip({
+  name,
+  typeLabel,
+  moveId,
+}: {
+  name: string;
+  typeLabel: string;
+  moveId?: string;
+}) {
+  if (name === '—' || name === '未載入') return null;
+  const rec = getMoveDetails(moveId || name);
+  const zh = rec?.names?.['zh-Hant'] || name;
+  const power = rec?.power;
+  const acc = rec?.accuracy;
+  const flavor = rec?.flavor?.['zh-Hant'] || null;
+  return (
+    <span className="move-tooltip" role="tooltip">
+      <strong>{zh}</strong>
+      <span>屬性：{typeLabel}</span>
+      <span>威力：{power == null ? '—' : power}</span>
+      <span>命中：{acc == null ? '—' : acc}</span>
+      {flavor ? <span className="move-tooltip__flavor">{flavor}</span> : null}
+    </span>
+  );
 }
 
 function formOptionsOf(pokemon: PokemonSet): PokemonFormOption[] {
@@ -177,6 +227,9 @@ export function PokemonCard({
     ? (pokemon.formKey as string)
     : forms.find((f) => f.isDefault)?.formKey || forms[0]?.formKey || '';
   const speciesTitle = formatSpeciesLabel(pokemon);
+  const sheetUrl = useSheetSprite(pokemon);
+  const avatarUrl = sheetUrl || (pokemon.identified ? null : pokemon.thumbnailDataUrl);
+  const { megaStones, held } = splitHeldItemUsage(pokemon.items, 2);
 
   const selectable = variant === 'my' && !!onSelect;
   const cardClass = [
@@ -193,8 +246,8 @@ export function PokemonCard({
     <div className="pkmn-card__col pkmn-card__col--identity">
       <header className="pkmn-card__header">
         <div className="pkmn-card__sprite" aria-hidden>
-          {pokemon.thumbnailDataUrl ? (
-            <img src={pokemon.thumbnailDataUrl} alt="" className="pkmn-card__thumb" />
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="pkmn-card__thumb" />
           ) : pokemon.speciesKey ? (
             pokemon.speciesKey.slice(0, 2).toUpperCase()
           ) : (
@@ -240,20 +293,25 @@ export function PokemonCard({
             pokemon.formLabel && <span className="pkmn-card__form">{pokemon.formLabel}</span>
           )}
           <div className="pkmn-card__meta">
+            {megaStones.length ? (
+              <span className="pkmn-card__items" title={`${formatItemUsageLine(megaStones, '')} · ${MOVES_SOURCE_LABEL}`}>
+                進化石使用率：{formatItemUsageLine(megaStones, '—')}
+              </span>
+            ) : null}
             <span
               className="pkmn-card__items"
               title={
-                pokemon.items?.length
-                  ? `${formatItemUsageLine(pokemon.items, '')} · ${MOVES_SOURCE_LABEL}`
+                held.length
+                  ? `${formatItemUsageLine(held, '')} · ${MOVES_SOURCE_LABEL}`
                   : variant === 'enemy'
                     ? 'CBD Doubles 道具使用率（非猜測持有）'
                     : undefined
               }
             >
               {variant === 'enemy'
-                ? `道具：${formatItemUsageLine(pokemon.items, '—')}`
-                : pokemon.items?.length
-                  ? `道具：${formatItemUsageLine(pokemon.items, pokemon.item || '無道具')}`
+                ? `道具：${formatItemUsageLine(held, '—')}`
+                : held.length
+                  ? `道具：${formatItemUsageLine(held, pokemon.item || '無道具')}`
                   : pokemon.item || '無道具'}
             </span>
             <span>{pokemon.ability || '—'}</span>
@@ -328,6 +386,7 @@ export function PokemonCard({
                 <span className="move-btn__name">{mv.name}</span>
               </span>
               {usageLabel ? <small className="move-btn__usage">{usageLabel}</small> : mv.pp ? <small>{mv.pp}</small> : null}
+              <MoveTooltip name={mv.name} typeLabel={String(mv.type)} moveId={mv.id} />
             </button>
           );
         })}

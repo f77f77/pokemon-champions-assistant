@@ -113,6 +113,11 @@ def emit_css_rule(dex: int, form: int, col: int, row: int, cols: int, rows: int,
     )
 
 
+def is_visible_pixel(r: int, g: int, b: int, a: int, *, alpha_thr: int = 12, rgb_sum_thr: int = 8) -> bool:
+    """Treat near-black sheet BG as empty; keep dark-but-colored bodies (Greninja)."""
+    return a > alpha_thr and (r + g + b) > rgb_sum_thr
+
+
 def trim_content(im: Image.Image, pad: int = 1, thr: int = 12) -> Image.Image:
     """Tight crop around opaque / non-black sprite pixels (handles black-bg sheets)."""
     rgba = im.convert("RGBA")
@@ -121,9 +126,7 @@ def trim_content(im: Image.Image, pad: int = 1, thr: int = 12) -> Image.Image:
     xs: list[int] = []
     ys: list[int] = []
     for i, (r, g, b, a) in enumerate(px):
-        if a <= thr:
-            continue
-        if r + g + b <= 20:
+        if not is_visible_pixel(r, g, b, a, alpha_thr=thr):
             continue
         xs.append(i % w)
         ys.append(i // w)
@@ -167,14 +170,18 @@ def crop_template(sheet: Image.Image, rect: dict[str, int], size: int = TEMPLATE
     if w >= size and h >= size:
         ox, oy = (w - size) // 2, (h - size) // 2
         centered = cell.crop((ox, oy, ox + size, oy + size))
+
         def _vis(im: Image.Image) -> int:
             n = 0
             for r, g, b, a in im.getdata():
-                if a > 12 and r + g + b > 20:
+                if is_visible_pixel(r, g, b, a):
                     n += 1
             return n
+
         full_v = _vis(cell)
         cen_v = _vis(centered)
+        # Legacy pack: a 64×64 icon centered in a larger cell. Official 128 cells
+        # with dark bodies (Greninja) used to trip this and yield a head-only crop.
         if full_v > 0 and cen_v >= 0.9 * full_v:
             return centered
     return letterbox_rgba(cell, size)
