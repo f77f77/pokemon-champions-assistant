@@ -124,6 +124,15 @@ function reindexSpeciesMaps() {
     addAlias(s.speciesKey, s);
     addAlias(s.key.replace(/-/g, ''), s);
     addAlias((s.formKey || '').replace(/-/g, ''), s);
+    if (s.formLabel) addAlias(`${s.nameEn}-${s.formLabel}`.replace(/\s+/g, '-'), s);
+    for (const f of s.forms || []) {
+      addAlias(f.formKey, s);
+      addAlias(f.showdownId, s);
+      addAlias((f.formKey || '').replace(/-/g, ''), s);
+      addAlias((f.showdownId || '').replace(/-/g, ''), s);
+      addAlias(`${s.nameEn}-${f.label}`.replace(/\s+/g, '-'), s);
+      addAlias(`${s.key}-${f.label}`.replace(/\s+/g, '-'), s);
+    }
     if (s.nationalDex != null && s.nationalDex > 0) {
       const dex = String(s.nationalDex);
       // Prefer form-0 / male / non-`f` suffix when several share a dex.
@@ -156,6 +165,127 @@ export function findSpecies(query: string): SpeciesData | undefined {
   return SPECIES_DB.find(
     (s) => s.nameZh.includes(query) || s.nameEn.toLowerCase().includes(q),
   );
+}
+
+function normIdent(s: string): string {
+  return s.trim().toLowerCase().replace(/[_ ]+/g, '-');
+}
+
+function compactIdent(s: string): string {
+  return normIdent(s).replace(/-/g, '');
+}
+
+/** Match a legal form on a species (Mega / Rotom / size / regional). */
+export function matchSpeciesForm(sp: SpeciesData, query: string): string | undefined {
+  const q = normIdent(query);
+  const compact = compactIdent(query);
+  const forms = sp.forms || [];
+  for (const f of forms) {
+    const keys = [
+      f.formKey,
+      f.showdownId,
+      f.label,
+      `${sp.nameEn}-${f.label}`,
+      `${sp.key}-${f.label}`,
+      `${sp.nameEn}-${f.formKey.replace(/^.*-/, '')}`,
+    ];
+    for (const k of keys) {
+      const n = normIdent(k);
+      if (n === q || compactIdent(k) === compact) return f.formKey;
+    }
+  }
+  const suffix = q.split('-').slice(1).join('-');
+  if (suffix) {
+    const hit = forms.find(
+      (f) =>
+        f.formKey === q ||
+        f.formKey.endsWith(`-${suffix}`) ||
+        compactIdent(f.formKey) === compact,
+    );
+    if (hit) return hit.formKey;
+  }
+  return undefined;
+}
+
+function stripMegaSuffix(name: string): { base: string; mega: 'x' | 'y' | true } | null {
+  const q = normIdent(name);
+  const mx = q.match(/^(.*)-mega-x$/);
+  if (mx?.[1]) return { base: mx[1], mega: 'x' };
+  const my = q.match(/^(.*)-mega-y$/);
+  if (my?.[1]) return { base: my[1], mega: 'y' };
+  const m = q.match(/^(.*)-mega$/);
+  if (m?.[1]) return { base: m[1], mega: true };
+  return null;
+}
+
+function matchMegaForm(sp: SpeciesData, mega: 'x' | 'y' | true): string | undefined {
+  const forms = sp.forms || [];
+  if (mega === 'x') return forms.find((f) => /mega-x$/i.test(f.formKey))?.formKey;
+  if (mega === 'y') return forms.find((f) => /mega-y$/i.test(f.formKey))?.formKey;
+  return forms.find((f) => /(?:^|-)mega$/i.test(f.formKey))?.formKey;
+}
+
+/** Mega stone → Mega / Mega X / Mega Y formKey when that sibling exists. */
+export function matchMegaFormFromItem(sp: SpeciesData, item?: string): string | undefined {
+  if (!item) return undefined;
+  const raw = item.trim();
+  const id = raw.toLowerCase().replace(/[-_ ]+/g, '');
+  if (/eviolite/i.test(id) || /進化的奇石/.test(raw)) return undefined;
+  const looksStone =
+    /ite[xy]?$/i.test(id) ||
+    /進化石/.test(raw) ||
+    /(ite|nite)(\s*[xy])?$/i.test(raw.replace(/[-_ ]+/g, '')) ||
+    /ite\s*[xy]$/i.test(raw);
+  if (!looksStone) return undefined;
+  if (/ite\s*x$/i.test(raw) || /itex$/i.test(id)) return matchMegaForm(sp, 'x');
+  if (/ite\s*y$/i.test(raw) || /itey$/i.test(id)) return matchMegaForm(sp, 'y');
+  return matchMegaForm(sp, true);
+}
+
+export interface ImportSpeciesHit {
+  species: SpeciesData;
+  formKey?: string;
+}
+
+/**
+ * Showdown paste names → allowlist species + legal form.
+ * Accepts `Salamence-Mega`, `Charizard-Mega-X`, `Gourgeist-Super`, `Rotom-Wash`.
+ */
+export function resolveImportSpecies(name: string, item?: string): ImportSpeciesHit | undefined {
+  const cleaned = name
+    .trim()
+    .replace(/[\u2640\u2642]/g, '')
+    .replace(/\s+/g, ' ');
+  if (!cleaned) return undefined;
+
+  const tryHit = (query: string): ImportSpeciesHit | undefined => {
+    const species = findSpecies(query);
+    if (!species) return undefined;
+    const formKey = matchSpeciesForm(species, query) || matchSpeciesForm(species, cleaned);
+    return { species, formKey };
+  };
+
+  let hit =
+    tryHit(cleaned) ||
+    tryHit(normIdent(cleaned)) ||
+    tryHit(compactIdent(cleaned));
+
+  const mega = stripMegaSuffix(cleaned);
+  if (!hit && mega) {
+    const species = findSpecies(mega.base) || findSpecies(compactIdent(mega.base));
+    if (species) hit = { species, formKey: matchMegaForm(species, mega.mega) };
+  }
+
+  if (!hit && cleaned.includes('-')) {
+    const base = cleaned.replace(/-[^-]+$/, '').trim();
+    const species = findSpecies(base) || findSpecies(normIdent(base));
+    if (species) hit = { species, formKey: matchSpeciesForm(species, cleaned) };
+  }
+
+  if (!hit) return undefined;
+  const fromItem = matchMegaFormFromItem(hit.species, item);
+  const formKey = hit.formKey || fromItem;
+  return { species: hit.species, formKey };
 }
 
 export function formatSpeciesLabel(

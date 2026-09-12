@@ -1,8 +1,10 @@
-# Pokemon Champions battle assistant (v0.5 / recognize v1.5)
+# Pokemon Champions battle assistant (v0.6 / recognize v1.5)
 
 Electron + Vite + React (TypeScript). Defaults: AverMedia GC551, local Team Preview thumbs, Spe hand-fill, championsbattledata VGC Doubles (2v2 / 6-pick-4) usage.
 
 UI strings remain Traditional Chinese.
+
+v0.6: Showdown import applies EVs/natures and `Species-Mega` / mega-stone forms; ally team persists in `localStorage`; move tooltips stay in viewport; speed axis drops the 0-EV +10% tick, adds a max-scale tick, and draws a vertical guide on the selected ally Spe.
 
 ## Quick start
 

@@ -361,13 +361,8 @@ button, input, select, textarea {
   position: relative;
 }
 .move-tooltip {
-  display: none;
-  position: absolute;
-  left: 0;
-  bottom: calc(100% + 6px);
-  z-index: 30;
   min-width: 11rem;
-  max-width: 16rem;
+  max-width: min(16rem, calc(100vw - 16px));
   padding: 0.4rem 0.5rem;
   background: #121826;
   border: 1px solid #4a5570;
@@ -378,12 +373,17 @@ button, input, select, textarea {
   line-height: 1.35;
   pointer-events: none;
   white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.move-tooltip--fixed {
+  display: block;
+  position: fixed;
+  z-index: 10000;
 }
 .move-tooltip strong { display: block; margin-bottom: 0.15rem; color: var(--accent); }
 .move-tooltip span { display: block; color: var(--muted); }
 .move-tooltip__flavor { margin-top: 0.25rem; color: var(--text) !important; }
-.move-btn:hover .move-tooltip,
-.move-btn:focus-visible .move-tooltip { display: block; }
 .pkmn-card--my .move-btn {
   padding: 0.25rem 0.3rem;
   font-size: 0.68rem;
@@ -489,9 +489,32 @@ button, input, select, textarea {
   margin: 0 0 0.35rem; color: var(--muted); font-size: 0.65rem; height: auto;
 }
 .speed-axis__scale-track {
-  height: 1.1rem; background: transparent; border-color: transparent;
+  height: 1.35rem; background: transparent; border-color: transparent;
 }
-.speed-axis__scale-track span { position: absolute; top: 0; transform: translateX(-50%); }
+.speed-axis__scale-track span {
+  position: absolute; top: 0; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 0.05rem;
+}
+.speed-axis__scale-track span.is-max { transform: translateX(-100%); align-items: flex-end; }
+.speed-axis__tick {
+  display: block;
+  width: 1px;
+  height: 7px;
+  background: #8b93a7;
+  box-shadow: 0 0 0 0.5px rgba(139, 147, 167, 0.4);
+}
+.speed-axis__guide {
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  width: 2px;
+  transform: translateX(-1px);
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(182, 255, 74, 0.65);
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0.9;
+}
 .speed-row {
   /* Label + track only — Spe value overlays inside track so all tracks share width */
   display: grid;
