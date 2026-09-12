@@ -416,10 +416,35 @@ button, input, select, textarea {
   border-top: 1px dashed var(--border);
 }
 
-.capture-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
-.capture-toolbar { display: flex; gap: 0.4rem; margin-bottom: 0.45rem; }
+.capture-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; justify-content: flex-end; }
+.capture-toolbar { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.45rem; align-items: center; }
 .capture-toolbar select {
-  flex: 1; background: #0e1118; border: 1px solid var(--border); border-radius: 8px; padding: 0.3rem;
+  flex: 1; min-width: 10rem; background: #0e1118; border: 1px solid var(--border); border-radius: 8px; padding: 0.3rem;
+}
+.capture-toolbar--audio { margin-top: -0.15rem; }
+.capture-audio-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.capture-listen {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.capture-signal {
+  font-size: 0.78rem;
+  margin: 0.35rem 0 0;
+  color: var(--ok);
+  font-variant-numeric: tabular-nums;
+}
+.capture-hint {
+  font-size: 0.72rem;
+  line-height: 1.4;
+  margin: 0.25rem 0 0;
 }
 .capture-preview {
   position: relative; flex: 1; min-height: 220px;
@@ -450,6 +475,7 @@ button, input, select, textarea {
 .status-pill {
   font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 999px;
   border: 1px solid var(--border); color: var(--muted);
+  max-width: min(100%, 36rem); line-height: 1.35;
 }
 .status-pill.is-on { color: var(--ok); border-color: #2f6b4f; background: #143025; }
 .status-line, .error-text { font-size: 0.8rem; margin: 0.4rem 0 0; }
@@ -722,7 +748,7 @@ button, input, select, textarea {
 .settings__val { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
 .settings__actions { display: flex; flex-direction: column; gap: 0.35rem; margin: 0.4rem 0; }
 .settings__check { display: flex; gap: 0.4rem; align-items: center; font-size: 0.75rem; }
-.settings__body { width: 280px; max-height: 70vh; overflow: auto; }
+.settings__body { width: 320px; max-height: 70vh; overflow: auto; }
 .settings__body hr { border: none; border-top: 1px solid var(--border); margin: 0.5rem 0; }
 
 .move-grid--six { grid-template-columns: 1fr 1fr; }

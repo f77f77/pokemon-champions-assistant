@@ -501,6 +501,18 @@ export default function App() {
                 </label>
               </div>
               <hr />
+              <p className="settings__title">擷取卡（GC551）</p>
+              <p className="muted settings__hint">
+                鏡頭約束：1920×1080 @ 60（理想），有支援時優先 MJPEG。實機有畫面即視為已連接；盒上
+                Signal Out of Range 多為 passthrough／EDID，唔影響擷取同辨認。
+              </p>
+              <p className="muted settings__hint">
+                PC 已係 1080p60 仍見 Out of Range → 查 passthrough
+                螢幕支援、GC551 EDID／遊戲機輸出、改用擷取預覽唔睇盒上 OSD。
+              </p>
+              <p className="muted settings__hint">
+                系統混音／Discord 要喺 OS 選 GC551 做輸入；app 監聽只係本機預覽。
+              </p>
               <p>鏡頭：優先 GC551／AVerMedia，其次 OBS</p>
               <p>Spe 於我方卡片手填</p>
               <p>招式來源：{MOVES_SOURCE_LABEL}（無資料→未載入）</p>
