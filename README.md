@@ -1,8 +1,10 @@
-# Pokemon Champions battle assistant (v0.6 / recognize v1.5)
+# Pokemon Champions battle assistant (v0.7 / recognize v1.5)
 
 Electron + Vite + React (TypeScript). Defaults: AverMedia GC551, local Team Preview thumbs, Spe hand-fill, championsbattledata VGC Doubles (2v2 / 6-pick-4) usage.
 
 UI strings remain Traditional Chinese.
+
+v0.7: GC551 capture locks 1080p60 (`ideal` 1920×1080 @ 60, MJPEG when the browser exposes it); live frames are treated as a good signal even if the hardware OSD says Signal Out of Range; optional capture-card audio listen (default off) with persisted audio device id.
 
 v0.6: Showdown import applies EVs/natures and `Species-Mega` / mega-stone forms; ally team persists in `localStorage`; move tooltips stay in viewport; speed axis drops the 0-EV +10% tick, adds a max-scale tick, and draws a vertical guide on the selected ally Spe.
 
@@ -26,15 +28,19 @@ Same contentRect → ROI → thumb → recognize pipeline + green/yellow debug o
 
 ## Capture device
 
-1. Plug in AverMedia GC551 (normal videoinput)
+1. Plug in AverMedia GC551 (normal videoinput). PC-side capture is typically **1920×1080 60fps YUY2**; the app requests `width/height/frameRate` ideal 1920×1080@60 and prefers MJPEG when Chromium exposes a format constraint (fallback = whatever 1080p60 the card grants).
 
-2. Open camera; picker prefers GC551/AVerMedia, then OBS Virtual Camera
+2. Open camera; picker prefers GC551/AVerMedia (★), then OBS Virtual Camera. Re-open re-applies those video constraints.
 
-3. Persist deviceId in localStorage key pkmn-champions-video-device
+3. Persist video `deviceId` in `pkmn-champions-video-device`. Audio input (if any `audioinput` exists) is listed as 擷取音訊 and persisted in `pkmn-champions-audio-device`.
 
-4. No stream shows Traditional Chinese no-signal message
+4. Status line shows actual `videoWidth` × `videoHeight` @ fps · format (e.g. `1920×1080 @ 60 · YUY2`). Non-zero frames = **已連接 · 實機訊號正常**. Hardware passthrough / AVerMedia OSD **Signal Out of Range** is not treated as no-signal and does not block 辨認敵方隊伍.
 
-5. Recognize button grabs ONE frame via canvas then ROI crop (not per-frame)
+5. Optional **監聽擷取音訊** (default off) plays the selected capture-card audio through a hidden `<audio>` element. Video connect does not fail if mic permission / audio device is missing. OS mix / Discord must select GC551 as the system input; in-app listen is local preview only.
+
+6. No live track and no still image → Traditional Chinese 無訊號. Permission / in-use / overconstrained failures are distinguished (無權限 / 裝置占用 / 無支援解析度).
+
+7. Recognize button grabs ONE frame via canvas then ROI crop (not per-frame)
 
 Busy label uses Traditional Chinese recognizing-state text.
 

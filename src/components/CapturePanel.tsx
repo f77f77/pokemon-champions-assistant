@@ -1,15 +1,25 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import {
   listVideoDevices,
+  listAudioDevices,
+  listAudioDevicesSilent,
   openVideoStream,
+  openAudioStream,
   stopStream,
   pickPreferredDeviceId,
+  pickPreferredAudioDeviceId,
   loadSavedDeviceId,
   saveDeviceId,
+  loadSavedAudioDeviceId,
+  saveAudioDeviceId,
   isPreferredCaptureDevice,
   grabFrame,
   grabImageSource,
+  classifyGetUserMediaError,
+  describeCaptureSignal,
+  waitForVideoDimensions,
   type VideoDevice,
+  type AudioDevice,
 } from '../lib/videoSource';
 import {
   resolveEnemyPanel,
@@ -23,6 +33,14 @@ import {
 } from '../lib/recognize';
 import { AllyIconStrip } from './AllyIconStrip';
 import type { PokemonSet } from '../types';
+
+const LIVE_OK_STATUS =
+  '已連接 · 實機訊號正常（若盒上仍顯示 Signal Out of Range，多為 passthrough/EDID，唔影響擷取）';
+
+const OUT_OF_RANGE_HINT =
+  'PC 已係 1080p60 仍見 Out of Range → 查 passthrough 螢幕支援、GC551 EDID／遊戲機輸出、改用擷取預覽唔睇盒上 OSD。App 以實機畫面為準，唔會因盒上 OSD 當無訊號。';
+
+const AUDIO_OS_HINT = '系統混音／Discord 要喺 OS 選 GC551 做輸入；app 監聽只係本機預覽。';
 
 interface Props {
   busy: boolean;
@@ -47,37 +65,92 @@ export function CapturePanel({
   onSelectAlly,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const stillImgRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const audioStreamRef = useRef<MediaStream | null>(null);
   const stillUrlRef = useRef<string | null>(null);
   const [devices, setDevices] = useState<VideoDevice[]>([]);
+  const [audioDevices, setAudioDevices] = useState<AudioDevice[]>([]);
   const [deviceId, setDeviceId] = useState('');
+  const [audioDeviceId, setAudioDeviceId] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [audioStatus, setAudioStatus] = useState<string | null>(null);
   const [live, setLive] = useState(false);
+  const [framesOk, setFramesOk] = useState(false);
+  const [signalMeta, setSignalMeta] = useState('');
+  const [listen, setListen] = useState(false);
   const [stillUrl, setStillUrl] = useState<string | null>(null);
   const [stillReady, setStillReady] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
   const panel = useMemo(() => resolveEnemyPanel(fineTune), [fineTune]);
   const panelPct = useMemo(() => panelCssPercent(panel), [panel]);
-  const hasFrame = live || (!!stillUrl && stillReady);
+  const hasValidFrames = framesOk || (!!stillUrl && stillReady);
+  const trackLive = live;
+
+  const selectedVideo = devices.find((d) => d.deviceId === deviceId);
+
+  useEffect(() => {
+    if (!live) return;
+    const video = videoRef.current;
+    const stream = streamRef.current;
+    if (!video || !stream) return;
+    const update = () => {
+      if (video.videoWidth > 0 && video.videoHeight > 0) {
+        setFramesOk(true);
+        setSignalMeta(describeCaptureSignal(video, stream.getVideoTracks()[0]));
+      }
+    };
+    video.addEventListener('loadedmetadata', update);
+    video.addEventListener('loadeddata', update);
+    const id = window.setInterval(update, 400);
+    update();
+    return () => {
+      video.removeEventListener('loadedmetadata', update);
+      video.removeEventListener('loadeddata', update);
+      window.clearInterval(id);
+    };
+  }, [live]);
 
   useEffect(() => {
     let cancelled = false;
-    listVideoDevices()
-      .then((list) => {
+
+    async function refreshDevices(probeVideo: boolean) {
+      try {
+        const videoList = await listVideoDevices({ probe: probeVideo });
         if (cancelled) return;
-        setDevices(list);
-        const preferred = pickPreferredDeviceId(list, loadSavedDeviceId());
-        setDeviceId(preferred);
-      })
-      .catch(() => {
-        if (!cancelled) setDevices([]);
-      });
+        setDevices(videoList);
+        setDeviceId((prev) => pickPreferredDeviceId(videoList, prev || loadSavedDeviceId()));
+        const audioList = await listAudioDevicesSilent();
+        if (cancelled) return;
+        setAudioDevices(audioList);
+        const videoGroup =
+          videoList.find((d) => d.deviceId === pickPreferredDeviceId(videoList, loadSavedDeviceId()))
+            ?.groupId;
+        setAudioDeviceId((audioPrev) =>
+          pickPreferredAudioDeviceId(audioList, audioPrev || loadSavedAudioDeviceId(), videoGroup),
+        );
+      } catch {
+        if (!cancelled) {
+          setDevices([]);
+          setAudioDevices([]);
+        }
+      }
+    }
+
+    void refreshDevices(true);
+    const onDeviceChange = () => {
+      void refreshDevices(false);
+    };
+    navigator.mediaDevices?.addEventListener?.('devicechange', onDeviceChange);
+
     return () => {
       cancelled = true;
+      navigator.mediaDevices?.removeEventListener?.('devicechange', onDeviceChange);
       stopStream(streamRef.current);
+      stopStream(audioStreamRef.current);
       if (stillUrlRef.current) {
         URL.revokeObjectURL(stillUrlRef.current);
         stillUrlRef.current = null;
@@ -99,6 +172,11 @@ export function CapturePanel({
     saveDeviceId(id);
   }
 
+  function onAudioDeviceChange(id: string) {
+    setAudioDeviceId(id);
+    saveAudioDeviceId(id);
+  }
+
   function loadStillFile(file: File | undefined | null) {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
@@ -110,6 +188,8 @@ export function CapturePanel({
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
     setLive(false);
+    setFramesOk(false);
+    setSignalMeta('');
 
     revokeStill();
     const url = URL.createObjectURL(file);
@@ -125,6 +205,8 @@ export function CapturePanel({
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
     setLive(false);
+    setFramesOk(false);
+    setSignalMeta('');
     revokeStill();
     // 非 blob URL，revokeStill 不會誤撤銷
     const label = currentFixtureLabel();
@@ -134,26 +216,59 @@ export function CapturePanel({
     console.info('[fixtures] loaded', label);
   }
 
+  function readSignal(video: HTMLVideoElement, stream: MediaStream): string {
+    const track = stream.getVideoTracks()[0];
+    return describeCaptureSignal(video, track);
+  }
+
   async function connect() {
     setError(null);
     try {
       revokeStill();
       stopStream(streamRef.current);
+      streamRef.current = null;
+      setFramesOk(false);
+      setSignalMeta('');
       const stream = await openVideoStream(deviceId || undefined);
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+      const video = videoRef.current;
+      if (video) {
+        video.srcObject = stream;
+        await video.play();
+        const dims = await waitForVideoDimensions(video);
+        const meta = readSignal(video, stream);
+        setSignalMeta(meta);
+        // 有非零畫面＝擷取成功；盒上 Signal Out of Range 唔當無訊號。
+        if (dims.width > 0 && dims.height > 0) {
+          setFramesOk(true);
+        } else {
+          setFramesOk(false);
+        }
       }
       if (deviceId) saveDeviceId(deviceId);
       setLive(true);
+      // 連線後再 enumerate，補齊 label／groupId；probe:false 以免搶走 live track。
+      try {
+        const videoList = await listVideoDevices({ probe: false });
+        setDevices(videoList);
+        const audioList = await listAudioDevicesSilent();
+        setAudioDevices(audioList);
+        setAudioDeviceId((prev) =>
+          pickPreferredAudioDeviceId(
+            audioList,
+            prev || loadSavedAudioDeviceId(),
+            videoList.find((d) => d.deviceId === (deviceId || pickPreferredDeviceId(videoList)))
+              ?.groupId,
+          ),
+        );
+      } catch {
+        /* ignore */
+      }
     } catch (e) {
       setLive(false);
-      setError(
-        e instanceof Error
-          ? e.message
-          : '無訊號／裝置不可用（請選 GC551 或 OBS Virtual Camera）',
-      );
+      setFramesOk(false);
+      setSignalMeta('');
+      setError(classifyGetUserMediaError(e, 'video'));
     }
   }
 
@@ -162,6 +277,77 @@ export function CapturePanel({
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
     setLive(false);
+    setFramesOk(false);
+    setSignalMeta('');
+  }
+
+  async function startListen(id: string) {
+    try {
+      stopStream(audioStreamRef.current);
+      audioStreamRef.current = null;
+      const stream = await openAudioStream(id || undefined);
+      audioStreamRef.current = stream;
+      const el = audioRef.current;
+      if (el) {
+        el.srcObject = stream;
+        el.muted = false;
+        el.volume = 1;
+        await el.play();
+      }
+      setAudioStatus(null);
+      if (id) saveAudioDeviceId(id);
+    } catch (e) {
+      stopStream(audioStreamRef.current);
+      audioStreamRef.current = null;
+      setListen(false);
+      setAudioStatus(classifyGetUserMediaError(e, 'audio'));
+    }
+  }
+
+  function stopListen() {
+    stopStream(audioStreamRef.current);
+    audioStreamRef.current = null;
+    const el = audioRef.current;
+    if (el) {
+      el.pause();
+      el.srcObject = null;
+    }
+  }
+
+  async function onListenChange(next: boolean) {
+    setListen(next);
+    if (next) {
+      let list = audioDevices;
+      if (list.length === 0 || list.every((d) => d.label.startsWith('音訊輸入'))) {
+        list = await listAudioDevices();
+        setAudioDevices(list);
+        if (!audioDeviceId) {
+          const picked = pickPreferredAudioDeviceId(
+            list,
+            loadSavedAudioDeviceId(),
+            selectedVideo?.groupId,
+          );
+          setAudioDeviceId(picked);
+          await startListen(picked);
+          return;
+        }
+      }
+      if (list.length === 0) {
+        setListen(false);
+        setAudioStatus('擷取卡無音訊裝置或未授權麥克風權限');
+        return;
+      }
+      await startListen(audioDeviceId);
+    } else {
+      stopListen();
+    }
+  }
+
+  async function onAudioSelect(id: string) {
+    onAudioDeviceChange(id);
+    if (listen) {
+      await startListen(id);
+    }
   }
 
   function handleRecognize() {
@@ -192,8 +378,14 @@ export function CapturePanel({
     loadStillFile(e.dataTransfer.files?.[0]);
   }
 
-  const statusLabel = stillUrl && stillReady ? '靜態圖' : live ? '已連接' : '無訊號';
-  const statusOn = hasFrame;
+  const statusLabel = stillUrl && stillReady
+    ? '靜態圖'
+    : trackLive && framesOk
+      ? LIVE_OK_STATUS
+      : trackLive
+        ? '已連接 · 等待畫面…'
+        : '無訊號';
+  const statusOn = hasValidFrames || trackLive;
 
   return (
     <section className="panel panel--capture">
@@ -204,7 +396,7 @@ export function CapturePanel({
           <button
             type="button"
             className="btn btn--primary"
-            disabled={busy || !hasFrame}
+            disabled={busy || !hasValidFrames}
             onClick={handleRecognize}
           >
             {busy ? '辨認中…' : '辨認敵方隊伍'}
@@ -226,7 +418,7 @@ export function CapturePanel({
           ))}
         </select>
         {!live ? (
-          <button type="button" className="btn btn--ghost" onClick={connect}>
+          <button type="button" className="btn btn--ghost" onClick={() => void connect()}>
             開啟鏡頭
           </button>
         ) : (
@@ -263,6 +455,36 @@ export function CapturePanel({
         </button>
       </div>
 
+      {audioDevices.length > 0 ? (
+        <div className="capture-toolbar capture-toolbar--audio">
+          <label className="capture-audio-label" htmlFor="capture-audio-select">
+            擷取音訊
+          </label>
+          <select
+            id="capture-audio-select"
+            value={audioDeviceId}
+            onChange={(e) => void onAudioSelect(e.target.value)}
+            aria-label="擷取音訊"
+          >
+            {audioDevices.map((d) => (
+              <option key={d.deviceId} value={d.deviceId}>
+                {isPreferredCaptureDevice(d.label) ? `★ ${d.label}` : d.label}
+              </option>
+            ))}
+          </select>
+          <label className="capture-listen">
+            <input
+              type="checkbox"
+              checked={listen}
+              onChange={(e) => void onListenChange(e.target.checked)}
+            />
+            監聽擷取音訊
+          </label>
+        </div>
+      ) : null}
+
+      <audio ref={audioRef} hidden playsInline />
+
       <div
         className={`capture-preview capture-preview--16x9${dragOver ? ' is-dragover' : ''}`}
         onDragOver={onPreviewDragOver}
@@ -290,7 +512,7 @@ export function CapturePanel({
             }}
           />
         )}
-        {!hasFrame && (
+        {!hasValidFrames && !trackLive && (
           <div className="capture-preview__placeholder">
             <p>無訊號／裝置不可用</p>
             <p className="muted">請選擇 AverMedia GC551 或 OBS Virtual Camera 後按「開啟鏡頭」</p>
@@ -299,6 +521,12 @@ export function CapturePanel({
               ROI 敵方面板 ({panel.left.toFixed(3)},{panel.top.toFixed(3)})–
               ({panel.right.toFixed(3)},{panel.bottom.toFixed(3)}) · 相對 16:9 內容區
             </p>
+          </div>
+        )}
+        {trackLive && !framesOk && !stillUrl && (
+          <div className="capture-preview__placeholder">
+            <p>已連接 · 等待畫面…</p>
+            <p className="muted">軌道已開啟；收到非零解析度後會顯示擷取預覽（唔當無訊號）</p>
           </div>
         )}
         {/* ROI 除錯疊加：綠面板／紅槽／黃縮圖（關閉時全部隱藏，含綠框） */}
@@ -353,6 +581,10 @@ export function CapturePanel({
         )}
       </div>
       {error && <p className="error-text">{error}</p>}
+      {audioStatus && <p className="error-text">{audioStatus}</p>}
+      {signalMeta ? <p className="capture-signal">{signalMeta}</p> : null}
+      <p className="capture-hint muted">{OUT_OF_RANGE_HINT}</p>
+      <p className="capture-hint muted">{AUDIO_OS_HINT}</p>
       <p className="status-line">{busy ? '辨認中…' : statusText}</p>
     </section>
   );
