@@ -90,6 +90,8 @@ def required_margin(confidence: float) -> float:
 # Soft type (below hard veto) may break a near-tie toward the matching species.
 TYPE_SOFT_THR = 0.45
 TYPE_TIE_MAX_GAP = 0.03
+TYPE_TIE_MAX_GAP_DUAL = 0.05
+TYPE_VETO_OVERRIDE_DELTA = 0.12
 
 LIVE_LATEST_EXPECTED = [
     "froslass",
@@ -725,6 +727,19 @@ def match_slot(
         reverse=True,
     )
 
+    # Skip hard veto when it drops a dominant raw top1 (false Water/Poison OCR).
+    if primary and ranked:
+        raw_sid, raw_info = ranked[0]
+        raw_conf = float(raw_info["conf"])
+        filt_conf = float(accepted[0][1]) if accepted else 0.0
+        if not has_type(raw_info["types"], primary) and raw_conf - filt_conf >= TYPE_VETO_OVERRIDE_DELTA:
+            dropped = primary
+            accepted = [(sid, float(info["conf"])) for sid, info in ranked]
+            primary = None
+            det_list = [tid for tid in det_list if tid != dropped]
+            soft_types = [tid for tid in (soft_types or []) if tid != dropped]
+            vetoed = []
+
     top_cands = [
         {"speciesId": sid, "confidence": round(float(info["conf"]), 4), "types": sorted(info["types"])}
         for sid, info in ranked[:8]
@@ -765,10 +780,24 @@ def match_slot(
             if tid:
                 soft_primary = tid
                 break
-    type_hint = primary or soft_primary
+    def pink_purple(tid: str) -> bool:
+        return tid in ("fairy", "psychic", "ghost", "poison")
+
+    def hint_matches_top1(tid: str) -> bool:
+        return has_type(best[top1_sid]["types"], tid) or (
+            pink_purple(tid) and any(pink_purple(t) for t in best[top1_sid]["types"])
+        )
+
+    matching_soft = next((tid for tid in (soft_types or []) if hint_matches_top1(tid)), None)
+    type_hint = (
+        primary
+        if primary and hint_matches_top1(primary)
+        else (matching_soft if not primary else None)
+    )
     # Type-supported accept only at high conf (Sylveon Fairy 0.46, margin 0.004).
     # Do not loosen the 0.54–0.60 band — that accepted Basculegion on Greninja.
-    if type_hint and has_type(best[top1_sid]["types"], type_hint) and top1_conf >= 0.60:
+    # Soft Poison on a pink Fairy icon still counts as a matching hint (false color).
+    if type_hint and hint_matches_top1(type_hint) and top1_conf >= 0.60:
         need = min(need, 0.0)
     dbg["requiredMargin"] = need
     if top1_conf >= CONFIDENCE_THRESHOLD and margin >= need:
@@ -784,6 +813,37 @@ def match_slot(
             out["debug"] = dbg
         return out
 
+    def try_soft_promote(typed: list[tuple[str, float]], max_gap: float, tag: str):
+        if len(typed) != 1:
+            return None
+        t_sid, t_conf = typed[0]
+        gap = top1_conf - t_conf
+        if t_conf >= CONFIDENCE_THRESHOLD and 0 <= gap <= max_gap:
+            out = {
+                "speciesId": t_sid,
+                "confidence": t_conf,
+                "altSpeciesId": top1_sid if top1_sid != t_sid else top2_sid,
+                "margin": t_conf,
+                "detectedTypes": list(det_list),
+                "reason": "ok",
+            }
+            if debug:
+                dbg["softTypePromote"] = {"type": tag, "speciesId": t_sid, "gap": gap}
+                out["debug"] = dbg
+            return out
+        return None
+
+    # Dual soft types uniquely pick e.g. Mimikyu (Ghost+Fairy) in a noisy pack.
+    if not primary and len(soft_types or []) >= 2:
+        dual = [
+            (sid, conf)
+            for sid, conf in accepted[:8]
+            if all(has_type(best[sid]["types"], tid) for tid in soft_types)
+        ]
+        promoted = try_soft_promote(dual, TYPE_TIE_MAX_GAP_DUAL, "+".join(soft_types))
+        if promoted:
+            return promoted
+
     # Soft type tie-break: unique match among top-8 within TYPE_TIE_MAX_GAP of raw top1.
     if soft_primary:
         typed = [
@@ -791,22 +851,9 @@ def match_slot(
             for sid, conf in accepted[:8]
             if has_type(best[sid]["types"], soft_primary)
         ]
-        if len(typed) == 1:
-            t_sid, t_conf = typed[0]
-            gap = top1_conf - t_conf
-            if t_conf >= CONFIDENCE_THRESHOLD and 0 <= gap <= TYPE_TIE_MAX_GAP:
-                out = {
-                    "speciesId": t_sid,
-                    "confidence": t_conf,
-                    "altSpeciesId": top1_sid if top1_sid != t_sid else top2_sid,
-                    "margin": t_conf,
-                    "detectedTypes": list(det_list),
-                    "reason": "ok",
-                }
-                if debug:
-                    dbg["softTypePromote"] = {"type": soft_primary, "speciesId": t_sid, "gap": gap}
-                    out["debug"] = dbg
-                return out
+        promoted = try_soft_promote(typed, TYPE_TIE_MAX_GAP, soft_primary)
+        if promoted:
+            return promoted
 
     reason = "LOW_CONF" if top1_conf < CONFIDENCE_THRESHOLD else "MARGIN_TOO_SMALL"
     if expected and expected not in cand_ids:

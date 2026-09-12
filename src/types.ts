@@ -83,6 +83,8 @@ export interface RecognizeResult {
   margin?: number;
   /** Debug: soft-detected type icon ids from card top-right */
   detectedTypes?: string[];
+  /** Debug: type-icon NCC scores from card top-right */
+  typeScores?: { id: string; score: number }[];
   /** Debug: why speciesId is null (threshold / margin / type-veto / ahash) */
   rejectReason?: string | null;
   /** Debug: top match candidates before accept gates */

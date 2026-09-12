@@ -169,14 +169,19 @@ async function main() {
       );
       if (i === 2 || mark !== 'Y') {
         console.log(
-          `      alt=${row.altSpeciesId} ahashHit=${row.ahashHit} top=${JSON.stringify(row.topCandidates?.slice(0, 5))}`,
+          `      alt=${row.altSpeciesId} ahashHit=${row.ahashHit} typeScores=${JSON.stringify(row.typeScores || [])} top=${JSON.stringify(row.topCandidates?.slice(0, 5))}`,
         );
       }
     }
     if (expected) {
       console.log(`Overall: correct=${correct}/6 wrong=${wrong} null=${unidentified}`);
       const isLive = img.endsWith('live-latest.jpg') || img.endsWith('test-1.jpg');
-      if (wrong !== 0 || (isLive && (correct < 6 || dump.slots[2].speciesId !== 'basculegion'))) {
+      const ids = dump.slots.map((s) => s.speciesId);
+      if (wrong !== 0 || (isLive && (correct < 6 || ids[2] !== 'basculegion'))) {
+        failed += 1;
+      } else if (img.includes('test-2') && (ids[1] !== 'mimikyu' || ids[2] !== 'ninetalesalola')) {
+        failed += 1;
+      } else if (img.includes('test-4') && ids[3] !== 'sylveon') {
         failed += 1;
       } else if (correct < 5) {
         failed += 1;

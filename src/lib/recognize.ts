@@ -93,6 +93,13 @@ export const MATCH_CROP_RIGHT_EXCLUDE_FRAC = 0.05;
 export const TYPE_SOFT_THR = 0.45;
 /** Max raw-top1 − typed gap for soft-type unique promote (Mimikyu vs Liepard). */
 export const TYPE_TIE_MAX_GAP = 0.03;
+/** Wider gap when 2+ soft types uniquely identify one species (Ghost+Fairy Mimikyu). */
+export const TYPE_TIE_MAX_GAP_DUAL = 0.05;
+/**
+ * Skip hard type veto when it would drop a dominant raw top1
+ * (false Water/Poison on white/pink sprites). Prefer null over a weak leftover.
+ */
+export const TYPE_VETO_OVERRIDE_DELTA = 0.12;
 
 /** Dynamic top1−top2 margin: high conf → smaller required gap (fixture-tuned). */
 export function requiredMargin(confidence: number): number {
@@ -144,6 +151,8 @@ export interface ThumbTemplate {
 
 interface TypeIconTemplate {
   id: TypeIconId;
+  /** Native PNG (not the 32px warmup) — resize from this like Python LANCZOS. */
+  source: HTMLCanvasElement | null;
   /** Pre-rasterized at multiple sizes lazily */
   cache: Map<number, { gray: Float32Array; rgb: Float32Array; mask: Float32Array; size: number }>;
 }
@@ -667,9 +676,9 @@ async function loadTypeIconTemplates(force = false): Promise<TypeIconTemplate[]>
   typeIconsPromise = (async () => {
     const loaded: TypeIconTemplate[] = [];
     for (const id of TYPE_ICON_IDS) {
-      loaded.push({ id, cache: new Map() });
+      loaded.push({ id, source: null, cache: new Map() });
     }
-    // Warm default 32px from PNG (SVG fallback via browser decode of png)
+    // Keep native PNG pixels; downsample per scan size (mirrors Python LANCZOS).
     await Promise.all(
       loaded.map(async (t) => {
         try {
@@ -677,13 +686,22 @@ async function loadTypeIconTemplates(force = false): Promise<TypeIconTemplate[]>
           if (!res.ok) return;
           const blob = await res.blob();
           const bmp = await createImageBitmap(blob);
+          const src = document.createElement('canvas');
+          src.width = bmp.width;
+          src.height = bmp.height;
+          const sctx = src.getContext('2d', { willReadFrequently: true })!;
+          sctx.clearRect(0, 0, src.width, src.height);
+          sctx.drawImage(bmp, 0, 0);
+          bmp.close();
+          t.source = src;
           const c = document.createElement('canvas');
           c.width = 32;
           c.height = 32;
           const ctx = c.getContext('2d', { willReadFrequently: true })!;
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
           ctx.clearRect(0, 0, 32, 32);
-          ctx.drawImage(bmp, 0, 0, 32, 32);
-          bmp.close();
+          ctx.drawImage(src, 0, 0, src.width, src.height, 0, 0, 32, 32);
           const imageData = ctx.getImageData(0, 0, 32, 32);
           t.cache.set(32, {
             size: 32,
@@ -710,28 +728,16 @@ function typeIconAtSize(t: TypeIconTemplate, size: number): {
 } | null {
   const hit = t.cache.get(size);
   if (hit) return hit;
-  const base = t.cache.get(32);
-  if (!base) return null;
-  // Nearest-neighbor upsample/downsample from 32 for other sizes
-  const c = document.createElement('canvas');
-  c.width = 32;
-  c.height = 32;
-  const ctx = c.getContext('2d', { willReadFrequently: true })!;
-  const img = ctx.createImageData(32, 32);
-  for (let i = 0, j = 0; i < 32 * 32; i++, j += 4) {
-    img.data[j] = base.rgb[i * 3];
-    img.data[j + 1] = base.rgb[i * 3 + 1];
-    img.data[j + 2] = base.rgb[i * 3 + 2];
-    img.data[j + 3] = base.mask[i] > 0 ? 255 : 0;
-  }
-  ctx.putImageData(img, 0, 0);
+  const src = t.source;
+  if (!src) return t.cache.get(32) ?? null;
   const out = document.createElement('canvas');
   out.width = size;
   out.height = size;
   const octx = out.getContext('2d', { willReadFrequently: true })!;
   octx.imageSmoothingEnabled = true;
+  octx.imageSmoothingQuality = 'high';
   octx.clearRect(0, 0, size, size);
-  octx.drawImage(c, 0, 0, 32, 32, 0, 0, size, size);
+  octx.drawImage(src, 0, 0, src.width, src.height, 0, 0, size, size);
   const imageData = octx.getImageData(0, 0, size, size);
   const entry = {
     size,
@@ -786,6 +792,7 @@ function nccMaskedGray(a: Float32Array, b: Float32Array, mask: Float32Array): nu
 export interface DetectedCardTypes {
   hard: string[];
   soft: string[];
+  scores: { id: string; score: number }[];
 }
 
 /**
@@ -797,7 +804,7 @@ function detectCardTypes(
   src: CanvasRenderingContext2D,
   card: { x: number; y: number; width: number; height: number },
 ): DetectedCardTypes {
-  if (TYPE_ICON_TEMPLATES.length === 0) return { hard: [], soft: [] };
+  if (TYPE_ICON_TEMPLATES.length === 0) return { hard: [], soft: [], scores: [] };
   const x0 = Math.floor(card.x + card.width * 0.55);
   const x1 = Math.floor(card.x + card.width * 0.98);
   const y0 = Math.floor(card.y + card.height * 0.04);
@@ -808,7 +815,7 @@ function detectCardTypes(
   try {
     region = src.getImageData(x0, y0, rw, rh);
   } catch {
-    return { hard: [], soft: [] };
+    return { hard: [], soft: [], scores: [] };
   }
   type Hit = { sc: number; id: string; x: number; y: number; sz: number };
   const hits: Hit[] = [];
@@ -825,7 +832,9 @@ function detectCardTypes(
           const gray = new Float32Array(isize * isize);
           const rgb = new Float32Array(isize * isize * 3);
           let sum = 0;
-          let sumSq = 0;
+          let rgbSum = 0;
+          let rgbSumSq = 0;
+          const nRgb = isize * isize * 3;
           for (let py = 0; py < isize; py++) {
             for (let px = 0; px < isize; px++) {
               const si = ((y + py) * rw + (x + px)) * 4;
@@ -839,13 +848,16 @@ function detectCardTypes(
               rgb[gi * 3 + 1] = g;
               rgb[gi * 3 + 2] = b;
               sum += gv;
-              sumSq += gv * gv;
+              rgbSum += r + g + b;
+              rgbSumSq += r * r + g * g + b * b;
             }
           }
           const mean = sum / (isize * isize);
           if (mean < 50) continue;
-          const variance = sumSq / (isize * isize) - mean * mean;
-          if (variance < 18 * 18) continue;
+          // Mirror Python patch.std() on RGB (not gray-only variance).
+          const rgbMean = rgbSum / nRgb;
+          const rgbStd = Math.sqrt(Math.max(0, rgbSumSq / nRgb - rgbMean * rgbMean));
+          if (rgbStd < 18) continue;
           const gN = nccMaskedGray(gray, tmpl.gray, tmpl.mask);
           const cN = nccMaskedRgb(rgb, tmpl.rgb, tmpl.mask, isize * isize);
           const sc = 0.35 * gN + 0.65 * cN;
@@ -857,23 +869,35 @@ function detectCardTypes(
     }
   }
   hits.sort((a, b) => b.sc - a.sc);
+  const typeColorFamily = (id: string): string => {
+    if (id === 'fairy' || id === 'psychic') return 'pink';
+    if (id === 'ghost' || id === 'poison') return 'purple';
+    return id;
+  };
+  const hitsOverlap = (a: Hit, b: Hit): boolean => {
+    const ix0 = Math.max(a.x, b.x);
+    const iy0 = Math.max(a.y, b.y);
+    const ix1 = Math.min(a.x + a.sz, b.x + b.sz);
+    const iy1 = Math.min(a.y + a.sz, b.y + b.sz);
+    return ix1 > ix0 && iy1 > iy0 && (ix1 - ix0) * (iy1 - iy0) > 0.3 * a.sz * a.sz;
+  };
   const picked: Hit[] = [];
   for (const h of hits) {
     if (picked.some((p) => p.id === h.id)) continue;
-    let overlap = false;
-    for (const p of picked) {
-      const ix0 = Math.max(h.x, p.x);
-      const iy0 = Math.max(h.y, p.y);
-      const ix1 = Math.min(h.x + h.sz, p.x + p.sz);
-      const iy1 = Math.min(h.y + h.sz, p.y + p.sz);
-      if (ix1 > ix0 && iy1 > iy0 && (ix1 - ix0) * (iy1 - iy0) > 0.3 * h.sz * h.sz) {
-        overlap = true;
-        break;
-      }
-    }
-    if (overlap) continue;
+    if (picked.some((p) => hitsOverlap(h, p))) continue;
     picked.push(h);
     if (picked.length >= 2) break;
+  }
+  // Pink vs purple icons often NCC-collide. Keep the overlapping other family as 2nd soft.
+  if (picked.length === 1) {
+    const first = picked[0];
+    for (const h of hits) {
+      if (h.id === first.id) continue;
+      if (typeColorFamily(h.id) === typeColorFamily(first.id)) continue;
+      if (!hitsOverlap(h, first)) continue;
+      picked.push(h);
+      break;
+    }
   }
   // Hard second gate: only confident type hits. 2nd icon needs a higher
   // score — Ghost vs Poison purple sprites otherwise both pass TYPE_MATCH_THR.
@@ -889,7 +913,11 @@ function detectCardTypes(
   for (const p of picked) {
     if (p.sc >= TYPE_SOFT_THR && !soft.includes(p.id)) soft.push(p.id);
   }
-  return { hard, soft };
+  return {
+    hard,
+    soft,
+    scores: picked.map((p) => ({ id: p.id, score: Number(p.sc.toFixed(4)) })),
+  };
 }
 
 /**
@@ -1270,13 +1298,14 @@ function matchTemplate(
   }
 
   const ranked = [...bestBySpecies.values()].sort((a, b) => b.confidence - a.confidence);
-  const det = detectedTypes;
+  let det = detectedTypes.slice();
+  let soft = softTypes.slice();
   const topCandidates = ranked.slice(0, 8).map((c) => ({
     speciesId: c.speciesId,
     confidence: Number(c.confidence.toFixed(4)),
     types: c.types,
   }));
-  const primary = det[0];
+  let primary: string | undefined = det[0];
   /** Near-identical Champions icons: Ghost/Poison (purple), Fairy/Psychic (pink). */
   const typeAliases = (id: string): string[] => {
     if (id === 'ghost' || id === 'poison') return ['ghost', 'poison'];
@@ -1289,7 +1318,7 @@ function matchTemplate(
   // Hard veto: the *primary* (highest-score) type icon must be on the species.
   // Extra icons are a preference only — requiring every detected id caused
   // Water/Ghost Basculegion to be dropped when canvas NCC read Ghost as Poison.
-  const accepted = ranked
+  let accepted = ranked
     .filter((c) => {
       if (!primary) return true;
       if (!c.types.length) return true;
@@ -1302,6 +1331,23 @@ function matchTemplate(
       if (de) return de;
       return b.confidence - a.confidence;
     });
+
+  // False type OCR (white fox → Water, pink fox → Poison) can veto a dominant
+  // raw top1 and leave only weak leftovers. Skip veto; drop the contradicted id.
+  const rawTop = ranked[0];
+  const filteredTop = accepted[0];
+  if (
+    primary &&
+    rawTop &&
+    !hasType(rawTop, primary) &&
+    rawTop.confidence - (filteredTop?.confidence ?? 0) >= TYPE_VETO_OVERRIDE_DELTA
+  ) {
+    const dropped = primary;
+    accepted = ranked;
+    primary = undefined;
+    det = det.filter((id) => id !== dropped);
+    soft = soft.filter((id) => id !== dropped);
+  }
 
   const debug = {
     topCandidates,
@@ -1327,9 +1373,16 @@ function matchTemplate(
   const top2 = accepted[1];
   const margin = top1.confidence - (top2?.confidence ?? 0);
   let need = requiredMargin(top1.confidence);
-  const softPrimary = !primary ? softTypes[0] : undefined;
-  const typeHint = primary || softPrimary;
-  if (typeHint && hasType(top1, typeHint) && top1.confidence >= 0.6) {
+  const softPrimary = !primary ? soft[0] : undefined;
+  const pinkPurple = (id: string) =>
+    id === 'fairy' || id === 'psychic' || id === 'ghost' || id === 'poison';
+  const hintMatchesTop1 = (id: string) =>
+    hasType(top1, id) || (pinkPurple(id) && top1.types.some((t) => pinkPurple(t)));
+  // Prefer a hint that actually matches top1 (soft Poison must not block Fairy Sylveon).
+  const typeHint =
+    (primary && hintMatchesTop1(primary) ? primary : undefined) ||
+    (!primary ? soft.find((id) => hintMatchesTop1(id)) : undefined);
+  if (typeHint && hintMatchesTop1(typeHint) && top1.confidence >= 0.6) {
     need = Math.min(need, 0);
   }
   if (top1.confidence >= CONFIDENCE_THRESHOLD && margin >= need) {
@@ -1345,25 +1398,42 @@ function matchTemplate(
     };
   }
 
+  const trySoftPromote = (
+    typed: typeof accepted,
+    maxGap: number,
+  ): MatchTemplateResult | null => {
+    if (typed.length !== 1) return null;
+    const pick = typed[0];
+    const gap = top1.confidence - pick.confidence;
+    if (pick.confidence >= CONFIDENCE_THRESHOLD && gap >= 0 && gap <= maxGap) {
+      return {
+        speciesId: pick.speciesId,
+        speciesNameZh: pick.speciesNameZh,
+        confidence: pick.confidence,
+        altSpeciesId: top1.speciesId !== pick.speciesId ? top1.speciesId : (top2?.speciesId ?? null),
+        margin: pick.confidence,
+        detectedTypes: det,
+        rejectReason: null,
+        ...debug,
+      };
+    }
+    return null;
+  };
+
+  // Dual soft types (Ghost+Fairy) uniquely pick Mimikyu among a noisy mid-0.58 pack.
+  if (!primary && soft.length >= 2) {
+    const dual = accepted
+      .slice(0, 8)
+      .filter((c) => soft.every((id) => hasType(c, id)));
+    const promoted = trySoftPromote(dual, TYPE_TIE_MAX_GAP_DUAL);
+    if (promoted) return promoted;
+  }
+
   // Soft type tie-break when hard veto did not fire and raw margin is too small.
   if (softPrimary) {
     const typed = accepted.slice(0, 8).filter((c) => hasType(c, softPrimary));
-    if (typed.length === 1) {
-      const pick = typed[0];
-      const gap = top1.confidence - pick.confidence;
-      if (pick.confidence >= CONFIDENCE_THRESHOLD && gap >= 0 && gap <= TYPE_TIE_MAX_GAP) {
-        return {
-          speciesId: pick.speciesId,
-          speciesNameZh: pick.speciesNameZh,
-          confidence: pick.confidence,
-          altSpeciesId: top1.speciesId !== pick.speciesId ? top1.speciesId : (top2?.speciesId ?? null),
-          margin: pick.confidence,
-          detectedTypes: det,
-          rejectReason: null,
-          ...debug,
-        };
-      }
-    }
+    const promoted = trySoftPromote(typed, TYPE_TIE_MAX_GAP);
+    if (promoted) return promoted;
   }
 
   return {
@@ -1438,6 +1508,7 @@ export async function recognizeEnemyTeamFromCanvas(
           altSpeciesId: matched.altSpeciesId,
           margin: matched.margin,
           detectedTypes: matched.detectedTypes,
+          typeScores: detected.scores,
           rejectReason: matched.rejectReason,
           topCandidates: matched.topCandidates,
           ahashHit: matched.ahashHit,
