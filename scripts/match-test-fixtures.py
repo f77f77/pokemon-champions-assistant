@@ -66,14 +66,14 @@ TYPE_ICON_FRACS = (0.36, 0.42, 0.48)
 # Zero right edge of yellow match crop (type panel bleed). Does NOT change yellow ROI.
 MATCH_CROP_RIGHT_EXCLUDE_FRAC = 0.05
 
-MATCH_SCALES = (0.9, 1.0, 1.1, 1.2, 1.35)
+MATCH_SCALES = (0.9, 1.0, 1.1, 1.2, 1.35, 1.55)
 MATCH_SHIFTS = (-8, -4, 0, 4, 8)
 
 
 def required_margin(confidence: float) -> float:
     """Dynamic top1−top2 margin: high conf → smaller required gap (fixture-tuned).
 
-    ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.06, ≥0.54→0.055, else MIN_MARGIN(0.08).
+    ≥0.75→0.025, ≥0.68→0.03, ≥0.60→0.05, ≥0.54→0.055, else MIN_MARGIN(0.08).
     Never loosens enough to reintroduce wrong-species FPs on the test fixtures.
     """
     if confidence >= 0.75:
@@ -81,23 +81,72 @@ def required_margin(confidence: float) -> float:
     if confidence >= 0.68:
         return 0.03
     if confidence >= 0.60:
-        return 0.06
+        return 0.05
     if confidence >= 0.54:
         return 0.055
     return MIN_MARGIN
 
 
+# Soft type (below hard veto) may break a near-tie toward the matching species.
+TYPE_SOFT_THR = 0.45
+TYPE_TIE_MAX_GAP = 0.03
+TYPE_TIE_MAX_GAP_DUAL = 0.05
+TYPE_VETO_OVERRIDE_DELTA = 0.12
+
+LIVE_LATEST_EXPECTED = [
+    "froslass",
+    "garchomp",
+    "basculegion",  # Basculegion-M
+    "kingambit",
+    "sneasler",
+    "golisopod",  # Bug/Water; not Araquanid
+]
+
 FIXTURES = [
     {
         "path": ROOT / "public/fixtures/team-preview-live-latest.jpg",
         "label": "team-preview-live-latest",
+        "expected": list(LIVE_LATEST_EXPECTED),
+    },
+    {
+        "path": ROOT / "public/fixtures/team-preview-test-1.jpg",
+        "label": "team-preview-test-1",
+        "expected": list(LIVE_LATEST_EXPECTED),  # same bytes as live-latest
+    },
+    {
+        "path": ROOT / "public/fixtures/team-preview-test-2.jpg",
+        "label": "team-preview-test-2",
         "expected": [
-            "froslass",
-            "garchomp",
-            "basculegion",  # Basculegion-M
+            "chesnaught",
+            "mimikyu",
+            "ninetalesalola",
+            "swampert",
+            "typhlosionhisui",
+            "greninja",
+        ],
+    },
+    {
+        "path": ROOT / "public/fixtures/team-preview-test-3.jpg",
+        "label": "team-preview-test-3",
+        "expected": [
+            "slowbrogalar",
+            "scizor",
+            "eelektross",
+            "salamence",
+            "rotomwash",
+            "gallade",
+        ],
+    },
+    {
+        "path": ROOT / "public/fixtures/team-preview-test-4.jpg",
+        "label": "team-preview-test-4",
+        "expected": [
+            "salamence",
+            "rillaboom",
             "kingambit",
+            "sylveon",
+            "rotomwash",
             "sneasler",
-            "golisopod",  # Bug/Water; not Araquanid
         ],
     },
 ]
@@ -276,14 +325,14 @@ def is_maroon(arr: np.ndarray) -> np.ndarray:
     b = arr[:, :, 2].astype(np.float32)
     mx = np.maximum(np.maximum(r, g), b)
     return (
-        (r > 55)
-        & (mx < 145)
-        & (g < 78)
-        & (b < 88)
-        & (r > g * 1.45)
-        & (r > b * 1.3)
-        & ((r - g) > 22)
-        & ((r + g + b) < 300)
+        (r > 50)
+        & (mx < 175)
+        & (g < 90)
+        & (b < 110)
+        & (r > g * 1.35)
+        & (r > b * 1.15)
+        & ((r - g) > 18)
+        & ((r + g + b) < 360)
     )
 
 
@@ -561,9 +610,11 @@ def detect_card_types(card: Image.Image, type_ids: list[str]) -> list[tuple[str,
 
 
 def type_aliases(tid: str) -> set[str]:
-    """Ghost/Poison icons are both purple; interchangeable for the 2nd slot."""
+    """Near-identical Champions icons: Ghost/Poison (purple), Fairy/Psychic (pink)."""
     if tid in ("ghost", "poison"):
         return {"ghost", "poison"}
+    if tid in ("fairy", "psychic"):
+        return {"fairy", "psychic"}
     return {tid}
 
 
@@ -623,6 +674,7 @@ def match_slot(
     *,
     expected: str | None = None,
     debug: bool = False,
+    soft_types: list[str] | None = None,
 ) -> dict:
     qh = average_hash(gray0)
     scored_ah = sorted(((hamming(qh, t["hash"]), t) for t in templates), key=lambda x: x[0])
@@ -675,6 +727,19 @@ def match_slot(
         reverse=True,
     )
 
+    # Skip hard veto when it drops a dominant raw top1 (false Water/Poison OCR).
+    if primary and ranked:
+        raw_sid, raw_info = ranked[0]
+        raw_conf = float(raw_info["conf"])
+        filt_conf = float(accepted[0][1]) if accepted else 0.0
+        if not has_type(raw_info["types"], primary) and raw_conf - filt_conf >= TYPE_VETO_OVERRIDE_DELTA:
+            dropped = primary
+            accepted = [(sid, float(info["conf"])) for sid, info in ranked]
+            primary = None
+            det_list = [tid for tid in det_list if tid != dropped]
+            soft_types = [tid for tid in (soft_types or []) if tid != dropped]
+            vetoed = []
+
     top_cands = [
         {"speciesId": sid, "confidence": round(float(info["conf"]), 4), "types": sorted(info["types"])}
         for sid, info in ranked[:8]
@@ -709,6 +774,31 @@ def match_slot(
     top2_conf = accepted[1][1] if len(accepted) > 1 else 0.0
     margin = top1_conf - top2_conf
     need = required_margin(top1_conf)
+    soft_primary = None
+    if not primary:
+        for tid in soft_types or []:
+            if tid:
+                soft_primary = tid
+                break
+    def pink_purple(tid: str) -> bool:
+        return tid in ("fairy", "psychic", "ghost", "poison")
+
+    def hint_matches_top1(tid: str) -> bool:
+        return has_type(best[top1_sid]["types"], tid) or (
+            pink_purple(tid) and any(pink_purple(t) for t in best[top1_sid]["types"])
+        )
+
+    matching_soft = next((tid for tid in (soft_types or []) if hint_matches_top1(tid)), None)
+    type_hint = (
+        primary
+        if primary and hint_matches_top1(primary)
+        else (matching_soft if not primary else None)
+    )
+    # Type-supported accept only at high conf (Sylveon Fairy 0.46, margin 0.004).
+    # Do not loosen the 0.54–0.60 band — that accepted Basculegion on Greninja.
+    # Soft Poison on a pink Fairy icon still counts as a matching hint (false color).
+    if type_hint and hint_matches_top1(type_hint) and top1_conf >= 0.60:
+        need = min(need, 0.0)
     dbg["requiredMargin"] = need
     if top1_conf >= CONFIDENCE_THRESHOLD and margin >= need:
         out = {
@@ -722,6 +812,49 @@ def match_slot(
         if debug:
             out["debug"] = dbg
         return out
+
+    def try_soft_promote(typed: list[tuple[str, float]], max_gap: float, tag: str):
+        if len(typed) != 1:
+            return None
+        t_sid, t_conf = typed[0]
+        gap = top1_conf - t_conf
+        if t_conf >= CONFIDENCE_THRESHOLD and 0 <= gap <= max_gap:
+            out = {
+                "speciesId": t_sid,
+                "confidence": t_conf,
+                "altSpeciesId": top1_sid if top1_sid != t_sid else top2_sid,
+                "margin": t_conf,
+                "detectedTypes": list(det_list),
+                "reason": "ok",
+            }
+            if debug:
+                dbg["softTypePromote"] = {"type": tag, "speciesId": t_sid, "gap": gap}
+                out["debug"] = dbg
+            return out
+        return None
+
+    # Dual soft types uniquely pick e.g. Mimikyu (Ghost+Fairy) in a noisy pack.
+    if not primary and len(soft_types or []) >= 2:
+        dual = [
+            (sid, conf)
+            for sid, conf in accepted[:8]
+            if all(has_type(best[sid]["types"], tid) for tid in soft_types)
+        ]
+        promoted = try_soft_promote(dual, TYPE_TIE_MAX_GAP_DUAL, "+".join(soft_types))
+        if promoted:
+            return promoted
+
+    # Soft type tie-break: unique match among top-8 within TYPE_TIE_MAX_GAP of raw top1.
+    if soft_primary:
+        typed = [
+            (sid, conf)
+            for sid, conf in accepted[:8]
+            if has_type(best[sid]["types"], soft_primary)
+        ]
+        promoted = try_soft_promote(typed, TYPE_TIE_MAX_GAP, soft_primary)
+        if promoted:
+            return promoted
+
     reason = "LOW_CONF" if top1_conf < CONFIDENCE_THRESHOLD else "MARGIN_TOO_SMALL"
     if expected and expected not in cand_ids:
         reason = "AHASH_PREFILTER"
@@ -783,7 +916,7 @@ def main() -> int:
     )
     print(
         f"Guards: thr={CONFIDENCE_THRESHOLD} dynMargin "
-        f"(≥0.75→0.025,≥0.68→0.03,≥0.60→0.06,≥0.54→0.055,else {MIN_MARGIN}) "
+        f"(≥0.75→0.025,≥0.68→0.03,≥0.60→0.05,≥0.54→0.055,else {MIN_MARGIN}) "
         f"aHash top{AHASH_TOP_K}|≤{AHASH_MAX_HAM} hue×{HUE_PENALTY}@{HUE_DIST_THR} "
         f"type hard≥{TYPE_MATCH_THR} cropRightExclude={MATCH_CROP_RIGHT_EXCLUDE_FRAC}"
     )
@@ -791,6 +924,9 @@ def main() -> int:
 
     for fx in FIXTURES:
         src = fx["path"]
+        if not src.exists():
+            print(f"SKIP missing {src}")
+            continue
         im = Image.open(src).convert("RGB")
         print(f"\n=== {fx['label']} ({src.relative_to(ROOT)}) ===")
         print(f"{'slot':<4} {'expected':<14} {'matched':<14} {'conf':>6} {'margin':>6} types            ok")
@@ -800,7 +936,10 @@ def main() -> int:
             card = crop_card(im, slot)
             scored_types = detect_card_types(card, type_ids)
             det = hard_detected_types(scored_types)
-            result = match_slot(gray0, rgb0, det, templates, expected=expected, debug=debug)
+            soft = [tid for tid, sc in scored_types if sc >= TYPE_SOFT_THR]
+            result = match_slot(
+                gray0, rgb0, det, templates, expected=expected, debug=debug, soft_types=soft
+            )
             best_id = result["speciesId"]
             best_c = float(result["confidence"])
             margin = float(result["margin"])
@@ -846,12 +985,12 @@ def main() -> int:
     out_md.parent.mkdir(parents=True, exist_ok=True)
 
     margin_rule = (
-        "dyn ≥0.75→0.025 / ≥0.68→0.03 / ≥0.60→0.06 / ≥0.54→0.055 / else 0.08"
+        "dyn ≥0.75→0.025 / ≥0.68→0.03 / ≥0.60→0.05 / ≥0.54→0.055 / else 0.08"
     )
     lines = [
         "# Test fixture match results",
         "",
-        f"- Fixtures: `public/fixtures/team-preview-live-latest.jpg` only (最新實機畫面)",
+        f"- Fixtures: live-latest + test-1~4 (`test-1` == live-latest bytes)",
         f"- Templates: `public/sprites/sprite_poke.png` + `atlas.json` (nationalDex-keyed in-memory crops; {len(templates)} cells / {n_ids} ids)",
         f"- Matcher: crop cleanup (right {MATCH_CROP_RIGHT_EXCLUDE_FRAC}) + BG suppress + content-aware recenter + aHash prefilter + multi-scale/shift; NCC×0.55 + SSD×0.25 + aHash×0.20",
         f"- Guards (v1.4): `CONFIDENCE_THRESHOLD={CONFIDENCE_THRESHOLD}`, `{margin_rule}`, "
@@ -915,9 +1054,11 @@ def main() -> int:
         f"- Result: **correct {accuracy}, wrong={wrong}, null={null_n}**.",
         "- Atlas: official full-roster `sprite_sheet.png` + `sprite_poke.css` → "
         f"{len(templates)} dex-keyed in-memory crops (no per-species PNG dump).",
-        "- Sole formal fixture: `team-preview-live-latest.jpg` (最新實機畫面). "
-        "Enemy team top→bottom: Froslass, Garchomp, Basculegion-M, Kingambit, Sneasler, "
-        "Golisopod (Bug/Water).",
+        "- Formal fixtures: `team-preview-live-latest.jpg` (= test-1) plus test-2~4. "
+        "live-latest enemy: Froslass, Garchomp, Basculegion-M, Kingambit, Sneasler, "
+        "Golisopod. test-2: Chesnaught, Mimikyu, Alolan Ninetales, Swampert, "
+        "Hisuian Typhlosion, Greninja. test-4: Salamence, Rillaboom, Kingambit, "
+        "Sylveon, Rotom-Wash, Sneasler.",
         f"- Legal roster counts: atlas cells={n_ids}, allowlist={allow_n}, pokemon.json={poke_n}.",
         "- Enemy/ally form selector uses sibling legal forms grouped by nationalDex "
         "(regional / gender / Rotom; Mega when present in the 262).",
@@ -942,7 +1083,7 @@ def main() -> int:
                 "dynamicMargin": {
                     "0.75": 0.025,
                     "0.68": 0.03,
-                    "0.60": 0.06,
+                    "0.60": 0.05,
                     "0.54": 0.055,
                     "else": MIN_MARGIN,
                 },

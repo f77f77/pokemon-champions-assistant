@@ -40,6 +40,27 @@ export const SPECIES_ID_ALIASES: Record<string, string> = {
   'basculegion-female': 'basculegionf',
   '902-1': 'basculegionf',
   '902-female': 'basculegionf',
+  'mimikyu-disguised': 'mimikyu',
+  mimikyudisguised: 'mimikyu',
+  '778': 'mimikyu',
+  '778-0': 'mimikyu',
+  'ninetales-alola': 'ninetalesalola',
+  '38-1': 'ninetalesalola',
+  'typhlosion-hisui': 'typhlosionhisui',
+  '157-1': 'typhlosionhisui',
+  'rotom-wash': 'rotomwash',
+  '479-1': 'rotomwash',
+  'slowbro-galar': 'slowbrogalar',
+  '80-1': 'slowbrogalar',
+  sylveon: 'sylveon',
+  '700': 'sylveon',
+  '700-0': 'sylveon',
+  greninja: 'greninja',
+  '658': 'greninja',
+  '658-0': 'greninja',
+  absol: 'absol',
+  '359': 'absol',
+  '359-0': 'absol',
 };
 
 /** 離線示範用種族資料（足夠 demo；boot 時由 pokemon.json overlay） */
@@ -412,11 +433,12 @@ export async function loadGeneratedSpeciesData(
   }
 }
 
+/** Demo ally strip — Champions-legal ids that exist on sprite_poke.png (fixture left list). */
 export const SAMPLE_MY_TEAM_KEYS = [
-  'incineroar',
+  'kingambit',
+  'delphox',
+  'salamence',
+  'sneasler',
   'rillaboom',
-  'urshifu-rapid-strike',
-  'flutter-mane',
-  'landorus-therian',
-  'amoonguss',
+  'incineroar',
 ] as const;

@@ -68,13 +68,13 @@ async function buildDemoMyTeam(): Promise<PokemonSet[]> {
     const key = SAMPLE_MY_TEAM_KEYS[i];
     const sp = findSpecies(key)!;
     const moves = top4ForCard(await fetchTopMoves(sp.key));
-    const items = await fetchTopItems(sp.key, 2);
+    const items = await fetchTopItems(sp.key, 8);
     out.push(
       speciesToSet(sp, `my-${i}`, {
         speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
         item: items[0]?.name || ['勿花果', '突擊背心', '氣勢披帶', '講究眼鏡', '生命寶珠', '岩石盔甲'][i],
         items,
-        ability: ['威嚇', '青草製造者', '無形拳', '古代活性', '威嚇', '再生力'][i],
+        ability: ['不服輸', '猛火', '威嚇', '毒手', '青草製造者', '威嚇'][i],
         moves,
       }),
     );
@@ -150,12 +150,12 @@ async function fetchMovesForForm(formKey: string, moveCount: 4 | 6) {
     };
   }
   let movesRaw = await fetchTopMoves(ids.primaryId);
-  let items = await fetchTopItems(ids.primaryId, 2);
+  let items = await fetchTopItems(ids.primaryId, 8);
   if (!movesRaw.length && ids.fallbackId && ids.fallbackId !== ids.primaryId) {
     movesRaw = await fetchTopMoves(ids.fallbackId);
   }
   if (!items.length && ids.fallbackId && ids.fallbackId !== ids.primaryId) {
-    items = await fetchTopItems(ids.fallbackId, 2);
+    items = await fetchTopItems(ids.fallbackId, 8);
   }
   return {
     moves: moveCount === 4 ? top4ForCard(movesRaw) : top6ForCard(movesRaw),
@@ -170,7 +170,7 @@ export default function App() {
       return speciesToSet(sp, `my-${i}`, {
         speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
         item: ['勿花果', '突擊背心', '氣勢披帶', '講究眼鏡', '生命寶珠', '岩石盔甲'][i],
-        ability: ['威嚇', '青草製造者', '無形拳', '古代活性', '威嚇', '再生力'][i],
+        ability: ['不服輸', '猛火', '威嚇', '毒手', '青草製造者', '威嚇'][i],
       });
     }),
   );
@@ -281,7 +281,7 @@ export default function App() {
     setStatus(`已選擇種族：${sp.nameZh}`);
     void (async () => {
       const moves = top4ForCard(await fetchTopMoves(sp.key));
-      const items = await fetchTopItems(sp.key, 2);
+      const items = await fetchTopItems(sp.key, 8);
       setMyTeam((prev) =>
         prev.map((p, i) => (i === index && p.speciesKey === sp.key ? { ...p, moves, items, item: items[0]?.name ?? p.item } : p)),
       );
@@ -318,7 +318,7 @@ export default function App() {
     setStatus(`已手動覆寫：${sp.nameZh}（弱點／速度軸已更新）`);
     void (async () => {
       const moves = top6ForCard(await fetchTopMoves(sp.key));
-      const items = await fetchTopItems(sp.key, 2);
+      const items = await fetchTopItems(sp.key, 8);
       setEnemyTeam((prev) =>
         prev.map((p, i) => (i === index && p.speciesKey === sp.key ? { ...p, moves, items } : p)),
       );
@@ -388,7 +388,7 @@ export default function App() {
             });
             continue;
           }
-          const [movesRaw, items] = await Promise.all([fetchTopMoves(sp.key), fetchTopItems(sp.key, 2)]);
+          const [movesRaw, items] = await Promise.all([fetchTopMoves(sp.key), fetchTopItems(sp.key, 8)]);
           next.push(
             speciesToSet(sp, `enemy-${i}`, {
               speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
@@ -517,6 +517,9 @@ export default function App() {
             statusText={status}
             fineTune={fineTune}
             debugOverlay={debugOverlay}
+            allyTeam={myTeam}
+            selectedAllyIndex={selectedAllyIndex}
+            onSelectAlly={onSelectAlly}
           />
           <SpeedAxis myTeam={myTeam} enemyTeam={enemyTeam} selectedAllyIndex={selectedAllyIndex} />
           <p className="usage-source-global" title={MOVES_SOURCE_LABEL}>

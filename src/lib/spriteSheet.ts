@@ -97,27 +97,95 @@ export function parseSpriteCss(
   return out;
 }
 
+let atlasPromise: Promise<SpriteAtlas | null> | null = null;
+let sheetPromise: Promise<ImageBitmap | null> | null = null;
+const SPRITE_URL_CACHE = new Map<string, string>();
+
 export async function loadSpriteAtlas(): Promise<SpriteAtlas | null> {
-  try {
-    const res = await fetch(`${spritesBaseUrl()}atlas.json`);
-    if (!res.ok) return null;
-    const atlas = (await res.json()) as SpriteAtlas;
-    if (!atlas?.entries?.length) return null;
-    return atlas;
-  } catch {
-    return null;
-  }
+  if (atlasPromise) return atlasPromise;
+  atlasPromise = (async () => {
+    try {
+      const res = await fetch(`${spritesBaseUrl()}atlas.json`);
+      if (!res.ok) return null;
+      const atlas = (await res.json()) as SpriteAtlas;
+      if (!atlas?.entries?.length) return null;
+      return atlas;
+    } catch {
+      return null;
+    }
+  })();
+  return atlasPromise;
 }
 
 export async function loadSpriteSheetBitmap(): Promise<ImageBitmap | null> {
-  try {
-    const res = await fetch(`${spritesBaseUrl()}sprite_poke.png`);
-    if (!res.ok) return null;
-    const blob = await res.blob();
-    return await createImageBitmap(blob);
-  } catch {
-    return null;
+  if (sheetPromise) return sheetPromise;
+  sheetPromise = (async () => {
+    try {
+      const res = await fetch(`${spritesBaseUrl()}sprite_poke.png`);
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      return await createImageBitmap(blob);
+    } catch {
+      return null;
+    }
+  })();
+  return sheetPromise;
+}
+
+export function findAtlasEntry(
+  atlas: SpriteAtlas,
+  opts: { speciesId?: string | null; formKey?: string | null; nationalDex?: number | null },
+): SpriteAtlasEntry | null {
+  const sid = (opts.speciesId || '').toLowerCase();
+  const fk = (opts.formKey || '').toLowerCase();
+  const dex = opts.nationalDex ?? null;
+  const entries = atlas.entries || [];
+  if (fk) {
+    const byForm = entries.find((e) => (e.formKey || '').toLowerCase() === fk);
+    if (byForm) return byForm;
+    const compact = fk.replace(/-/g, '');
+    const byCompact = entries.find((e) => (e.formKey || '').replace(/-/g, '').toLowerCase() === compact);
+    if (byCompact) return byCompact;
   }
+  if (sid) {
+    const exact = entries.find((e) => (e.speciesId || '').toLowerCase() === sid && (e.form || 0) === 0);
+    if (exact) return exact;
+    const any = entries.find((e) => (e.speciesId || '').toLowerCase() === sid);
+    if (any) return any;
+  }
+  if (dex != null && dex > 0) {
+    const byDex = entries.find((e) => e.nationalDex === dex && (e.form || 0) === 0);
+    if (byDex) return byDex;
+    return entries.find((e) => e.nationalDex === dex) || null;
+  }
+  return null;
+}
+
+/**
+ * Full sheet cell (128) as a PNG data URL — card avatars / ally strip.
+ * Not the 64×64 match template (which may center-extract).
+ */
+export async function sheetSpriteDataUrl(opts: {
+  speciesId?: string | null;
+  formKey?: string | null;
+  nationalDex?: number | null;
+}): Promise<string | null> {
+  const cacheKey = `${opts.speciesId || ''}::${opts.formKey || ''}::${opts.nationalDex ?? ''}`;
+  const hit = SPRITE_URL_CACHE.get(cacheKey);
+  if (hit) return hit;
+  const [atlas, sheet] = await Promise.all([loadSpriteAtlas(), loadSpriteSheetBitmap()]);
+  if (!atlas || !sheet) return null;
+  const entry = findAtlasEntry(atlas, opts);
+  if (!entry) return null;
+  const cell = cropSheetCell(sheet, sheet.width, sheet.height, {
+    x: entry.x,
+    y: entry.y,
+    w: entry.w,
+    h: entry.h,
+  });
+  const url = cell.toDataURL('image/png');
+  SPRITE_URL_CACHE.set(cacheKey, url);
+  return url;
 }
 
 /**
