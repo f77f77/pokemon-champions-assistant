@@ -1424,7 +1424,12 @@ export async function recognizeEnemyTeam(
 }
 
 /** Built-in Team Preview fixture under public/fixtures/ (sole formal test image). */
-export const TEAM_PREVIEW_FIXTURES = ['fixtures/team-preview-live-latest.jpg'] as const;
+export const TEAM_PREVIEW_FIXTURES = [
+  'fixtures/team-preview-test-1.jpg',
+  'fixtures/team-preview-test-2.jpg',
+  'fixtures/team-preview-test-3.jpg',
+  'fixtures/team-preview-test-4.jpg',
+] as const;
 
 let fixtureCursor = 0;
 
