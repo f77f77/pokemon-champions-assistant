@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-12T06:24:16.742Z",
-  "updatedAt": "2026-09-12",
-  "usageUpdatedAt": "2026-09-12",
-  "usageSourceLabel": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com · 更新 2026-09-12",
+  "generatedAt": "2026-09-12T18:22:24.096Z",
+  "updatedAt": "2026-09-13",
+  "usageUpdatedAt": "2026-09-13",
+  "usageSourceLabel": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com · 更新 2026-09-13",
   "sources": {
     "pokeapi": "https://pokeapi.co/api/v2",
     "cbd": "https://championsbattledata.com/api/pokemon/{showdownId}",
@@ -12,7 +12,7 @@
     "cbdIndex": "https://championsbattledata.com/api/index",
     "allowlist": "data/allowlist.json",
     "legalAllowlist": "data/legal-allowlist.json",
-    "notes": "Classic PokéAPI base stats + nationalDex + forms[] including Mega (not CBD screen-scaled). Move/item usage % from CBD VGC Doubles (2v2 / 6-pick-4) sorted highest-first; Current CSV rank-1 gaps filled from newest complete daily snapshot. Locale keys: en / zh-Hant / ja. See assets/CREDITS.md. Move flavor_text from PokéAPI (zh-Hant / en / ja)."
+    "notes": "Classic PokéAPI base stats + nationalDex + forms[] including Mega (not CBD screen-scaled). Move/item usage % from CBD VGC Doubles (2v2 / 6-pick-4) sorted highest-first; Current CSV rank-1 gaps filled from newest complete daily snapshot. Locale keys: en / zh-Hant / ja. See assets/CREDITS.md."
   },
   "pokemonCount": 262,
   "movesCount": 626,
