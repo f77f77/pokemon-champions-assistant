@@ -284,7 +284,14 @@ export function resolveImportSpecies(name: string, item?: string): ImportSpecies
 
   if (!hit) return undefined;
   const fromItem = matchMegaFormFromItem(hit.species, item);
-  const formKey = hit.formKey || fromItem;
+  const matched = hit.formKey ? hit.species.forms?.find((f) => f.formKey === hit.formKey) : undefined;
+  const matchedIsDefault =
+    !hit.formKey ||
+    matched?.isDefault === true ||
+    hit.formKey === hit.species.formKey ||
+    hit.formKey === hit.species.key;
+  // Bare `Delphox @ Delphoxite` matches the default form; mega stone must still win.
+  const formKey = (!matchedIsDefault ? hit.formKey : undefined) || fromItem || hit.formKey;
   return { species: hit.species, formKey };
 }
 
