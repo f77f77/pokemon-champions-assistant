@@ -433,11 +433,12 @@ export async function loadGeneratedSpeciesData(
   }
 }
 
+/** Demo ally strip — Champions-legal ids that exist on sprite_poke.png (fixture left list). */
 export const SAMPLE_MY_TEAM_KEYS = [
-  'incineroar',
+  'kingambit',
+  'delphox',
+  'salamence',
+  'sneasler',
   'rillaboom',
-  'urshifu-rapid-strike',
-  'flutter-mane',
-  'landorus-therian',
-  'amoonguss',
+  'incineroar',
 ] as const;

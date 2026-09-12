@@ -74,7 +74,7 @@ async function buildDemoMyTeam(): Promise<PokemonSet[]> {
         speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
         item: items[0]?.name || ['勿花果', '突擊背心', '氣勢披帶', '講究眼鏡', '生命寶珠', '岩石盔甲'][i],
         items,
-        ability: ['威嚇', '青草製造者', '無形拳', '古代活性', '威嚇', '再生力'][i],
+        ability: ['不服輸', '猛火', '威嚇', '毒手', '青草製造者', '威嚇'][i],
         moves,
       }),
     );
@@ -170,7 +170,7 @@ export default function App() {
       return speciesToSet(sp, `my-${i}`, {
         speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
         item: ['勿花果', '突擊背心', '氣勢披帶', '講究眼鏡', '生命寶珠', '岩石盔甲'][i],
-        ability: ['威嚇', '青草製造者', '無形拳', '古代活性', '威嚇', '再生力'][i],
+        ability: ['不服輸', '猛火', '威嚇', '毒手', '青草製造者', '威嚇'][i],
       });
     }),
   );
