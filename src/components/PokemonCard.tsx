@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
 import type { HeldItemSlot, PokemonFormOption, PokemonSet, PokemonType, StatKey } from '../types';
 import { ALL_TYPES, TYPE_COLORS, defensiveMatchups } from '../lib/typeChart';
 import { typeIconUrl } from '../lib/typeIcons';
@@ -87,29 +88,135 @@ function useSheetSprite(pokemon: PokemonSet): string | null {
   return url;
 }
 
+function placeFixedTooltip(
+  anchor: DOMRect,
+  tipW: number,
+  tipH: number,
+): { top: number; left: number } {
+  const pad = 8;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  let top = anchor.top - tipH - 6;
+  if (top < pad) top = anchor.bottom + 6;
+  if (top + tipH > vh - pad) top = Math.max(pad, vh - pad - tipH);
+  let left = anchor.left;
+  if (left + tipW > vw - pad) left = vw - pad - tipW;
+  if (left < pad) left = pad;
+  return { top, left };
+}
+
 function MoveTooltip({
   name,
   typeLabel,
   moveId,
+  usageLabel,
+  anchorRef,
+  open,
 }: {
   name: string;
   typeLabel: string;
   moveId?: string;
+  usageLabel?: string | null;
+  anchorRef: RefObject<HTMLElement | null>;
+  open: boolean;
 }) {
-  if (name === '—' || name === '未載入') return null;
+  const tipRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; ready: boolean }>({
+    top: 0,
+    left: 0,
+    ready: false,
+  });
   const rec = getMoveDetails(moveId || name);
   const zh = rec?.names?.['zh-Hant'] || name;
   const power = rec?.power;
   const acc = rec?.accuracy;
   const flavor = rec?.flavor?.['zh-Hant'] || null;
-  return (
-    <span className="move-tooltip" role="tooltip">
+  const empty = name === '—' || name === '未載入';
+
+  useLayoutEffect(() => {
+    if (!open || empty) {
+      setPos((p) => (p.ready ? { ...p, ready: false } : p));
+      return;
+    }
+    const update = () => {
+      const anchor = anchorRef.current?.getBoundingClientRect();
+      const tip = tipRef.current?.getBoundingClientRect();
+      if (!anchor || !tip) return;
+      const next = placeFixedTooltip(anchor, tip.width, tip.height);
+      setPos({ ...next, ready: true });
+    };
+    update();
+    window.addEventListener('scroll', update, true);
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update, true);
+      window.removeEventListener('resize', update);
+    };
+  }, [open, empty, name, flavor, anchorRef]);
+
+  if (empty || !open || typeof document === 'undefined') return null;
+  return createPortal(
+    <div
+      ref={tipRef}
+      className="move-tooltip move-tooltip--fixed"
+      role="tooltip"
+      style={{
+        top: pos.top,
+        left: pos.left,
+        visibility: pos.ready ? 'visible' : 'hidden',
+      }}
+    >
       <strong>{zh}</strong>
       <span>屬性：{typeLabel}</span>
       <span>威力：{power == null ? '—' : power}</span>
       <span>命中：{acc == null ? '—' : acc}</span>
+      {usageLabel ? <span>使用率：{usageLabel}</span> : null}
       {flavor ? <span className="move-tooltip__flavor">{flavor}</span> : null}
-    </span>
+    </div>,
+    document.body,
+  );
+}
+
+function MoveButton({
+  mv,
+  usageLabel,
+  tip,
+}: {
+  mv: { name: string; type: string; id?: string; pp?: string };
+  usageLabel: string | null;
+  tip: string;
+}) {
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
+  const showTip = mv.name !== '—' && mv.name !== '未載入';
+  return (
+    <button
+      ref={btnRef}
+      type="button"
+      className="move-btn"
+      style={{ borderColor: TYPE_COLORS[mv.type as keyof typeof TYPE_COLORS] || '#666' }}
+      title={showTip ? undefined : tip}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
+    >
+      <span className="move-btn__main">
+        {typeIconUrl(mv.type) && (
+          <img src={typeIconUrl(mv.type)!} alt={String(mv.type)} className="move-btn__type-icon" title={String(mv.type)} />
+        )}
+        <span className="move-btn__name">{mv.name}</span>
+      </span>
+      {usageLabel ? <small className="move-btn__usage">{usageLabel}</small> : mv.pp ? <small>{mv.pp}</small> : null}
+      <MoveTooltip
+        name={mv.name}
+        typeLabel={String(mv.type)}
+        moveId={mv.id}
+        usageLabel={usageLabel}
+        anchorRef={btnRef}
+        open={open && showTip}
+      />
+    </button>
   );
 }
 
@@ -205,7 +312,7 @@ export function PokemonCard({
   selected,
   onSelect,
 }: Props) {
-  const stats = calcAllStats(pokemon.baseStats);
+  const stats = calcAllStats(pokemon.baseStats, pokemon.evs, pokemon.nature, pokemon.evsArePts);
   const maxStat = Math.max(150, ...Object.values(pokemon.baseStats));
   const matchups = pokemon.types.length ? defensiveMatchups(pokemon.types) : null;
   const moveLimit = variant === 'enemy' ? 6 : 4;
@@ -366,29 +473,11 @@ export function PokemonCard({
 
       <div className={`move-grid ${variant === 'enemy' ? 'move-grid--six' : ''}`}>
         {displayMoves.map((mv, i) => {
-          const moveIcon = typeIconUrl(mv.type);
           const usageLabel = formatUsage(mv.usage);
           const tip = usageLabel
             ? `${mv.name} · ${usageLabel} · ${MOVES_SOURCE_LABEL}`
             : mv.name;
-          return (
-            <button
-              key={i}
-              type="button"
-              className="move-btn"
-              style={{ borderColor: TYPE_COLORS[mv.type as keyof typeof TYPE_COLORS] || '#666' }}
-              title={tip}
-            >
-              <span className="move-btn__main">
-                {moveIcon && (
-                  <img src={moveIcon} alt={String(mv.type)} className="move-btn__type-icon" title={String(mv.type)} />
-                )}
-                <span className="move-btn__name">{mv.name}</span>
-              </span>
-              {usageLabel ? <small className="move-btn__usage">{usageLabel}</small> : mv.pp ? <small>{mv.pp}</small> : null}
-              <MoveTooltip name={mv.name} typeLabel={String(mv.type)} moveId={mv.id} />
-            </button>
-          );
+          return <MoveButton key={i} mv={mv} usageLabel={usageLabel} tip={tip} />;
         })}
       </div>
     </div>

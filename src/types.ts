@@ -55,6 +55,12 @@ export interface PokemonSet {
   baseStats: Stats;
   /** 實際顯示用速度（可由 IV/EV/性格計算） */
   speed: number;
+  /** 努力值：Champions 0–32 點（`evsArePts`）或 Showdown 0–252 EV */
+  evs?: Partial<Stats>;
+  /** true = `evs` 為 Champions 投資點（export `32 HP / 2 Spe`） */
+  evsArePts?: boolean;
+  /** Showdown / 中文性格名（如 Jolly、爽朗） */
+  nature?: string;
   moves: MoveSlot[];
   identified: boolean;
   confidence?: number;

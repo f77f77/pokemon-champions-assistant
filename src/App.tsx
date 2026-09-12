@@ -5,7 +5,8 @@ import { CapturePanel } from './components/CapturePanel';
 import { SpeedAxis } from './components/SpeedAxis';
 import { emptySlot, type PokemonSet } from './types';
 import { SAMPLE_MY_TEAM_KEYS, SPECIES_DB, findSpecies, speciesToSet } from './lib/species';
-import { calcStat } from './lib/speedCalc';
+import { calcStat, speedFromInvestment } from './lib/speedCalc';
+import { loadAllyTeam, saveAllyTeam } from './lib/allyTeamStorage';
 import {
   recognizeEnemyTeamFromCanvas,
   CONFIDENCE_THRESHOLD,
@@ -94,13 +95,14 @@ function clampTune(v: number): number {
 function applyFormSync(prev: PokemonSet, formKey: string): PokemonSet | null {
   const form = prev.forms?.find((f) => f.formKey === formKey);
   if (!form) return null;
+  const nextSpeed = speedFromInvestment(form.baseStats.spe, prev);
   const patched: PokemonSet = {
     ...prev,
     formKey: form.formKey,
     formLabel: form.label,
     types: [...form.types],
     baseStats: { ...form.baseStats },
-    speed: calcStat(form.baseStats.spe, 31, 0, 50, 1),
+    speed: nextSpeed,
   };
   const sp = findSpecies(form.showdownId) || findSpecies(formKey);
   // Different allowlist record (gender / regional sibling) → swap species identity.
@@ -114,7 +116,10 @@ function applyFormSync(prev: PokemonSet, formKey: string): PokemonSet | null {
       items: prev.items,
       ability: undefined,
       moves: prev.moves,
-      speed: calcStat(form.baseStats.spe, 31, 0, 50, 1),
+      evs: prev.evs,
+      evsArePts: prev.evsArePts,
+      nature: prev.nature,
+      speed: nextSpeed,
       formKey: form.formKey,
       formLabel: form.label,
       types: [...form.types],
@@ -163,17 +168,20 @@ async function fetchMovesForForm(formKey: string, moveCount: 4 | 6) {
   };
 }
 
+function buildSyncDemoTeam(): PokemonSet[] {
+  return SAMPLE_MY_TEAM_KEYS.map((key, i) => {
+    const sp = findSpecies(key)!;
+    return speciesToSet(sp, `my-${i}`, {
+      speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
+      item: ['勿花果', '突擊背心', '氣勢披帶', '講究眼鏡', '生命寶珠', '岩石盔甲'][i],
+      ability: ['不服輸', '猛火', '威嚇', '毒手', '青草製造者', '威嚇'][i],
+    });
+  });
+}
+
 export default function App() {
-  const [myTeam, setMyTeam] = useState<PokemonSet[]>(() =>
-    SAMPLE_MY_TEAM_KEYS.map((key, i) => {
-      const sp = findSpecies(key)!;
-      return speciesToSet(sp, `my-${i}`, {
-        speed: calcStat(sp.baseStats.spe, 31, 0, 50, 1),
-        item: ['勿花果', '突擊背心', '氣勢披帶', '講究眼鏡', '生命寶珠', '岩石盔甲'][i],
-        ability: ['不服輸', '猛火', '威嚇', '毒手', '青草製造者', '威嚇'][i],
-      });
-    }),
-  );
+  const [restoredAlly] = useState(() => loadAllyTeam());
+  const [myTeam, setMyTeam] = useState<PokemonSet[]>(() => restoredAlly ?? buildSyncDemoTeam());
   const [enemyTeam, setEnemyTeam] = useState<PokemonSet[]>(() => buildEmptyEnemy());
   const [status, setStatus] = useState('就緒 — 請連接 GC551／OBS、載入靜態選隊圖，或匯入我方隊伍');
   const [busy, setBusy] = useState(false);
@@ -189,7 +197,9 @@ export default function App() {
   }, [appVersion]);
 
   // Prefer CBD Doubles top-4 for ally demo when baked usage exists; else 未載入 (no fake stubs).
+  // Skip when localStorage already has an imported / edited team (F5 must restore it).
   useEffect(() => {
+    if (restoredAlly) return;
     let cancelled = false;
     void (async () => {
       const next = await buildDemoMyTeam();
@@ -198,7 +208,11 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [restoredAlly]);
+
+  useEffect(() => {
+    saveAllyTeam(myTeam);
+  }, [myTeam]);
 
   const panelPreview = useMemo(() => {
     const l = ENEMY_PANEL_DEFAULT.left + fineTune.dLeft;
