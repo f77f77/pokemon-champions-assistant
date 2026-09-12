@@ -4,9 +4,12 @@ Formal recognition inputs are **raw 16:9 Team Preview screenshots**, not screens
 
 | File | Notes |
 |------|--------|
-| `team-preview-live-latest.jpg` | 1920×1080 live capture. Expected: Froslass, Garchomp, **Basculegion-M**, Kingambit, Sneasler, Golisopod. |
+| `team-preview-test-1.jpg` | 1920×1080 test capture #1 |
+| `team-preview-test-2.jpg` | 1920×1080 test capture #2 |
+| `team-preview-test-3.jpg` | 1920×1080 test capture #3 |
+| `team-preview-test-4.jpg` | 1920×1080 test capture #4 |
 
-The 2026-09-11 Pages report (slot 3 「未識別」 with a Basculegion-M crop) is **this same Team Preview** shown inside the app chrome. Do **not** feed the full app screenshot into `ENEMY_PANEL` — that ROI is relative to the game frame, so it would crop the enemy **card column** instead of the in-game thumbs.
+「載入測試圖」按鈕會依序循環這四張。
 
 Reproduce with the **browser** path (same `recognize.ts` as GitHub Pages), not only Python:
 
