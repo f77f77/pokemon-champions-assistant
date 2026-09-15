@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-14T20:18:58.116Z",
-  "updatedAt": "2026-09-15",
-  "usageUpdatedAt": "2026-09-15",
-  "usageSourceLabel": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com · 更新 2026-09-15",
+  "generatedAt": "2026-09-15T19:42:01.503Z",
+  "updatedAt": "2026-09-16",
+  "usageUpdatedAt": "2026-09-16",
+  "usageSourceLabel": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com · 更新 2026-09-16",
   "sources": {
     "pokeapi": "https://pokeapi.co/api/v2",
     "cbd": "https://championsbattledata.com/api/pokemon/{showdownId}",
