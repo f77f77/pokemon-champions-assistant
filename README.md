@@ -207,8 +207,9 @@ Workflow: `.github/workflows/build-pokemon-data.yml`
 - Runs `node scripts/build-pokemon-data.mjs --usage-only`
 - Uploads a `pokemon-data` artifact
 - Commits updated JSON to `main` as `github-actions[bot]` when `contents: write` is allowed
-- On a successful data commit, **dispatches** `.github/workflows/pages.yml` (`gh workflow run "Deploy GitHub Pages" --ref main`) so GitHub Pages rebuilds `public/data/meta.json` (`usageUpdatedAt` / `usageSourceLabel`). A `GITHUB_TOKEN` push does **not** retrigger `on: push`, which is why Pages previously stayed on an older usage date.
+- On a successful data commit, **explicitly dispatches** `.github/workflows/pages.yml` via `actions/github-script` → `actions.createWorkflowDispatch` (`workflow_id: pages.yml`, `ref: main`).
+- Why: `pages.yml` already has `on: push` to `main`, but commits from `github-actions[bot]` using the default `GITHUB_TOKEN` **do not start subsequent `push` workflows**. That is why `usageUpdatedAt` could be **2026-09-16** on `main` while Pages last deployed **2026-09-12**. GitHub still allows that token to create `workflow_dispatch` / `repository_dispatch` runs, so no fine-grained PAT is required.
 
 The UI reads the deployed `public/data/meta.json` via `loadMovesData()` (`usageUpdatedAt` / `usageSourceLabel`) — it does not hardcode the date.
 
-If the commit step fails (branch protection / missing permission), download the artifact and copy into `data/` + `public/data/` manually. The next successful daily cron after this wiring will refresh Pages; merging a PR to `main` also runs Pages via `on: push`.
+If the commit step fails (branch protection / missing permission), download the artifact and copy into `data/` + `public/data/` manually. Merging this PR to `main` deploys Pages via `on: push` with the current meta; the next successful daily cron will commit CBD usage and dispatch Pages again.

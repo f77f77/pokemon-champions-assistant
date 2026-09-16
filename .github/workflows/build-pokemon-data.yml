@@ -57,10 +57,21 @@ jobs:
             echo "committed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # GITHUB_TOKEN pushes do not retrigger `on: push` workflows, so Pages
-      # would otherwise keep serving yesterday's `public/data/meta.json`.
-      - name: Trigger Pages deploy
+      # github-actions[bot] + default GITHUB_TOKEN cannot start `on: push`
+      # workflows, so pages.yml never saw daily data commits (meta 2026-09-16
+      # on main vs last Pages deploy 2026-09-12). GitHub *does* allow that
+      # same token to create workflow_dispatch / repository_dispatch runs
+      # (no PAT). Dispatch against branch `main` so Pages checks out the
+      # commit we just pushed, not this job's original SHA.
+      - name: Dispatch Deploy GitHub Pages
         if: steps.commit.outputs.committed == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run "Deploy GitHub Pages" --repo "${{ github.repository }}" --ref main
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'pages.yml',
+              ref: 'main',
+            });
