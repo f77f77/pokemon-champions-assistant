@@ -131,6 +131,10 @@ button, input, select, textarea {
 .panel__header-actions { display: flex; align-items: center; gap: 0.25rem; }
 .panel__header--row { flex-wrap: wrap; }
 .panel__hint { color: var(--muted); font-size: 0.75rem; }
+.panel__header--speed .panel__hint {
+  flex: 1 1 100%;
+  order: 3;
+}
 .panel__cards {
   display: flex;
   flex-direction: column;

@@ -472,11 +472,6 @@ export const CapturePanel = forwardRef<CapturePanelHandle, Props>(function Captu
         <h2>擷取預覽</h2>
         <div className="capture-actions">
           <span className={`status-pill ${statusOn ? 'is-on' : ''}`}>{statusLabel}</span>
-          {autoRecognize ? (
-            <span className={`status-pill ${autoPhase === 'lock' ? 'is-on' : ''}`} title="錨點狀態機：IDLE→TRIGGERED→LOCK">
-              自動辨認 · {autoRecognizePhaseLabel(autoPhase)}
-            </span>
-          ) : null}
           <button
             type="button"
             className="btn btn--ghost"
@@ -689,7 +684,10 @@ export const CapturePanel = forwardRef<CapturePanelHandle, Props>(function Captu
       {error && <p className="error-text">{error}</p>}
       {audioStatus && <p className="error-text">{audioStatus}</p>}
       {signalMeta ? <p className="capture-signal">{signalMeta}</p> : null}
-      <p className="status-line">{busy ? '辨認中…' : statusText}</p>
+      <p className="status-line">
+        {busy ? '辨認中…' : statusText}
+        {autoRecognize ? ` · 自動辨認：${autoRecognizePhaseLabel(autoPhase)}` : ''}
+      </p>
     </section>
   );
 });
