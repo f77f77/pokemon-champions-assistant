@@ -141,7 +141,7 @@ export function calcAllStats(
   };
 }
 
-/** 敵方速度軸四段：減速0 / 中性0 / 中性252(標為32示意)/ 加速0 — 規格：減速0/中性0/中性32/加速0 */
+/** 敵方速度軸四段：減速0 / 中性0 / 中性32 / 加速32（Champions Spe 投資 0 或 32 點） */
 
 /** Champions investment pts -> EV: min(252, pts * 8) */
 export function championsPtsToEv(pts: number): number {
@@ -157,19 +157,20 @@ export interface SpeedBand {
 }
 
 /**
- * 中性32：Champions pts 32 -> EV=min(252, 32*8)=252；其餘依規格。
- * 減速 = 性格 -Spe × EV0；加速 = 性格 +Spe × EV0
+ * 中性32／加速32：Champions pts 32 → EV=min(252, 32*8)=252。
+ * 減速 = 性格 −Spe × EV0；加速 = 性格 +Spe × EV32（右端點，無 加速0）。
  */
 export function enemySpeedBands(baseSpe: number): SpeedBand[] {
+  const ev32 = championsPtsToEv(32);
   const slow = calcStat(baseSpe, 31, 0, 50, 0.9);
   const n0 = calcStat(baseSpe, 31, 0, 50, 1);
-  const n32 = calcStat(baseSpe, 31, championsPtsToEv(32), 50, 1);
-  const fast = calcStat(baseSpe, 31, 0, 50, 1.1);
+  const n32 = calcStat(baseSpe, 31, ev32, 50, 1);
+  const fast = calcStat(baseSpe, 31, ev32, 50, 1.1);
   return [
     { id: 'slow0', label: '減速0', value: slow, kind: 'slow' },
     { id: 'n0', label: '中性0', value: n0, kind: 'neutral0' },
     { id: 'n32', label: '中性32', value: n32, kind: 'neutral32' },
-    { id: 'fast0', label: '加速0', value: fast, kind: 'fast' },
+    { id: 'fast32', label: '加速32', value: fast, kind: 'fast' },
   ];
 }
 

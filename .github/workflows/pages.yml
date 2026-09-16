@@ -1,5 +1,10 @@
 name: Deploy GitHub Pages
 
+# `on: push` still covers human / PR merges.
+# Daily CBD commits use github-actions[bot] + GITHUB_TOKEN, which does not
+# start subsequent `push` workflows. `Build Pokémon data` therefore calls
+# createWorkflowDispatch on this file after a successful push to main
+# (GITHUB_TOKEN may fire workflow_dispatch; it may not fire push).
 on:
   push:
     branches: [main]

@@ -79,7 +79,60 @@ check(unsorted === 0, `all species moves sorted desc (unsorted=${unsorted})`);
 
 check(!!meta.usageUpdatedAt, `meta.usageUpdatedAt=${meta.usageUpdatedAt}`);
 check(/championsbattledata\.com/.test(meta.usageSourceLabel || ''), `source label mentions CBD`);
+check(
+  /Regulation M-/.test(meta.usageSourceLabel || ''),
+  `source label includes regulation (got ${meta.usageSourceLabel})`,
+);
+check(!!meta.usageSeason && !/^current$/i.test(meta.usageSeason), `usageSeason is explicit folder (got ${meta.usageSeason})`);
+check(
+  !/^m5$/i.test(String(meta.usageSeason || '')),
+  `usageSeason is not stale M5/M-B (got ${meta.usageSeason})`,
+);
 check(pokemon.length === 262, `pokemon count 262 (got ${pokemon.length})`);
+
+function compactIdent(s) {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/[-_ ]+/g, '');
+}
+
+function itemIsOwnMegaStone(item, speciesKey, formKey) {
+  const id = compactIdent(item?.id || item?.nameEn || '');
+  if (!id || /eviolite/.test(id)) return false;
+  const stems = new Set();
+  for (const raw of [speciesKey, formKey]) {
+    const compact = compactIdent(raw);
+    if (!compact) continue;
+    stems.add(compact);
+    const stripped = compact.replace(/(male|female|eternal|midday|midnight|dusk|alola|galar|hisui|paldea)$/, '');
+    if (stripped.length >= 4) stems.add(stripped);
+  }
+  for (const stem of stems) {
+    if (stem.length < 4) continue;
+    if (id === `${stem}ite` || id.startsWith(`${stem}ite`)) return true;
+  }
+  return false;
+}
+
+const floette = byId.get('floette');
+check(!!floette, 'floette (Eternal Flower) record exists');
+check(
+  (floette?.forms || []).some((f) => String(f.formKey || '') === 'floette-mega'),
+  `floette forms include Mega (got ${(floette?.forms || []).map((f) => f.formKey).join(', ') || 'none'})`,
+);
+
+let missingOwnMega = 0;
+for (const p of pokemon) {
+  const items = [...(p.vgcDoublesItems || []), ...(p.forms || []).flatMap((f) => f.vgcDoublesItems || [])];
+  const own = items.find((it) => itemIsOwnMegaStone(it, p.showdownId, p.formKey) && pct(it) >= 50);
+  if (!own) continue;
+  const hasMega = (p.forms || []).some((f) => String(f.formKey || '').toLowerCase().includes('mega'));
+  if (!hasMega) {
+    missingOwnMega += 1;
+    console.error(`  ${p.showdownId} has ${own.id} ${own.usage} but forms[] lacks Mega`);
+  }
+}
+check(missingOwnMega === 0, `own mega-stone (≥50%) species have a Mega form (missing=${missingOwnMega})`);
 
 if (failed) {
   console.error(`\n${failed} invariant(s) failed`);

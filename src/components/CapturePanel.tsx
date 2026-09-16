@@ -1,4 +1,13 @@
-import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+} from 'react';
 import {
   listVideoDevices,
   listAudioDevices,
@@ -33,14 +42,17 @@ import {
 } from '../lib/recognize';
 import { AllyIconStrip } from './AllyIconStrip';
 import type { PokemonSet } from '../types';
+import {
+  AUTO_RECOGNIZE_TICK_MS,
+  autoRecognizePhaseLabel,
+  detectTeamPreviewAnchors,
+  initialAutoRecognizeState,
+  stepAutoRecognize,
+  type AutoRecognizeState,
+} from '../lib/previewAnchors';
 
 const LIVE_OK_STATUS =
   '已連接 · 實機訊號正常（若盒上仍顯示 Signal Out of Range，多為 passthrough/EDID，唔影響擷取）';
-
-const OUT_OF_RANGE_HINT =
-  'PC 已係 1080p60 仍見 Out of Range → 查 passthrough 螢幕支援、GC551 EDID／遊戲機輸出、改用擷取預覽唔睇盒上 OSD。App 以實機畫面為準，唔會因盒上 OSD 當無訊號。';
-
-const AUDIO_OS_HINT = '系統混音／Discord 要喺 OS 選 GC551 做輸入；app 監聽只係本機預覽。';
 
 interface Props {
   busy: boolean;
@@ -52,22 +64,37 @@ interface Props {
   allyTeam?: PokemonSet[];
   selectedAllyIndex?: number | null;
   onSelectAlly?: (index: number) => void;
+  showAvControls?: boolean;
+  onShowAvControlsChange?: (show: boolean) => void;
+  autoRecognize?: boolean;
 }
 
-export function CapturePanel({
-  busy,
-  onRecognize,
-  statusText,
-  fineTune,
-  debugOverlay,
-  allyTeam,
-  selectedAllyIndex = null,
-  onSelectAlly,
-}: Props) {
+export interface CapturePanelHandle {
+  recognizeNow: () => void;
+}
+
+export const CapturePanel = forwardRef<CapturePanelHandle, Props>(function CapturePanel(
+  {
+    busy,
+    onRecognize,
+    statusText,
+    fineTune,
+    debugOverlay,
+    allyTeam,
+    selectedAllyIndex = null,
+    onSelectAlly,
+    showAvControls = true,
+    onShowAvControlsChange,
+    autoRecognize = false,
+  }: Props,
+  ref,
+) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const stillImgRef = useRef<HTMLImageElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const autoStateRef = useRef<AutoRecognizeState>(initialAutoRecognizeState());
   const streamRef = useRef<MediaStream | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
   const stillUrlRef = useRef<string | null>(null);
@@ -84,6 +111,8 @@ export function CapturePanel({
   const [stillUrl, setStillUrl] = useState<string | null>(null);
   const [stillReady, setStillReady] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [autoPhase, setAutoPhase] = useState<AutoRecognizeState['phase']>('idle');
+  const [fullscreen, setFullscreen] = useState(false);
 
   const panel = useMemo(() => resolveEnemyPanel(fineTune), [fineTune]);
   const panelPct = useMemo(() => panelCssPercent(panel), [panel]);
@@ -350,7 +379,7 @@ export function CapturePanel({
     }
   }
 
-  function handleRecognize() {
+  const handleRecognize = useCallback(() => {
     if (stillUrl && stillImgRef.current?.naturalWidth) {
       const img = stillImgRef.current;
       onRecognize(grabImageSource(img, img.naturalWidth, img.naturalHeight));
@@ -358,6 +387,56 @@ export function CapturePanel({
     }
     if (videoRef.current?.videoWidth) {
       onRecognize(grabFrame(videoRef.current));
+    }
+  }, [onRecognize, stillUrl]);
+
+  useImperativeHandle(ref, () => ({ recognizeNow: handleRecognize }), [handleRecognize]);
+
+  useEffect(() => {
+    autoStateRef.current = initialAutoRecognizeState();
+    setAutoPhase('idle');
+  }, [stillUrl, live, autoRecognize]);
+
+  useEffect(() => {
+    if (!autoRecognize || !hasValidFrames) return;
+    const id = window.setInterval(() => {
+      if (!autoRecognize) return;
+      let previewVisible = false;
+      if (stillUrl && stillImgRef.current?.naturalWidth) {
+        const img = stillImgRef.current;
+        previewVisible = detectTeamPreviewAnchors(img, img.naturalWidth, img.naturalHeight);
+      } else if (videoRef.current?.videoWidth) {
+        const video = videoRef.current;
+        previewVisible = detectTeamPreviewAnchors(video, video.videoWidth, video.videoHeight);
+      }
+      const { next, fire } = stepAutoRecognize(autoStateRef.current, previewVisible, busy);
+      autoStateRef.current = next;
+      setAutoPhase(next.phase);
+      if (fire) handleRecognize();
+    }, AUTO_RECOGNIZE_TICK_MS);
+    return () => window.clearInterval(id);
+  }, [autoRecognize, busy, handleRecognize, hasValidFrames, stillUrl, live]);
+
+  useEffect(() => {
+    const onFs = () => {
+      const el = previewRef.current;
+      setFullscreen(!!el && document.fullscreenElement === el);
+    };
+    document.addEventListener('fullscreenchange', onFs);
+    return () => document.removeEventListener('fullscreenchange', onFs);
+  }, []);
+
+  async function toggleFullscreen() {
+    const el = previewRef.current;
+    if (!el) return;
+    try {
+      if (document.fullscreenElement === el) {
+        await document.exitFullscreen();
+      } else {
+        await el.requestFullscreen();
+      }
+    } catch {
+      /* user gesture / browser policy */
     }
   }
 
@@ -395,6 +474,15 @@ export function CapturePanel({
           <span className={`status-pill ${statusOn ? 'is-on' : ''}`}>{statusLabel}</span>
           <button
             type="button"
+            className="btn btn--ghost"
+            onClick={() => onShowAvControlsChange?.(!showAvControls)}
+            aria-pressed={showAvControls}
+            title={showAvControls ? '隱藏開啟鏡頭與擷取音訊' : '顯示開啟鏡頭與擷取音訊'}
+          >
+            {showAvControls ? '隱藏鏡頭／音訊' : '顯示鏡頭／音訊'}
+          </button>
+          <button
+            type="button"
             className="btn btn--primary"
             disabled={busy || !hasValidFrames}
             onClick={handleRecognize}
@@ -417,15 +505,17 @@ export function CapturePanel({
             </option>
           ))}
         </select>
-        {!live ? (
-          <button type="button" className="btn btn--ghost" onClick={() => void connect()}>
-            開啟鏡頭
-          </button>
-        ) : (
-          <button type="button" className="btn btn--ghost" onClick={disconnect}>
-            關閉鏡頭
-          </button>
-        )}
+        {showAvControls ? (
+          !live ? (
+            <button type="button" className="btn btn--ghost" onClick={() => void connect()}>
+              開啟鏡頭
+            </button>
+          ) : (
+            <button type="button" className="btn btn--ghost" onClick={disconnect}>
+              關閉鏡頭
+            </button>
+          )
+        ) : null}
         <input
           ref={fileInputRef}
           type="file"
@@ -455,7 +545,7 @@ export function CapturePanel({
         </button>
       </div>
 
-      {audioDevices.length > 0 ? (
+      {showAvControls && audioDevices.length > 0 ? (
         <div className="capture-toolbar capture-toolbar--audio">
           <label className="capture-audio-label" htmlFor="capture-audio-select">
             擷取音訊
@@ -486,7 +576,8 @@ export function CapturePanel({
       <audio ref={audioRef} hidden playsInline />
 
       <div
-        className={`capture-preview capture-preview--16x9${dragOver ? ' is-dragover' : ''}`}
+        ref={previewRef}
+        className={`capture-preview capture-preview--16x9${dragOver ? ' is-dragover' : ''}${fullscreen ? ' is-fullscreen' : ''}`}
         onDragOver={onPreviewDragOver}
         onDragLeave={onPreviewDragLeave}
         onDrop={onPreviewDrop}
@@ -579,13 +670,24 @@ export function CapturePanel({
             放開以載入靜態選隊圖
           </div>
         )}
+        <button
+          type="button"
+          className="capture-preview__fs"
+          onClick={() => void toggleFullscreen()}
+          title={fullscreen ? '離開全螢幕' : '擷取預覽全螢幕'}
+          aria-pressed={fullscreen}
+          aria-label={fullscreen ? '離開全螢幕' : '擷取預覽全螢幕'}
+        >
+          {fullscreen ? '退出' : '全螢幕'}
+        </button>
       </div>
       {error && <p className="error-text">{error}</p>}
       {audioStatus && <p className="error-text">{audioStatus}</p>}
       {signalMeta ? <p className="capture-signal">{signalMeta}</p> : null}
-      <p className="capture-hint muted">{OUT_OF_RANGE_HINT}</p>
-      <p className="capture-hint muted">{AUDIO_OS_HINT}</p>
-      <p className="status-line">{busy ? '辨認中…' : statusText}</p>
+      <p className="status-line">
+        {busy ? '辨認中…' : statusText}
+        {autoRecognize ? ` · 自動辨認：${autoRecognizePhaseLabel(autoPhase)}` : ''}
+      </p>
     </section>
   );
-}
+});

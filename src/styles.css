@@ -131,6 +131,10 @@ button, input, select, textarea {
 .panel__header-actions { display: flex; align-items: center; gap: 0.25rem; }
 .panel__header--row { flex-wrap: wrap; }
 .panel__hint { color: var(--muted); font-size: 0.75rem; }
+.panel__header--speed .panel__hint {
+  flex: 1 1 100%;
+  order: 3;
+}
 .panel__cards {
   display: flex;
   flex-direction: column;
@@ -571,7 +575,7 @@ button, input, select, textarea {
   font-variant-numeric: tabular-nums;
   text-shadow: 0 0 4px rgba(0, 0, 0, 0.9), 0 1px 2px rgba(0, 0, 0, 0.8);
 }
-/* Four anchors: 減速0 / 中性0 / 中性32 / 加速0 — high-contrast on dark navy */
+/* Four anchors: 減速0 / 中性0 / 中性32 / 加速32 — high-contrast on dark navy */
 .speed-band { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; opacity: 1; }
 .speed-band--slow { background: rgba(64, 196, 255, 0.72); box-shadow: inset 0 0 0 1px rgba(120, 220, 255, 0.45); }
 .speed-band--mid { background: rgba(230, 236, 255, 0.38); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28); }
@@ -660,10 +664,31 @@ button, input, select, textarea {
 }
 
 /* —— Capture 16:9 + ROI debug —— */
-.capture-preview--16x9 {
-  aspect-ratio: 16 / 9;
-  min-height: 0;
-  flex: 1 1 auto;
+.capture-preview:fullscreen,
+.capture-preview:-webkit-full-screen {
+  aspect-ratio: auto;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  border: none;
+}
+.capture-preview__fs {
+  position: absolute;
+  right: 0.45rem;
+  bottom: 0.45rem;
+  z-index: 8;
+  font-size: 0.72rem;
+  line-height: 1;
+  padding: 0.28rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #3a4258;
+  background: rgba(10, 12, 18, 0.82);
+  color: var(--text);
+  cursor: pointer;
+}
+.capture-preview__fs:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 .capture-preview__roi--panel {
   border: 1.5px solid rgba(61, 220, 151, 0.9);
