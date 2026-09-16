@@ -160,6 +160,7 @@ const POKEAPI_TO_SHOWDOWN = {
   'tyranitar-mega': 'tyranitar',
   'metagross-mega': 'metagross',
   'floette-mega': 'floette',
+  'pyroar-mega': 'pyroar',
 };
 
 
@@ -356,7 +357,25 @@ function toShowdownMoveId(displayName) {
     .replace(/[^a-z0-9]+/g, '');
 }
 
-async function attachMegaForms(forms, species, parentShowdownId, doublesCache, parentFormKey) {
+async function pushMegaVariety(forms, have, vName, parentShowdownId, doublesCache) {
+  const key = String(vName || '').toLowerCase();
+  if (!key || have.has(key)) return false;
+  try {
+    const formEntry = await loadFormEntry(vName, parentShowdownId, doublesCache);
+    formEntry.formNames = megaFormLabel(vName);
+    formEntry.isDefault = false;
+    formEntry.showdownId = parentShowdownId;
+    forms.push(formEntry);
+    have.add(key);
+    console.log(`  + mega form ${vName}`);
+    return true;
+  } catch (err) {
+    console.warn(`  mega skip ${vName}: ${err.message || err}`);
+    return false;
+  }
+}
+
+async function attachMegaForms(forms, species, parentShowdownId, doublesCache, parentFormKey, megaStoneHint = false) {
   const varieties = Array.isArray(species?.varieties) ? species.varieties : [];
   const have = new Set(forms.map((f) => String(f.formKey || '').toLowerCase()));
   const parentKey = parentFormKey || forms[0]?.formKey || '';
@@ -364,16 +383,16 @@ async function attachMegaForms(forms, species, parentShowdownId, doublesCache, p
     const vName = v?.pokemon?.name;
     if (!vName || !isMegaPokemonName(vName) || have.has(vName.toLowerCase())) continue;
     if (!megaBelongsToForm(vName, parentKey)) continue;
-    try {
-      const formEntry = await loadFormEntry(vName, parentShowdownId, doublesCache);
-      formEntry.formNames = megaFormLabel(vName);
-      formEntry.isDefault = false;
-      formEntry.showdownId = parentShowdownId;
-      forms.push(formEntry);
-      have.add(vName.toLowerCase());
-      console.log(`  + mega form ${vName}`);
-    } catch (err) {
-      console.warn(`  mega skip ${vName}: ${err.message || err}`);
+    await pushMegaVariety(forms, have, vName, parentShowdownId, doublesCache);
+  }
+  // Own mega stone in CBD usage but forms[] still lacks Mega (Eternal Flower / Pyroar-M).
+  if (!recordHasMegaForm(forms) && megaStoneHint) {
+    const speciesName = String(species?.name || parentShowdownId || '').toLowerCase();
+    const guesses = [`${speciesName}-mega`, `${parentKey}-mega`].filter(Boolean);
+    for (const g of guesses) {
+      if (have.has(g)) continue;
+      const ok = await pushMegaVariety(forms, have, g, parentShowdownId, doublesCache);
+      if (ok) break;
     }
   }
 }
@@ -464,12 +483,54 @@ function isMegaPokemonName(name) {
   return n.includes('-mega') && !n.includes('-gmax') && !n.includes('-z');
 }
 
+const REGIONAL_FORM_RE = /-(alola|galar|hisui|paldea)(?:-|$)/;
+
 /** Mega X/Y/base must belong to this form slug (do not hang Kanto megas on Alolan records). */
 function megaBelongsToForm(megaName, parentFormKey) {
   const mega = String(megaName || '').toLowerCase();
   const parent = String(parentFormKey || '').toLowerCase();
   if (!parent || !mega) return false;
-  return mega === `${parent}-mega` || mega.startsWith(`${parent}-mega-`);
+  if (mega === `${parent}-mega` || mega.startsWith(`${parent}-mega-`)) return true;
+  // Species-level mega (floette-mega, pyroar-mega) attaches to the Champions
+  // legal form (floette-eternal, pyroar-male) — not to regional siblings.
+  const megaBase = mega.replace(/-mega(?:-x|-y)?$/, '');
+  if (!megaBase || megaBase === mega) return false;
+  if (REGIONAL_FORM_RE.test(parent) && !REGIONAL_FORM_RE.test(mega)) return false;
+  return parent === megaBase || parent.startsWith(`${megaBase}-`);
+}
+
+function compactIdent(s) {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/[-_ ]+/g, '');
+}
+
+/** Floettite → floette, Pyroarite → pyroar. Ignore another species' stone (e.g. Greninjite on Simisear). */
+function itemIsOwnMegaStone(item, speciesKey, formKey) {
+  const id = compactIdent(item?.id || item?.nameEn || '');
+  if (!id || /eviolite/.test(id)) return false;
+  const stems = new Set();
+  for (const raw of [speciesKey, formKey]) {
+    const compact = compactIdent(raw);
+    if (!compact) continue;
+    stems.add(compact);
+    const stripped = compact.replace(/(male|female|eternal|midday|midnight|dusk|alola|galar|hisui|paldea)$/, '');
+    if (stripped.length >= 4) stems.add(stripped);
+  }
+  for (const stem of stems) {
+    if (stem.length < 4) continue;
+    if (id === `${stem}ite` || id.startsWith(`${stem}ite`)) return true;
+  }
+  return false;
+}
+
+function recordHasMegaForm(forms) {
+  return (forms || []).some((f) => isMegaPokemonName(f.formKey));
+}
+
+function recordMegaStoneHint(rec) {
+  const items = [...(rec?.vgcDoublesItems || []), ...(rec?.forms || []).flatMap((f) => f.vgcDoublesItems || [])];
+  return items.some((it) => itemIsOwnMegaStone(it, rec.showdownId, rec.formKey));
 }
 
 /**
@@ -782,7 +843,14 @@ async function buildPokemonRecord(showdownId, doublesCache, entryHint = null) {
       }
     }
   }
-  await attachMegaForms(forms, species, showdownId, doublesCache, record.formKey);
+  await attachMegaForms(
+    forms,
+    species,
+    showdownId,
+    doublesCache,
+    record.formKey,
+    recordMegaStoneHint(record),
+  );
   if (forms.length) {
     record.forms = forms;
   }
@@ -902,7 +970,14 @@ async function applyUsageToRecord(rec, doublesCache, speciesCache) {
     speciesCache.set(speciesKey, species);
   }
   if (!rec.forms) rec.forms = [];
-  await attachMegaForms(rec.forms, species, sid, doublesCache, rec.formKey);
+  await attachMegaForms(
+    rec.forms,
+    species,
+    sid,
+    doublesCache,
+    rec.formKey,
+    recordMegaStoneHint(rec),
+  );
 }
 
 async function refreshUsageOnly({ dryRun, allowlistPath }) {

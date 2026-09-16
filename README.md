@@ -4,7 +4,7 @@ Electron + Vite + React (TypeScript). Defaults: AverMedia GC551, local Team Prev
 
 UI strings remain Traditional Chinese.
 
-v0.7: GC551 capture locks 1080p60 (`ideal` 1920×1080 @ 60, MJPEG when the browser exposes it); live frames are treated as a good signal even if the hardware OSD says Signal Out of Range; optional capture-card audio listen (default off) with persisted audio device id.
+v0.7: GC551 capture locks 1080p60 (`ideal` 1920×1080 @ 60, MJPEG when the browser exposes it); live frames are treated as a good signal even if the hardware OSD says Signal Out of Range; optional capture-card audio listen (default off) with persisted audio device id. Speed axis enemy dual-band ends at **加速32** (max Spe EV 32 + +Spe nature, Tailwind ×2 when on). Hideable 開啟鏡頭／擷取音訊 row (settings + toolbar, `localStorage`). Hotkeys `1`–`6` select ally slots, `Space` runs 辨認敵方隊伍. Auto-recognize is a Team Preview **anchor state machine** (IDLE → TRIGGERED once → LOCK), not per-frame OCR. Daily CBD usage commits dispatch **Deploy GitHub Pages** so `usageUpdatedAt` reaches the live site. Floette Eternal Flower (and other own-stone cases such as Pyroar) attach Mega in `forms[]`.
 
 v0.6: Showdown import applies EVs/natures and `Species-Mega` / mega-stone forms; ally team persists in `localStorage`; move tooltips stay in viewport; speed axis drops the 0-EV +10% tick, adds a max-scale tick, and draws a vertical guide on the selected ally Spe.
 
@@ -203,9 +203,12 @@ Writes both `data/*` and `public/data/*`. The app loads `public/data/pokemon.jso
 
 Workflow: `.github/workflows/build-pokemon-data.yml`
 
-- Triggers: `workflow_dispatch` + weekly cron
-- Runs `node scripts/build-pokemon-data.mjs`
+- Triggers: `workflow_dispatch` + **daily** cron (`0 16 * * *` UTC = 00:00 HKT)
+- Runs `node scripts/build-pokemon-data.mjs --usage-only`
 - Uploads a `pokemon-data` artifact
 - Commits updated JSON to `main` as `github-actions[bot]` when `contents: write` is allowed
+- On a successful data commit, **dispatches** `.github/workflows/pages.yml` (`gh workflow run "Deploy GitHub Pages" --ref main`) so GitHub Pages rebuilds `public/data/meta.json` (`usageUpdatedAt` / `usageSourceLabel`). A `GITHUB_TOKEN` push does **not** retrigger `on: push`, which is why Pages previously stayed on an older usage date.
 
-If the commit step fails (branch protection / missing permission), download the artifact and copy into `data/` + `public/data/` manually.
+The UI reads the deployed `public/data/meta.json` via `loadMovesData()` (`usageUpdatedAt` / `usageSourceLabel`) — it does not hardcode the date.
+
+If the commit step fails (branch protection / missing permission), download the artifact and copy into `data/` + `public/data/` manually. The next successful daily cron after this wiring will refresh Pages; merging a PR to `main` also runs Pages via `on: push`.

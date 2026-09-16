@@ -54269,6 +54269,143 @@
             "nameZh": "講究圍巾"
           }
         ]
+      },
+      {
+        "showdownId": "pyroar",
+        "pokeapiId": 10295,
+        "formKey": "pyroar-mega",
+        "formNames": {
+          "en": "Mega",
+          "zh-Hant": "Mega",
+          "ja": "メガ"
+        },
+        "types": [
+          "fire",
+          "normal"
+        ],
+        "baseStats": {
+          "hp": 86,
+          "atk": 88,
+          "def": 92,
+          "spa": 129,
+          "spd": 86,
+          "spe": 126
+        },
+        "abilities": [
+          "fire-mane"
+        ],
+        "isDefault": false,
+        "vgcDoublesMoves": [
+          {
+            "id": "protect",
+            "nameEn": "Protect",
+            "usage": "98.5%",
+            "rank": 1
+          },
+          {
+            "id": "heatwave",
+            "nameEn": "Heat Wave",
+            "usage": "97.9%",
+            "rank": 2
+          },
+          {
+            "id": "overheat",
+            "nameEn": "Overheat",
+            "usage": "63.6%",
+            "rank": 3
+          },
+          {
+            "id": "solarbeam",
+            "nameEn": "Solar Beam",
+            "usage": "28.9%",
+            "rank": 4
+          },
+          {
+            "id": "hypervoice",
+            "nameEn": "Hyper Voice",
+            "usage": "26.2%",
+            "rank": 5
+          },
+          {
+            "id": "flamethrower",
+            "nameEn": "Flamethrower",
+            "usage": "17.5%",
+            "rank": 6
+          }
+        ],
+        "vgcDoublesMeta": {
+          "source": "championsbattledata.com",
+          "format": "Doubles",
+          "season": "Current",
+          "battleSource": "pokemon_champions_assets/battle_data/Doubles/Pyroar.csv",
+          "usageSnapshot": "current",
+          "label": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com · 更新 2026-09-16"
+        },
+        "vgcDoublesItems": [
+          {
+            "id": "pyroarite",
+            "nameEn": "Pyroarite",
+            "usage": "97.4%",
+            "rank": 1,
+            "nameZh": "Pyroarite"
+          },
+          {
+            "id": "life-orb",
+            "nameEn": "Life Orb",
+            "usage": "1.1%",
+            "rank": 2,
+            "nameZh": "生命寶珠"
+          },
+          {
+            "id": "charcoal",
+            "nameEn": "Charcoal",
+            "usage": "1%",
+            "rank": 3,
+            "nameZh": "木炭"
+          },
+          {
+            "id": "quick-claw",
+            "nameEn": "Quick Claw",
+            "usage": "0.3%",
+            "rank": 4,
+            "nameZh": "先制之爪"
+          },
+          {
+            "id": "focus-sash",
+            "nameEn": "Focus Sash",
+            "usage": "0.2%",
+            "rank": 5,
+            "nameZh": "氣勢披帶"
+          },
+          {
+            "id": "air-balloon",
+            "nameEn": "Air Balloon",
+            "usage": "0%",
+            "rank": 6,
+            "nameZh": "氣球"
+          },
+          {
+            "id": "silk-scarf",
+            "nameEn": "Silk Scarf",
+            "usage": "0%",
+            "rank": 7,
+            "nameZh": "絲綢圍巾"
+          },
+          {
+            "id": "chople-berry",
+            "nameEn": "Chople Berry",
+            "usage": "0%",
+            "rank": 8,
+            "nameZh": "蓮蒲果"
+          },
+          {
+            "id": "choice-scarf",
+            "nameEn": "Choice Scarf",
+            "usage": "0%",
+            "rank": 9,
+            "nameZh": "講究圍巾"
+          }
+        ]
       }
     ],
     "championsId": "0668-000",
@@ -54494,6 +54631,149 @@
           "battleSource": "pokemon_champions_assets/battle_data/M6/11_09_2026/Doubles/Floette.csv",
           "usageSnapshot": "11_09_2026",
           "label": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com · 更新 2026-09-17"
+        },
+        "vgcDoublesItems": [
+          {
+            "id": "floettite",
+            "nameEn": "Floettite",
+            "usage": "99.1%",
+            "rank": 1,
+            "nameZh": "Floettite"
+          },
+          {
+            "id": "choice-scarf",
+            "nameEn": "Choice Scarf",
+            "usage": "0.4%",
+            "rank": 2,
+            "nameZh": "講究圍巾"
+          },
+          {
+            "id": "fairy-feather",
+            "nameEn": "Fairy Feather",
+            "usage": "0.2%",
+            "rank": 3,
+            "nameZh": "妖精之羽"
+          },
+          {
+            "id": "life-orb",
+            "nameEn": "Life Orb",
+            "usage": "0%",
+            "rank": 4,
+            "nameZh": "生命寶珠"
+          },
+          {
+            "id": "leftovers",
+            "nameEn": "Leftovers",
+            "usage": "0%",
+            "rank": 5,
+            "nameZh": "吃剩的東西"
+          },
+          {
+            "id": "sitrus-berry",
+            "nameEn": "Sitrus Berry",
+            "usage": "0%",
+            "rank": 6,
+            "nameZh": "文柚果"
+          },
+          {
+            "id": "kebia-berry",
+            "nameEn": "Kebia Berry",
+            "usage": "0%",
+            "rank": 7,
+            "nameZh": "通通果"
+          },
+          {
+            "id": "wise-glasses",
+            "nameEn": "Wise Glasses",
+            "usage": "0%",
+            "rank": 8,
+            "nameZh": "博識眼鏡"
+          },
+          {
+            "id": "focus-sash",
+            "nameEn": "Focus Sash",
+            "usage": "0%",
+            "rank": 9,
+            "nameZh": "氣勢披帶"
+          },
+          {
+            "id": "quick-claw",
+            "nameEn": "Quick Claw",
+            "usage": "0%",
+            "rank": 10,
+            "nameZh": "先制之爪"
+          }
+        ]
+      },
+      {
+        "showdownId": "floette",
+        "pokeapiId": 10296,
+        "formKey": "floette-mega",
+        "formNames": {
+          "en": "Mega",
+          "zh-Hant": "Mega",
+          "ja": "メガ"
+        },
+        "types": [
+          "fairy"
+        ],
+        "baseStats": {
+          "hp": 74,
+          "atk": 85,
+          "def": 87,
+          "spa": 155,
+          "spd": 148,
+          "spe": 102
+        },
+        "abilities": [
+          "fairy-aura"
+        ],
+        "isDefault": false,
+        "vgcDoublesMoves": [
+          {
+            "id": "protect",
+            "nameEn": "Protect",
+            "usage": "97.5%",
+            "rank": 1
+          },
+          {
+            "id": "dazzlinggleam",
+            "nameEn": "Dazzling Gleam",
+            "usage": "96%",
+            "rank": 2
+          },
+          {
+            "id": "moonblast",
+            "nameEn": "Moonblast",
+            "usage": "71.5%",
+            "rank": 3
+          },
+          {
+            "id": "lightofruin",
+            "nameEn": "Light of Ruin",
+            "usage": "59.4%",
+            "rank": 4
+          },
+          {
+            "id": "calmmind",
+            "nameEn": "Calm Mind",
+            "usage": "38.9%",
+            "rank": 5
+          },
+          {
+            "id": "drainingkiss",
+            "nameEn": "Draining Kiss",
+            "usage": "24%",
+            "rank": 6
+          }
+        ],
+        "vgcDoublesMeta": {
+          "source": "championsbattledata.com",
+          "format": "Doubles",
+          "season": "M6",
+          "battleSource": "pokemon_champions_assets/battle_data/M6/11_09_2026/Doubles/Floette.csv",
+          "usageSnapshot": "11_09_2026",
+          "label": "VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com · 更新 2026-09-16"
         },
         "vgcDoublesItems": [
           {

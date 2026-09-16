@@ -105,7 +105,7 @@ function EnemySpeedRow({
         <div
           className="speed-band speed-band--fast"
           style={{ left: `${pct(n32, axisMax)}%`, width: `${Math.max(1, pct(fast, axisMax) - pct(n32, axisMax))}%` }}
-          title={`中性32–加速0：${n32}–${fast}${tailwind ? '（順風 ×2）' : ''}`}
+          title={`中性32–加速32：${n32}–${fast}${tailwind ? '（順風 ×2）' : ''}`}
         />
         {bands.map((b) => (
           <span
@@ -181,7 +181,7 @@ export function SpeedAxis({ myTeam, enemyTeam, selectedAllyIndex }: Props) {
       <header className="panel__header panel__header--row panel__header--speed">
         <h2>速度軸</h2>
         <span className="panel__hint">
-          敵方雙色帶：減速0／中性0／中性32／加速0 · 我方單點（點選隊員 · 手填 Spe）
+          敵方雙色帶：減速0／中性0／中性32／加速32 · 我方單點（點選隊員 · 手填 Spe）
           {allyTailwind || enemyTailwind ? ' · 順風 Spe ×2' : ''}
         </span>
         <div className="speed-axis__toggles">

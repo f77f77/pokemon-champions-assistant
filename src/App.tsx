@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TeamPanel } from './components/TeamPanel';
 import { EnemyPanel } from './components/EnemyPanel';
-import { CapturePanel } from './components/CapturePanel';
+import { CapturePanel, type CapturePanelHandle } from './components/CapturePanel';
 import { SpeedAxis } from './components/SpeedAxis';
 import { emptySlot, type PokemonSet } from './types';
 import { SAMPLE_MY_TEAM_KEYS, SPECIES_DB, findSpecies, speciesToSet } from './lib/species';
@@ -20,8 +20,22 @@ import {
 } from './lib/recognize';
 import { fetchTopMoves, fetchTopItems, top4ForCard, top6ForCard, MOVES_SOURCE_LABEL } from './lib/movesCache';
 import { APP_NAME, SHOWDOWN_TEAMBUILDER_URL, formatAppVersion } from './version';
+import {
+  AUTO_RECOGNIZE_KEY,
+  SHOW_AV_CONTROLS_KEY,
+  loadBoolPref,
+  saveBoolPref,
+} from './lib/prefs';
 
 const TEAM_PANEL_STORAGE_KEY = 'pkmn-ally-panel-open';
+
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  const tag = target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'OPTION') return true;
+  if (target.isContentEditable) return true;
+  return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+}
 
 function loadTeamPanelOpen(): boolean {
   try {
@@ -190,6 +204,9 @@ export default function App() {
   /** 速度軸對照用：目前選中的我方隊員 index */
   const [selectedAllyIndex, setSelectedAllyIndex] = useState<number | null>(null);
   const [teamOpen, setTeamOpen] = useState(() => loadTeamPanelOpen());
+  const [showAvControls, setShowAvControls] = useState(() => loadBoolPref(SHOW_AV_CONTROLS_KEY, true));
+  const [autoRecognize, setAutoRecognize] = useState(() => loadBoolPref(AUTO_RECOGNIZE_KEY, true));
+  const captureRef = useRef<CapturePanelHandle>(null);
   const appVersion = formatAppVersion();
 
   useEffect(() => {
@@ -374,6 +391,40 @@ export default function App() {
     });
   }, []);
 
+  const toggleAvControls = useCallback((show: boolean) => {
+    setShowAvControls(show);
+    saveBoolPref(SHOW_AV_CONTROLS_KEY, show);
+  }, []);
+
+  const toggleAutoRecognize = useCallback(() => {
+    setAutoRecognize((prev) => {
+      const next = !prev;
+      saveBoolPref(AUTO_RECOGNIZE_KEY, next);
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.altKey || e.ctrlKey || e.metaKey || e.repeat) return;
+      if (isTypingTarget(e.target)) return;
+      if (e.key >= '1' && e.key <= '6') {
+        e.preventDefault();
+        onSelectAlly(Number(e.key) - 1);
+        return;
+      }
+      if (e.key === ' ' || e.code === 'Space') {
+        if (e.target instanceof HTMLElement && e.target.closest('button, [role="button"], summary, a')) {
+          return;
+        }
+        e.preventDefault();
+        captureRef.current?.recognizeNow();
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onSelectAlly]);
+
   const onRecognize = useCallback(
     async (canvas: HTMLCanvasElement) => {
       setBusy(true);
@@ -499,6 +550,18 @@ export default function App() {
                   <input type="checkbox" checked={debugOverlay} onChange={toggleDebug} />
                   ROI 除錯疊加（綠面板／黃縮圖）
                 </label>
+                <label className="settings__check">
+                  <input
+                    type="checkbox"
+                    checked={showAvControls}
+                    onChange={(e) => toggleAvControls(e.target.checked)}
+                  />
+                  顯示鏡頭／音訊控制
+                </label>
+                <label className="settings__check">
+                  <input type="checkbox" checked={autoRecognize} onChange={toggleAutoRecognize} />
+                  自動辨認（選隊畫面錨點，非逐幀 OCR）
+                </label>
               </div>
               <hr />
               <p className="settings__title">擷取卡（GC551）</p>
@@ -513,6 +576,7 @@ export default function App() {
               <p className="muted settings__hint">
                 系統混音／Discord 要喺 OS 選 GC551 做輸入；app 監聽只係本機預覽。
               </p>
+              <p>快捷鍵：1–6 選我方欄位 · Space 辨認敵方隊伍</p>
               <p>鏡頭：優先 GC551／AVerMedia，其次 OBS</p>
               <p>Spe 於我方卡片手填</p>
               <p>招式來源：{MOVES_SOURCE_LABEL}（無資料→未載入）</p>
@@ -538,6 +602,7 @@ export default function App() {
       <main className={`layout ${teamOpen ? 'layout--team-open' : ''}`}>
         <div className="layout__center">
           <CapturePanel
+            ref={captureRef}
             busy={busy}
             onRecognize={onRecognize}
             statusText={status}
@@ -546,6 +611,9 @@ export default function App() {
             allyTeam={myTeam}
             selectedAllyIndex={selectedAllyIndex}
             onSelectAlly={onSelectAlly}
+            showAvControls={showAvControls}
+            onShowAvControlsChange={toggleAvControls}
+            autoRecognize={autoRecognize}
           />
           <SpeedAxis myTeam={myTeam} enemyTeam={enemyTeam} selectedAllyIndex={selectedAllyIndex} />
           <p className="usage-source-global" title={MOVES_SOURCE_LABEL}>

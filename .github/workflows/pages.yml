@@ -1,5 +1,8 @@
 name: Deploy GitHub Pages
 
+# Daily CBD commits use GITHUB_TOKEN, which does not retrigger `on: push`.
+# `Build Pokémon data` therefore `workflow_dispatch`es this workflow after a
+# successful data commit so `usageUpdatedAt` reaches GitHub Pages.
 on:
   push:
     branches: [main]
