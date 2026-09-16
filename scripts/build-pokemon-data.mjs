@@ -8,7 +8,8 @@
  *   - CBD index: https://championsbattledata.com/api/index
  *                (Doubles usage rank → --update-allowlist --top=N)
  *   - CBD API:   https://championsbattledata.com/api/pokemon/{showdownId}
- *   - CBD battle: https://championsbattledata.com/api/battle/Doubles/{showdownId}
+ *   - CBD battle: https://championsbattledata.com/api/battle/Doubles/{showdownId}?season={latest}
+ *                 (latest = /api/index battleDataFolders[0] / dailyDataFolders[0], e.g. M6 = Regulation M-C)
  *                 (+ ?days=7 fallback when Current CSV omits rank-1 moves)
  *   - PokéAPI:   national dex, classic base stats, types, abilities, forms, locales
  *
@@ -174,8 +175,87 @@ function formatUsageDate(d = new Date()) {
   }).format(d);
 }
 
+/**
+ * CBD folder codes → Champions regulation names (site copy).
+ * M4 = Regulation M-A, M5 = M-B, M6 = M-C, M7 = M-D, …
+ * Never hardcode M5; resolve the latest folder from /api/index.
+ */
+function cbdFolderToRegulation(seasonCode) {
+  const raw = String(seasonCode || '').trim();
+  if (!raw || /^current$/i.test(raw)) return '';
+  const m = raw.match(/^M(\d+)$/i);
+  if (!m) return raw;
+  const n = Number(m[1]);
+  if (n >= 4 && n <= 26) return `Regulation M-${String.fromCharCode(64 + n - 3)}`;
+  return `M${n}`;
+}
+
+function isNumberedCbdSeason(s) {
+  return /^M\d+$/i.test(String(s || '').trim());
+}
+
+/** Newest regulation folder from /api/index — dailyDataFolders[0] or battleDataFolders[0] (M6 today). */
+function pickLatestCbdSeason(index) {
+  const daily = Array.isArray(index?.dailyDataFolders) ? index.dailyDataFolders : [];
+  const folders = Array.isArray(index?.battleDataFolders) ? index.battleDataFolders : [];
+  const seasons = Array.isArray(index?.seasons) ? index.seasons : [];
+  const fromDaily = String(daily[0] || '').split('/')[0];
+  return (
+    (isNumberedCbdSeason(fromDaily) && fromDaily) ||
+    folders.find(isNumberedCbdSeason) ||
+    seasons.find(isNumberedCbdSeason) ||
+    String(index?.defaultSeason || 'Current')
+  );
+}
+
+const cbdSeason = {
+  season: '',
+  regulation: '',
+  defaultSeason: '',
+  resolved: false,
+};
+
+async function ensureCbdSeason() {
+  if (cbdSeason.resolved) return cbdSeason;
+  const index = await rateLimitedJson(`${CBD_ORIGIN}/api/index`);
+  const season = pickLatestCbdSeason(index);
+  cbdSeason.season = season;
+  cbdSeason.regulation = cbdFolderToRegulation(season);
+  cbdSeason.defaultSeason = String(index?.defaultSeason || '');
+  cbdSeason.resolved = true;
+  console.log(
+    `CBD regulation: season=${season} (${cbdSeason.regulation || 'unmapped'}) · index.defaultSeason=${cbdSeason.defaultSeason} · battleDataFolders[0]=${(index.battleDataFolders || [])[0]} · daily[0]=${(index.dailyDataFolders || [])[0]}`,
+  );
+  if (/^current$/i.test(cbdSeason.defaultSeason) && isNumberedCbdSeason(season)) {
+    console.log(
+      '  note: defaultSeason Current currently matches the latest numbered folder row-for-row; we still pass ?season= so M-B/M5 is never implied.',
+    );
+  }
+  return cbdSeason;
+}
+
 function formatUsageSourceLabel(d = new Date()) {
-  return `VGC Doubles (2v2 / 6-pick-4) · championsbattledata.com · 更新 ${formatUsageDate(d)}`;
+  const reg = cbdSeason.regulation ? ` · ${cbdSeason.regulation}` : '';
+  return `VGC Doubles (2v2 / 6-pick-4)${reg} · championsbattledata.com · 更新 ${formatUsageDate(d)}`;
+}
+
+function doublesBattleUrl(showdownId, { days } = {}) {
+  const params = new URLSearchParams();
+  if (cbdSeason.season) params.set('season', cbdSeason.season);
+  if (days) params.set('days', String(days));
+  const q = params.toString();
+  return `${CBD_ORIGIN}/api/battle/Doubles/${encodeURIComponent(showdownId)}${q ? `?${q}` : ''}`;
+}
+
+function usageSourceUrls() {
+  const seasonQ = cbdSeason.season ? `?season=${encodeURIComponent(cbdSeason.season)}` : '';
+  const daysQ = cbdSeason.season
+    ? `?season=${encodeURIComponent(cbdSeason.season)}&days=7`
+    : '?days=7';
+  return {
+    cbdDoublesBattle: `${CBD_ORIGIN}/api/battle/Doubles/{showdownId}${seasonQ}`,
+    cbdDoublesBattleDays: `${CBD_ORIGIN}/api/battle/Doubles/{showdownId}${daysQ}`,
+  };
 }
 
 function sleep(ms) {
@@ -541,15 +621,12 @@ function recordMegaStoneHint(rec) {
  */
 async function fetchCbdDoublesUsage(showdownId, { moveLimit = 6, itemLimit = 10 } = {}) {
   try {
-    const current = await rateLimitedJsonOptional(
-      `${CBD_ORIGIN}/api/battle/Doubles/${encodeURIComponent(showdownId)}`,
-    );
+    await ensureCbdSeason();
+    const current = await rateLimitedJsonOptional(doublesBattleUrl(showdownId));
     let chosen = current;
     let chosenMoves = categoryRows(current, 'move');
     if (!movesLookComplete(chosenMoves)) {
-      const dailyPack = await rateLimitedJsonOptional(
-        `${CBD_ORIGIN}/api/battle/Doubles/${encodeURIComponent(showdownId)}?days=7`,
-      );
+      const dailyPack = await rateLimitedJsonOptional(doublesBattleUrl(showdownId, { days: 7 }));
       const days = Array.isArray(dailyPack?.daily) ? dailyPack.daily : [];
       for (const day of days) {
         const m = categoryRows(day, 'move');
@@ -557,7 +634,7 @@ async function fetchCbdDoublesUsage(showdownId, { moveLimit = 6, itemLimit = 10 
           chosen = day;
           chosenMoves = m;
           console.log(
-            `  Doubles fallback ${showdownId}: ${day.date || day.source || 'daily'} (Current CSV missing rank-1 moves)`,
+            `  Doubles fallback ${showdownId}: ${day.date || day.source || 'daily'} (${cbdSeason.season} CSV missing rank-1 moves)`,
           );
           break;
         }
@@ -571,7 +648,8 @@ async function fetchCbdDoublesUsage(showdownId, { moveLimit = 6, itemLimit = 10 
       meta: {
         source: 'championsbattledata.com',
         format: 'Doubles',
-        season: chosen.season ?? current?.season ?? 'Current',
+        season: chosen.season ?? cbdSeason.season ?? current?.season ?? 'Current',
+        regulation: cbdSeason.regulation || null,
         battleSource: chosen.source ?? current?.source ?? null,
         usageSnapshot: chosen.date || 'current',
         label: formatUsageSourceLabel(new Date()),
@@ -986,6 +1064,7 @@ async function refreshUsageOnly({ dryRun, allowlistPath }) {
   const pokemon = JSON.parse(fs.readFileSync(pokemonPath, 'utf8'));
   const existingMoves = JSON.parse(fs.readFileSync(movesPath, 'utf8'));
   console.log(`usage-only: ${pokemon.length} pokemon from ${path.relative(ROOT, pokemonPath)}`);
+  await ensureCbdSeason();
   const doublesCache = new Map();
   const speciesCache = new Map();
   const moveNameSet = new Map();
@@ -1014,22 +1093,25 @@ async function refreshUsageOnly({ dryRun, allowlistPath }) {
   moves.sort((a, b) => String(a.id).localeCompare(String(b.id)));
   const generatedAt = new Date();
   const usageUpdatedAt = formatUsageDate(usageFetchedAt);
+  const battleUrls = usageSourceUrls();
   const meta = {
     schemaVersion: SCHEMA_VERSION,
     generatedAt: generatedAt.toISOString(),
     updatedAt: formatUsageDate(generatedAt),
     usageUpdatedAt,
     usageSourceLabel: formatUsageSourceLabel(usageFetchedAt),
+    usageSeason: cbdSeason.season || null,
+    usageRegulation: cbdSeason.regulation || null,
     sources: {
       pokeapi: POKEAPI,
       cbd: `${CBD_ORIGIN}/api/pokemon/{showdownId}`,
-      cbdDoublesBattle: `${CBD_ORIGIN}/api/battle/Doubles/{showdownId}`,
-      cbdDoublesBattleDays: `${CBD_ORIGIN}/api/battle/Doubles/{showdownId}?days=7`,
+      cbdDoublesBattle: battleUrls.cbdDoublesBattle,
+      cbdDoublesBattleDays: battleUrls.cbdDoublesBattleDays,
       cbdIndex: `${CBD_ORIGIN}/api/index`,
       allowlist: path.relative(ROOT, allowlistPath).replace(/\\/g, '/'),
       legalAllowlist: 'data/legal-allowlist.json',
       notes:
-        'Classic PokéAPI base stats + nationalDex + forms[] including Mega (not CBD screen-scaled). Move/item usage % from CBD VGC Doubles (2v2 / 6-pick-4) sorted highest-first; Current CSV rank-1 gaps filled from newest complete daily snapshot. Locale keys: en / zh-Hant / ja. See assets/CREDITS.md.',
+        'Classic PokéAPI base stats + nationalDex + forms[] including Mega (not CBD screen-scaled). Move/item usage % from CBD VGC Doubles (2v2 / 6-pick-4) for the latest regulation folder from /api/index (battleDataFolders[0] / dailyDataFolders[0], currently M6 = Regulation M-C). Explicit ?season= on battle URLs (Current matches that folder today; M5 is Regulation M-B). Sorted highest-first; rank-1 gaps filled from newest complete daily snapshot. Locale keys: en / zh-Hant / ja. See assets/CREDITS.md.',
     },
     pokemonCount: pokemon.length,
     movesCount: moves.length,
@@ -1100,6 +1182,7 @@ async function main() {
   }
 
   const { ids: showdownIds, entryById } = readAllowlist(allowlistPath);
+  await ensureCbdSeason();
   console.log(`Allowlist (${showdownIds.length}): ${showdownIds.slice(0, 12).join(', ')}${showdownIds.length > 12 ? ', …' : ''}`);
   console.log(`Rate limit ${RATE_LIMIT_MS}ms; dryRun=${dryRun}; schema=${SCHEMA_VERSION}`);
 
@@ -1148,22 +1231,25 @@ async function main() {
 
   const generatedAt = new Date();
   const usageUpdatedAt = formatUsageDate(usageFetchedAt);
+  const battleUrls = usageSourceUrls();
   const meta = {
     schemaVersion: SCHEMA_VERSION,
     generatedAt: generatedAt.toISOString(),
     updatedAt: formatUsageDate(generatedAt),
     usageUpdatedAt,
     usageSourceLabel: formatUsageSourceLabel(usageFetchedAt),
+    usageSeason: cbdSeason.season || null,
+    usageRegulation: cbdSeason.regulation || null,
     sources: {
       pokeapi: POKEAPI,
       cbd: `${CBD_ORIGIN}/api/pokemon/{showdownId}`,
-      cbdDoublesBattle: `${CBD_ORIGIN}/api/battle/Doubles/{showdownId}`,
-      cbdDoublesBattleDays: `${CBD_ORIGIN}/api/battle/Doubles/{showdownId}?days=7`,
+      cbdDoublesBattle: battleUrls.cbdDoublesBattle,
+      cbdDoublesBattleDays: battleUrls.cbdDoublesBattleDays,
       cbdIndex: `${CBD_ORIGIN}/api/index`,
       allowlist: path.relative(ROOT, allowlistPath).replace(/\\/g, '/'),
       legalAllowlist: 'data/legal-allowlist.json',
       notes:
-        'Classic PokéAPI base stats + nationalDex + forms[] including Mega (not CBD screen-scaled). Move/item names from PokéAPI; usage % from CBD VGC Doubles (2v2 / 6-pick-4) sorted highest-first. Current CSV rank-1 gaps filled from newest complete daily snapshot (?days=7). Locale keys: en / zh-Hant / ja. Legal Champions forms via map-legal-allowlist.mjs. See assets/CREDITS.md.',
+        'Classic PokéAPI base stats + nationalDex + forms[] including Mega (not CBD screen-scaled). Move/item names from PokéAPI; usage % from CBD VGC Doubles (2v2 / 6-pick-4) for the latest regulation folder from /api/index (explicit ?season=, currently M6 = Regulation M-C). Current CSV rank-1 gaps filled from newest complete daily snapshot (?days=7). Locale keys: en / zh-Hant / ja. Legal Champions forms via map-legal-allowlist.mjs. See assets/CREDITS.md.',
     },
     pokemonCount: pokemon.length,
     movesCount: moves.length,

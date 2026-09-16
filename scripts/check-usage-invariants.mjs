@@ -79,6 +79,15 @@ check(unsorted === 0, `all species moves sorted desc (unsorted=${unsorted})`);
 
 check(!!meta.usageUpdatedAt, `meta.usageUpdatedAt=${meta.usageUpdatedAt}`);
 check(/championsbattledata\.com/.test(meta.usageSourceLabel || ''), `source label mentions CBD`);
+check(
+  /Regulation M-/.test(meta.usageSourceLabel || ''),
+  `source label includes regulation (got ${meta.usageSourceLabel})`,
+);
+check(!!meta.usageSeason && !/^current$/i.test(meta.usageSeason), `usageSeason is explicit folder (got ${meta.usageSeason})`);
+check(
+  !/^m5$/i.test(String(meta.usageSeason || '')),
+  `usageSeason is not stale M5/M-B (got ${meta.usageSeason})`,
+);
 check(pokemon.length === 262, `pokemon count 262 (got ${pokemon.length})`);
 
 function compactIdent(s) {
