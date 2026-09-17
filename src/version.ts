@@ -1,7 +1,7 @@
 /** App version — sourced from package.json via Vite `define` (`__APP_VERSION__`). */
 export const APP_VERSION: string = __APP_VERSION__;
 
-/** Header / title display: `1.0.0` → `v1.0` (major.minor). */
+/** Header / title display: `1.1.0` → `v1.1` (major.minor). */
 export function formatAppVersion(version: string = APP_VERSION): string {
   const [major = '0', minor = '0'] = version.split('.');
   return `v${major}.${minor}`;

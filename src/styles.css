@@ -116,16 +116,20 @@ button, input, select, textarea {
   gap: 0.75rem;
   min-height: 0;
   min-width: 0;
-  /* Stack preview (intrinsic 16:9) + speed axis. Extra grid-row height stays
-     empty below — never distributed into the capture stage. */
+  /* Stack 16:9 preview + fully expanded speed axis. If the viewport is short,
+     this column scrolls as a whole — never nest a scrollbar inside 速度軸. */
   overflow: auto;
 }
 .panel--capture {
   flex: 0 0 auto;
   min-height: 0;
 }
-.panel--speed {
-  flex: 0 1 auto;
+.panel.panel--speed {
+  /* Grow to lane content; do not shrink into leftover height under the preview. */
+  flex: 0 0 auto;
+  height: auto;
+  min-height: auto;
+  overflow: visible;
 }
 .panel--enemy {
   min-height: 0;
@@ -642,7 +646,13 @@ button, input, select, textarea {
 .status-line, .error-text { font-size: 0.8rem; margin: 0.4rem 0 0; }
 .error-text { color: var(--danger); }
 
-.speed-axis { overflow: auto; padding: 0.25rem 0.2rem 0.5rem; }
+.speed-axis {
+  flex: 0 0 auto;
+  height: auto;
+  min-height: auto;
+  overflow: visible;
+  padding: 0.25rem 0.2rem 0.5rem;
+}
 .panel__header--speed .speed-axis__toggles {
   margin-left: auto;
 }
