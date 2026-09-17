@@ -342,6 +342,7 @@ export function PokemonCard({
   const cardClass = [
     'pkmn-card',
     `pkmn-card--${variant}`,
+    variant === 'enemy' ? 'pkmn-card--dense' : '',
     pokemon.identified ? '' : 'is-unidentified',
     selected ? 'is-selected' : '',
     selectable ? 'is-selectable' : '',
@@ -349,101 +350,135 @@ export function PokemonCard({
     .filter(Boolean)
     .join(' ');
 
+  const spriteEl = (
+    <div className="pkmn-card__sprite" aria-hidden>
+      {avatarUrl ? (
+        <img src={avatarUrl} alt="" className="pkmn-card__thumb" />
+      ) : pokemon.speciesKey ? (
+        pokemon.speciesKey.slice(0, 2).toUpperCase()
+      ) : (
+        '??'
+      )}
+    </div>
+  );
+
+  const speciesEl = onSpeciesOverride ? (
+    <select
+      className="pkmn-card__species-select"
+      value={pokemon.speciesKey || ''}
+      onChange={(e) => onSpeciesOverride(e.target.value)}
+      onClick={(e) => e.stopPropagation()}
+      aria-label={variant === 'enemy' ? '手動覆寫種族' : '選擇種族'}
+    >
+      {variant === 'enemy' ? <option value="">未識別</option> : null}
+      {(speciesOptions ?? []).map((opt) => (
+        <option key={opt.key} value={opt.key}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  ) : (
+    <h3 title={speciesTitle}>{speciesTitle}</h3>
+  );
+
+  const formEl = showFormSelect ? (
+    <label className="pkmn-card__form-select-wrap" onClick={(e) => e.stopPropagation()}>
+      <span className="muted">形態</span>
+      <select
+        className="pkmn-card__form-select"
+        value={formSelectValue}
+        onChange={(e) => onFormChange?.(e.target.value)}
+        aria-label="切換形態／Mega"
+      >
+        {forms.map((f) => (
+          <option key={f.formKey} value={f.formKey}>
+            {f.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  ) : (
+    pokemon.formLabel && <span className="pkmn-card__form">{pokemon.formLabel}</span>
+  );
+
+  const metaEl = (
+    <div className="pkmn-card__meta">
+      {megaStones.length ? (
+        <span className="pkmn-card__items" title={`${formatItemUsageLine(megaStones, '')} · ${MOVES_SOURCE_LABEL}`}>
+          進化石使用率：{formatItemUsageLine(megaStones, '—')}
+        </span>
+      ) : null}
+      <span
+        className="pkmn-card__items"
+        title={
+          held.length
+            ? `${formatItemUsageLine(held, '')} · ${MOVES_SOURCE_LABEL}`
+            : variant === 'enemy'
+              ? 'CBD Doubles 道具使用率（非猜測持有）'
+              : undefined
+        }
+      >
+        {variant === 'enemy'
+          ? `道具：${formatItemUsageLine(held, '—')}`
+          : held.length
+            ? `道具：${formatItemUsageLine(held, pokemon.item || '無道具')}`
+            : pokemon.item || '無道具'}
+      </span>
+      <span>{pokemon.ability || '—'}</span>
+    </div>
+  );
+
+  const statsEl = (
+    <div className="pkmn-card__stats">
+      {STAT_LABELS.map(({ key, label }) => (
+        <div key={key} className="stat-row">
+          <span className="stat-row__label">{label}</span>
+          <div className="stat-row__bar">
+            <div
+              className="stat-row__fill"
+              style={{ width: `${Math.min(100, (pokemon.baseStats[key] / maxStat) * 100)}%` }}
+            />
+          </div>
+          <span className="stat-row__num">
+            {pokemon.baseStats[key]}
+            <small>({stats[key]})</small>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+
+  const typesEl = (
+    <div className="pkmn-card__types" aria-label="屬性">
+      {pokemon.types.map((t) => (
+        <TypeBadge key={t} type={t} size={variant === 'enemy' ? 'sm' : 'md'} />
+      ))}
+    </div>
+  );
+
+  const movesEl = (
+    <div className={`move-grid ${variant === 'enemy' ? 'move-grid--six' : ''}`}>
+      {displayMoves.map((mv, i) => {
+        const usageLabel = formatUsage(mv.usage);
+        const tip = usageLabel
+          ? `${mv.name} · ${usageLabel} · ${MOVES_SOURCE_LABEL}`
+          : mv.name;
+        return <MoveButton key={i} mv={mv} usageLabel={usageLabel} tip={tip} />;
+      })}
+    </div>
+  );
+
   const identityCol = (
     <div className="pkmn-card__col pkmn-card__col--identity">
       <header className="pkmn-card__header">
-        <div className="pkmn-card__sprite" aria-hidden>
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="pkmn-card__thumb" />
-          ) : pokemon.speciesKey ? (
-            pokemon.speciesKey.slice(0, 2).toUpperCase()
-          ) : (
-            '??'
-          )}
-        </div>
+        {spriteEl}
         <div className="pkmn-card__title">
-          {onSpeciesOverride ? (
-            <select
-              className="pkmn-card__species-select"
-              value={pokemon.speciesKey || ''}
-              onChange={(e) => onSpeciesOverride(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              aria-label={variant === 'enemy' ? '手動覆寫種族' : '選擇種族'}
-            >
-              {variant === 'enemy' ? <option value="">未識別</option> : null}
-              {(speciesOptions ?? []).map((opt) => (
-                <option key={opt.key} value={opt.key}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <h3 title={speciesTitle}>{speciesTitle}</h3>
-          )}
-          {showFormSelect ? (
-            <label className="pkmn-card__form-select-wrap" onClick={(e) => e.stopPropagation()}>
-              <span className="muted">形態</span>
-              <select
-                className="pkmn-card__form-select"
-                value={formSelectValue}
-                onChange={(e) => onFormChange?.(e.target.value)}
-                aria-label="切換形態／Mega"
-              >
-                {forms.map((f) => (
-                  <option key={f.formKey} value={f.formKey}>
-                    {f.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : (
-            pokemon.formLabel && <span className="pkmn-card__form">{pokemon.formLabel}</span>
-          )}
-          <div className="pkmn-card__meta">
-            {megaStones.length ? (
-              <span className="pkmn-card__items" title={`${formatItemUsageLine(megaStones, '')} · ${MOVES_SOURCE_LABEL}`}>
-                進化石使用率：{formatItemUsageLine(megaStones, '—')}
-              </span>
-            ) : null}
-            <span
-              className="pkmn-card__items"
-              title={
-                held.length
-                  ? `${formatItemUsageLine(held, '')} · ${MOVES_SOURCE_LABEL}`
-                  : variant === 'enemy'
-                    ? 'CBD Doubles 道具使用率（非猜測持有）'
-                    : undefined
-              }
-            >
-              {variant === 'enemy'
-                ? `道具：${formatItemUsageLine(held, '—')}`
-                : held.length
-                  ? `道具：${formatItemUsageLine(held, pokemon.item || '無道具')}`
-                  : pokemon.item || '無道具'}
-            </span>
-            <span>{pokemon.ability || '—'}</span>
-          </div>
+          {speciesEl}
+          {formEl}
+          {metaEl}
         </div>
       </header>
-
-      <div className="pkmn-card__stats">
-        {STAT_LABELS.map(({ key, label }) => (
-          <div key={key} className="stat-row">
-            <span className="stat-row__label">{label}</span>
-            <div className="stat-row__bar">
-              <div
-                className="stat-row__fill"
-                style={{ width: `${Math.min(100, (pokemon.baseStats[key] / maxStat) * 100)}%` }}
-              />
-            </div>
-            <span className="stat-row__num">
-              {pokemon.baseStats[key]}
-              <small>({stats[key]})</small>
-            </span>
-          </div>
-        ))}
-      </div>
-
+      {statsEl}
       {variant === 'my' && onSpeedChange && (
         <label className="pkmn-card__speed-input" onClick={(e) => e.stopPropagation()}>
           Spe 實值
@@ -463,23 +498,9 @@ export function PokemonCard({
 
   const matchupCol = (
     <div className="pkmn-card__col pkmn-card__col--matchup">
-      <div className="pkmn-card__types" aria-label="屬性">
-        {pokemon.types.map((t) => (
-          <TypeBadge key={t} type={t} />
-        ))}
-      </div>
-
+      {typesEl}
       {matchups && <MatchupRows matchups={matchups} />}
-
-      <div className={`move-grid ${variant === 'enemy' ? 'move-grid--six' : ''}`}>
-        {displayMoves.map((mv, i) => {
-          const usageLabel = formatUsage(mv.usage);
-          const tip = usageLabel
-            ? `${mv.name} · ${usageLabel} · ${MOVES_SOURCE_LABEL}`
-            : mv.name;
-          return <MoveButton key={i} mv={mv} usageLabel={usageLabel} tip={tip} />;
-        })}
-      </div>
+      {movesEl}
     </div>
   );
 
@@ -502,11 +523,29 @@ export function PokemonCard({
       aria-pressed={selectable ? !!selected : undefined}
       title={selectable ? (selected ? '取消選取（速度軸）' : '選取以對照速度軸') : undefined}
     >
-      {/* 我方：左身份／數值・右屬性／弱點／招式；敵方鏡像左右對調 */}
-      <div className={`pkmn-card__body ${variant === 'enemy' ? 'pkmn-card__body--mirror' : ''}`}>
-        {identityCol}
-        {matchupCol}
-      </div>
+      {variant === 'enemy' ? (
+        <div className="pkmn-card__dense">
+          <div className="pkmn-card__dense-main">
+            <div className="pkmn-card__dense-id">
+              {spriteEl}
+              {typesEl}
+            </div>
+            <div className="pkmn-card__dense-info">
+              {speciesEl}
+              {formEl}
+              {metaEl}
+              {matchups && <MatchupRows matchups={matchups} />}
+            </div>
+            {statsEl}
+          </div>
+          {movesEl}
+        </div>
+      ) : (
+        <div className="pkmn-card__body">
+          {identityCol}
+          {matchupCol}
+        </div>
+      )}
     </article>
   );
 }
