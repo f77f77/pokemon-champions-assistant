@@ -1,8 +1,10 @@
-# Pokemon Champions battle assistant (v0.8 / recognize v1.5)
+# Pokemon Champions battle assistant (v0.9 / recognize v1.5)
 
 Electron + Vite + React (TypeScript). Defaults: AverMedia GC551, local Team Preview thumbs, Spe hand-fill, championsbattledata VGC Doubles (2v2 / 6-pick-4) usage.
 
 UI strings remain Traditional Chinese.
+
+v0.9: Capture preview height is **width × 9/16** of the left column — not the enemy-team column. After「辨認敵方隊伍」, taller enemy cards must not stretch the 擷取預覽 stage or the video/img (circles stay circles). Left column stacks the 16:9 preview + 速度軸; leftover height is empty (or the right column scrolls). Fullscreen still 16:9-contains inside the stage. ROI overlay stays on the displayed 16:9 frame; recognition geometry (source pixels) is unchanged.
 
 v0.8: Capture preview (live camera, static Team Preview image, and fullscreen) displays a **contained 16:9** frame — letterbox/pillarbox the stage, never stretch the video/canvas. ROI debug overlay is positioned on that 16:9 frame (same contentRect space as recognition).
 
