@@ -17,7 +17,7 @@ export function EnemyPanel({ team, onSpeciesOverride, onFormChange }: Props) {
         <h2>敵方隊伍</h2>
         <span className="panel__hint">低信心 → 未識別；可手動覆寫</span>
       </header>
-      <div className="panel__cards">
+      <div className="panel__cards panel__cards--enemy-grid">
         {team.map((p, i) => (
           <PokemonCard
             key={p.id}

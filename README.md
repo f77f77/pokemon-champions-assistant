@@ -1,8 +1,10 @@
-# Pokemon Champions battle assistant (v0.9 / recognize v1.5)
+# Pokemon Champions battle assistant (v1.0 / recognize v1.5)
 
 Electron + Vite + React (TypeScript). Defaults: AverMedia GC551, local Team Preview thumbs, Spe hand-fill, championsbattledata VGC Doubles (2v2 / 6-pick-4) usage.
 
 UI strings remain Traditional Chinese.
+
+v1.0: **敵方隊伍** is a **2×3 compact card grid** so all 6 slots fit in the enemy panel at a typical laptop height (~900–1080px content; 1080p-class). Each enemy card is a short horizontal layout — sprite + type icons | species/form dropdowns + 進化石／道具 lines + weakness rows | narrow stats; top-usage moves in a **3×2** grid (type icon + name + %). Empty / 未識別 slots keep the same grid placeholders. Capture preview stays width-driven **16:9**; speed axis is unchanged. The enemy column only scrolls on extremely short viewports.
 
 v0.9: Capture preview height is **width × 9/16** of the left column — not the enemy-team column. After「辨認敵方隊伍」, taller enemy cards must not stretch the 擷取預覽 stage or the video/img (circles stay circles). Left column stacks the 16:9 preview + 速度軸; leftover height is empty (or the right column scrolls). Fullscreen still 16:9-contains inside the stage. ROI overlay stays on the displayed 16:9 frame; recognition geometry (source pixels) is unchanged.
 
@@ -127,7 +129,7 @@ Acceptance:
 
 ## Layout
 
-1. Left my team / 2. Capture preview / 3. Speed axis / 4. Enemy panel
+1. Left my team / 2. Capture preview / 3. Speed axis / 4. Enemy panel (2×3 compact grid)
 
 ## Out of scope
 
