@@ -1,8 +1,10 @@
-# Pokemon Champions battle assistant (v0.7 / recognize v1.5)
+# Pokemon Champions battle assistant (v0.8 / recognize v1.5)
 
 Electron + Vite + React (TypeScript). Defaults: AverMedia GC551, local Team Preview thumbs, Spe hand-fill, championsbattledata VGC Doubles (2v2 / 6-pick-4) usage.
 
 UI strings remain Traditional Chinese.
+
+v0.8: Capture preview (live camera, static Team Preview image, and fullscreen) displays a **contained 16:9** frame — letterbox/pillarbox the stage, never stretch the video/canvas. ROI debug overlay is positioned on that 16:9 frame (same contentRect space as recognition).
 
 v0.7: GC551 capture locks 1080p60 (`ideal` 1920×1080 @ 60, MJPEG when the browser exposes it); live frames are treated as a good signal even if the hardware OSD says Signal Out of Range; optional capture-card audio listen (default off) with persisted audio device id. Speed axis enemy dual-band ends at **加速32** (max Spe EV 32 + +Spe nature, Tailwind ×2 when on). Hideable 開啟鏡頭／擷取音訊 row (settings + toolbar, `localStorage`). Hotkeys `1`–`6` select ally slots, `Space` runs 辨認敵方隊伍. Auto-recognize is a Team Preview **anchor state machine** (IDLE → TRIGGERED once → LOCK), not per-frame OCR. Daily CBD usage commits dispatch **Deploy GitHub Pages** so `usageUpdatedAt` reaches the live site. Floette Eternal Flower (and other own-stone cases such as Pyroar) attach Mega in `forms[]`. Usage bind is the latest CBD regulation folder from `/api/index` (`?season=M6` = Regulation M-C; never hardcoded M5).
 

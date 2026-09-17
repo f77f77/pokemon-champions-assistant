@@ -582,86 +582,88 @@ export const CapturePanel = forwardRef<CapturePanelHandle, Props>(function Captu
         onDragLeave={onPreviewDragLeave}
         onDrop={onPreviewDrop}
       >
-        <video
-          ref={videoRef}
-          muted
-          playsInline
-          className="capture-preview__video"
-          hidden={!live || !!stillUrl}
-        />
-        {stillUrl && (
-          <img
-            ref={stillImgRef}
-            src={stillUrl}
-            alt="靜態選隊圖預覽"
-            className="capture-preview__still"
-            onLoad={() => setStillReady(true)}
-            onError={() => {
-              setStillReady(false);
-              setError('靜態圖載入失敗');
-              revokeStill();
-            }}
+        <div className="capture-preview__frame">
+          <video
+            ref={videoRef}
+            muted
+            playsInline
+            className="capture-preview__video"
+            hidden={!live || !!stillUrl}
           />
-        )}
-        {!hasValidFrames && !trackLive && (
-          <div className="capture-preview__placeholder">
-            <p>無訊號／裝置不可用</p>
-            <p className="muted">請選擇 AverMedia GC551 或 OBS Virtual Camera 後按「開啟鏡頭」</p>
-            <p className="muted">或按「載入靜態選隊圖」／拖放截圖到此預覽區（無 GC551 亦可驗收）</p>
-            <p className="muted">
-              ROI 敵方面板 ({panel.left.toFixed(3)},{panel.top.toFixed(3)})–
-              ({panel.right.toFixed(3)},{panel.bottom.toFixed(3)}) · 相對 16:9 內容區
-            </p>
-          </div>
-        )}
-        {trackLive && !framesOk && !stillUrl && (
-          <div className="capture-preview__placeholder">
-            <p>已連接 · 等待畫面…</p>
-            <p className="muted">軌道已開啟；收到非零解析度後會顯示擷取預覽（唔當無訊號）</p>
-          </div>
-        )}
-        {/* ROI 除錯疊加：綠面板／紅槽／黃縮圖（關閉時全部隱藏，含綠框） */}
-        {debugOverlay && (
-          <>
-            <div
-              className="capture-preview__roi capture-preview__roi--panel"
-              style={{
-                left: `${panelPct.left}%`,
-                top: `${panelPct.top}%`,
-                width: `${panelPct.width}%`,
-                height: `${panelPct.height}%`,
+          {stillUrl && (
+            <img
+              ref={stillImgRef}
+              src={stillUrl}
+              alt="靜態選隊圖預覽"
+              className="capture-preview__still"
+              onLoad={() => setStillReady(true)}
+              onError={() => {
+                setStillReady(false);
+                setError('靜態圖載入失敗');
+                revokeStill();
               }}
-              title="敵方面板 ROI"
             />
-            {Array.from({ length: SLOT_COUNT }, (_, slot) => {
-              const c = cardCssPercent(panel, slot);
-              const t = thumbCssPercent(panel, slot);
-              return (
-                <div key={slot}>
-                  <div
-                    className="capture-preview__roi capture-preview__roi--slot"
-                    style={{
-                      left: `${c.left}%`,
-                      top: `${c.top}%`,
-                      width: `${c.width}%`,
-                      height: `${c.height}%`,
-                    }}
-                  />
-                  <div
-                    className="capture-preview__roi capture-preview__roi--thumb"
-                    style={{
-                      left: `${t.left}%`,
-                      top: `${t.top}%`,
-                      width: `${t.width}%`,
-                      height: `${t.height}%`,
-                    }}
-                    title={`槽 ${slot + 1} 縮圖`}
-                  />
-                </div>
-              );
-            })}
-          </>
-        )}
+          )}
+          {!hasValidFrames && !trackLive && (
+            <div className="capture-preview__placeholder">
+              <p>無訊號／裝置不可用</p>
+              <p className="muted">請選擇 AverMedia GC551 或 OBS Virtual Camera 後按「開啟鏡頭」</p>
+              <p className="muted">或按「載入靜態選隊圖」／拖放截圖到此預覽區（無 GC551 亦可驗收）</p>
+              <p className="muted">
+                ROI 敵方面板 ({panel.left.toFixed(3)},{panel.top.toFixed(3)})–
+                ({panel.right.toFixed(3)},{panel.bottom.toFixed(3)}) · 相對 16:9 內容區
+              </p>
+            </div>
+          )}
+          {trackLive && !framesOk && !stillUrl && (
+            <div className="capture-preview__placeholder">
+              <p>已連接 · 等待畫面…</p>
+              <p className="muted">軌道已開啟；收到非零解析度後會顯示擷取預覽（唔當無訊號）</p>
+            </div>
+          )}
+          {/* ROI 除錯疊加：綠面板／紅槽／黃縮圖（關閉時全部隱藏，含綠框）；座標相對 16:9 __frame */}
+          {debugOverlay && (
+            <>
+              <div
+                className="capture-preview__roi capture-preview__roi--panel"
+                style={{
+                  left: `${panelPct.left}%`,
+                  top: `${panelPct.top}%`,
+                  width: `${panelPct.width}%`,
+                  height: `${panelPct.height}%`,
+                }}
+                title="敵方面板 ROI"
+              />
+              {Array.from({ length: SLOT_COUNT }, (_, slot) => {
+                const c = cardCssPercent(panel, slot);
+                const t = thumbCssPercent(panel, slot);
+                return (
+                  <div key={slot}>
+                    <div
+                      className="capture-preview__roi capture-preview__roi--slot"
+                      style={{
+                        left: `${c.left}%`,
+                        top: `${c.top}%`,
+                        width: `${c.width}%`,
+                        height: `${c.height}%`,
+                      }}
+                    />
+                    <div
+                      className="capture-preview__roi capture-preview__roi--thumb"
+                      style={{
+                        left: `${t.left}%`,
+                        top: `${t.top}%`,
+                        width: `${t.width}%`,
+                        height: `${t.height}%`,
+                      }}
+                      title={`槽 ${slot + 1} 縮圖`}
+                    />
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
         {allyTeam && onSelectAlly ? (
           <AllyIconStrip team={allyTeam} selectedIndex={selectedAllyIndex} onSelect={onSelectAlly} />
         ) : null}

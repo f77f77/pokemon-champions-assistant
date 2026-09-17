@@ -109,6 +109,13 @@ button, input, select, textarea {
   gap: 0.75rem;
   min-height: 0;
 }
+.panel--capture {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.panel--speed {
+  flex: 0 1 auto;
+}
 
 .panel {
   background: var(--bg-panel);
@@ -451,14 +458,45 @@ button, input, select, textarea {
   margin: 0.25rem 0 0;
 }
 .capture-preview {
-  position: relative; flex: 1; min-height: 220px;
-  background: #07090f; border-radius: 10px; overflow: hidden; border: 1px solid var(--border);
+  /* Stage can be any leftover size; 16:9 lives on __frame (contain, never stretch). */
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 220px;
+  min-width: 0;
+  background: #07090f;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  container-type: size;
+  container-name: capture-preview;
+}
+/* Displayed game frame: 16:9 letterboxed/pillarboxed in the stage. ROI % is this box. */
+.capture-preview__frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  aspect-ratio: 16 / 9;
+  width: min(100%, calc(100cqh * 16 / 9));
+  height: min(100%, calc(100cqw * 9 / 16));
+  max-width: 100%;
+  max-height: 100%;
+  background: #000;
+  pointer-events: none;
+  z-index: 1;
 }
 .capture-preview__video,
 .capture-preview__still {
-  width: 100%; height: 100%; object-fit: contain; display: block; background: #000;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  background: #000;
 }
-.capture-preview__still { position: absolute; inset: 0; z-index: 1; }
 .capture-preview.is-dragover {
   outline: 2px dashed var(--accent);
   outline-offset: -4px;
@@ -665,12 +703,14 @@ button, input, select, textarea {
 
 /* —— Capture 16:9 + ROI debug —— */
 .capture-preview:fullscreen,
-.capture-preview:-webkit-full-screen {
+.capture-preview:-webkit-full-screen,
+.capture-preview.is-fullscreen {
   aspect-ratio: auto;
   width: 100%;
   height: 100%;
   border-radius: 0;
   border: none;
+  /* __frame still 16:9 via cqh/cqw contain against the fullscreen stage */
 }
 .capture-preview__fs {
   position: absolute;
