@@ -485,8 +485,8 @@ export const CapturePanel = forwardRef<CapturePanelHandle, Props>(function Captu
             aria-pressed={showAvControls}
             title={
               showAvControls
-                ? '隱藏來源選單、開啟鏡頭與擷取音訊'
-                : '顯示來源選單、開啟鏡頭與擷取音訊'
+                ? '隱藏來源選單、開啟鏡頭、擷取音訊，以及載入靜態選隊圖／載入測試圖'
+                : '顯示來源選單、開啟鏡頭、擷取音訊，以及載入靜態選隊圖／載入測試圖'
             }
           >
             {showAvControls ? '隱藏鏡頭／音訊' : '顯示鏡頭／音訊'}
@@ -512,50 +512,48 @@ export const CapturePanel = forwardRef<CapturePanelHandle, Props>(function Captu
           e.target.value = '';
         }}
       />
-      <div className="capture-toolbar">
-        {showAvControls ? (
-          <>
-            <select
-              value={deviceId}
-              onChange={(e) => onDeviceChange(e.target.value)}
-              aria-label="選擇攝影機（優先 GC551／AVerMedia）"
-            >
-              <option value="">自動（GC551 → OBS → 預設）</option>
-              {devices.map((d) => (
-                <option key={d.deviceId} value={d.deviceId}>
-                  {isPreferredCaptureDevice(d.label) ? `★ ${d.label}` : d.label}
-                </option>
-              ))}
-            </select>
-            {!live ? (
-              <button type="button" className="btn btn--ghost" onClick={() => void connect()}>
-                開啟鏡頭
-              </button>
-            ) : (
-              <button type="button" className="btn btn--ghost" onClick={disconnect}>
-                關閉鏡頭
-              </button>
-            )}
-          </>
-        ) : null}
-        <button
-          type="button"
-          className="btn btn--ghost"
-          disabled={busy}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          載入靜態選隊圖
-        </button>
-        <button
-          type="button"
-          className="btn btn--ghost"
-          disabled={busy}
-          onClick={loadFixtureStill}
-          title="循環載入 public/fixtures/team-preview-test-1.jpg～test-4.jpg"
-        >
-          載入測試圖
-        </button>
-      </div>
+      {showAvControls ? (
+        <div className="capture-toolbar">
+          <select
+            value={deviceId}
+            onChange={(e) => onDeviceChange(e.target.value)}
+            aria-label="選擇攝影機（優先 GC551／AVerMedia）"
+          >
+            <option value="">自動（GC551 → OBS → 預設）</option>
+            {devices.map((d) => (
+              <option key={d.deviceId} value={d.deviceId}>
+                {isPreferredCaptureDevice(d.label) ? `★ ${d.label}` : d.label}
+              </option>
+            ))}
+          </select>
+          {!live ? (
+            <button type="button" className="btn btn--ghost" onClick={() => void connect()}>
+              開啟鏡頭
+            </button>
+          ) : (
+            <button type="button" className="btn btn--ghost" onClick={disconnect}>
+              關閉鏡頭
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn btn--ghost"
+            disabled={busy}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            載入靜態選隊圖
+          </button>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            disabled={busy}
+            onClick={loadFixtureStill}
+            title="循環載入 public/fixtures/team-preview-test-1.jpg～test-4.jpg"
+          >
+            載入測試圖
+          </button>
+        </div>
+      ) : null}
 
       {showAvControls && audioDevices.length > 0 ? (
         <div className="capture-toolbar capture-toolbar--audio">
