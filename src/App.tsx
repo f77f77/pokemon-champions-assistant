@@ -22,6 +22,7 @@ import { fetchTopMoves, fetchTopItems, top4ForCard, top6ForCard, MOVES_SOURCE_LA
 import { APP_NAME, SHOWDOWN_TEAMBUILDER_URL, formatAppVersion } from './version';
 import {
   AUTO_RECOGNIZE_KEY,
+  SAVE_RECOGNIZE_FRAMES_KEY,
   SHOW_AV_CONTROLS_KEY,
   loadBoolPref,
   saveBoolPref,
@@ -206,6 +207,9 @@ export default function App() {
   const [teamOpen, setTeamOpen] = useState(() => loadTeamPanelOpen());
   const [showAvControls, setShowAvControls] = useState(() => loadBoolPref(SHOW_AV_CONTROLS_KEY, true));
   const [autoRecognize, setAutoRecognize] = useState(() => loadBoolPref(AUTO_RECOGNIZE_KEY, true));
+  const [saveRecognizeFrames, setSaveRecognizeFrames] = useState(() =>
+    loadBoolPref(SAVE_RECOGNIZE_FRAMES_KEY, false),
+  );
   const captureRef = useRef<CapturePanelHandle>(null);
   const appVersion = formatAppVersion();
 
@@ -404,6 +408,14 @@ export default function App() {
     });
   }, []);
 
+  const toggleSaveRecognizeFrames = useCallback(() => {
+    setSaveRecognizeFrames((prev) => {
+      const next = !prev;
+      saveBoolPref(SAVE_RECOGNIZE_FRAMES_KEY, next);
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.altKey || e.ctrlKey || e.metaKey || e.repeat) return;
@@ -562,6 +574,14 @@ export default function App() {
                   <input type="checkbox" checked={autoRecognize} onChange={toggleAutoRecognize} />
                   自動辨認（選隊畫面錨點，非逐幀 OCR）
                 </label>
+                <label className="settings__check">
+                  <input
+                    type="checkbox"
+                    checked={saveRecognizeFrames}
+                    onChange={toggleSaveRecognizeFrames}
+                  />
+                  辨認時儲存遊戲畫面（除錯，預設關）
+                </label>
               </div>
               <hr />
               <p className="settings__title">擷取卡（GC551）</p>
@@ -614,6 +634,7 @@ export default function App() {
             showAvControls={showAvControls}
             onShowAvControlsChange={toggleAvControls}
             autoRecognize={autoRecognize}
+            saveRecognizeFrames={saveRecognizeFrames}
           />
           <SpeedAxis myTeam={myTeam} enemyTeam={enemyTeam} selectedAllyIndex={selectedAllyIndex} />
           <p className="usage-source-global" title={MOVES_SOURCE_LABEL}>

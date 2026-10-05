@@ -24,6 +24,7 @@ import {
   isPreferredCaptureDevice,
   grabFrame,
   grabImageSource,
+  downloadRecognizeFrame,
   classifyGetUserMediaError,
   describeCaptureSignal,
   waitForVideoDimensions,
@@ -67,6 +68,8 @@ interface Props {
   showAvControls?: boolean;
   onShowAvControlsChange?: (show: boolean) => void;
   autoRecognize?: boolean;
+  /** When on, manual and automatic 辨認敵方隊伍 download the capture frame. */
+  saveRecognizeFrames?: boolean;
 }
 
 export interface CapturePanelHandle {
@@ -86,6 +89,7 @@ export const CapturePanel = forwardRef<CapturePanelHandle, Props>(function Captu
     showAvControls = true,
     onShowAvControlsChange,
     autoRecognize = false,
+    saveRecognizeFrames = false,
   }: Props,
   ref,
 ) {
@@ -380,15 +384,17 @@ export const CapturePanel = forwardRef<CapturePanelHandle, Props>(function Captu
   }
 
   const handleRecognize = useCallback(() => {
+    let canvas: HTMLCanvasElement | null = null;
     if (stillUrl && stillImgRef.current?.naturalWidth) {
       const img = stillImgRef.current;
-      onRecognize(grabImageSource(img, img.naturalWidth, img.naturalHeight));
-      return;
+      canvas = grabImageSource(img, img.naturalWidth, img.naturalHeight);
+    } else if (videoRef.current?.videoWidth) {
+      canvas = grabFrame(videoRef.current);
     }
-    if (videoRef.current?.videoWidth) {
-      onRecognize(grabFrame(videoRef.current));
-    }
-  }, [onRecognize, stillUrl]);
+    if (!canvas) return;
+    if (saveRecognizeFrames) downloadRecognizeFrame(canvas);
+    onRecognize(canvas);
+  }, [onRecognize, saveRecognizeFrames, stillUrl]);
 
   useImperativeHandle(ref, () => ({ recognizeNow: handleRecognize }), [handleRecognize]);
 
@@ -477,7 +483,11 @@ export const CapturePanel = forwardRef<CapturePanelHandle, Props>(function Captu
             className="btn btn--ghost"
             onClick={() => onShowAvControlsChange?.(!showAvControls)}
             aria-pressed={showAvControls}
-            title={showAvControls ? '隱藏開啟鏡頭與擷取音訊' : '顯示開啟鏡頭與擷取音訊'}
+            title={
+              showAvControls
+                ? '隱藏來源選單、開啟鏡頭、擷取音訊，以及載入靜態選隊圖／載入測試圖'
+                : '顯示來源選單、開啟鏡頭、擷取音訊，以及載入靜態選隊圖／載入測試圖'
+            }
           >
             {showAvControls ? '隱藏鏡頭／音訊' : '顯示鏡頭／音訊'}
           </button>
@@ -492,21 +502,31 @@ export const CapturePanel = forwardRef<CapturePanelHandle, Props>(function Captu
         </div>
       </header>
 
-      <div className="capture-toolbar">
-        <select
-          value={deviceId}
-          onChange={(e) => onDeviceChange(e.target.value)}
-          aria-label="選擇攝影機（優先 GC551／AVerMedia）"
-        >
-          <option value="">自動（GC551 → OBS → 預設）</option>
-          {devices.map((d) => (
-            <option key={d.deviceId} value={d.deviceId}>
-              {isPreferredCaptureDevice(d.label) ? `★ ${d.label}` : d.label}
-            </option>
-          ))}
-        </select>
-        {showAvControls ? (
-          !live ? (
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={(e) => {
+          loadStillFile(e.target.files?.[0]);
+          e.target.value = '';
+        }}
+      />
+      {showAvControls ? (
+        <div className="capture-toolbar">
+          <select
+            value={deviceId}
+            onChange={(e) => onDeviceChange(e.target.value)}
+            aria-label="選擇攝影機（優先 GC551／AVerMedia）"
+          >
+            <option value="">自動（GC551 → OBS → 預設）</option>
+            {devices.map((d) => (
+              <option key={d.deviceId} value={d.deviceId}>
+                {isPreferredCaptureDevice(d.label) ? `★ ${d.label}` : d.label}
+              </option>
+            ))}
+          </select>
+          {!live ? (
             <button type="button" className="btn btn--ghost" onClick={() => void connect()}>
               開啟鏡頭
             </button>
@@ -514,36 +534,26 @@ export const CapturePanel = forwardRef<CapturePanelHandle, Props>(function Captu
             <button type="button" className="btn btn--ghost" onClick={disconnect}>
               關閉鏡頭
             </button>
-          )
-        ) : null}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={(e) => {
-            loadStillFile(e.target.files?.[0]);
-            e.target.value = '';
-          }}
-        />
-        <button
-          type="button"
-          className="btn btn--ghost"
-          disabled={busy}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          載入靜態選隊圖
-        </button>
-        <button
-          type="button"
-          className="btn btn--ghost"
-          disabled={busy}
-          onClick={loadFixtureStill}
-          title="循環載入 public/fixtures/team-preview-test-1.jpg～test-4.jpg"
-        >
-          載入測試圖
-        </button>
-      </div>
+          )}
+          <button
+            type="button"
+            className="btn btn--ghost"
+            disabled={busy}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            載入靜態選隊圖
+          </button>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            disabled={busy}
+            onClick={loadFixtureStill}
+            title="循環載入 public/fixtures/team-preview-test-1.jpg～test-4.jpg"
+          >
+            載入測試圖
+          </button>
+        </div>
+      ) : null}
 
       {showAvControls && audioDevices.length > 0 ? (
         <div className="capture-toolbar capture-toolbar--audio">

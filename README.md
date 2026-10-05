@@ -1,8 +1,10 @@
-# Pokemon Champions battle assistant (v1.2 / recognize v1.5)
+# Pokemon Champions battle assistant (v1.3 / recognize v1.5)
 
 Electron + Vite + React (TypeScript). Defaults: AverMedia GC551, local Team Preview thumbs, Spe hand-fill, championsbattledata VGC Doubles (2v2 / 6-pick-4) usage.
 
 UI strings remain Traditional Chinese.
+
+v1.3: Indeedee male and female are separate legal forms. The species menu and form selector show **愛管侍 · 雄性的樣子** and **愛管侍 · 雌性的樣子** (same pattern as 幽尾玄魚). Showdown `Indeedee-F` / atlas `876-1` resolve to `indeedeef`, so the card no longer falls through to an unmatched key and the first roster row **#3 妙蛙花**. 「隱藏鏡頭／音訊」 hides the capture-source dropdown (OBS Virtual Camera), 開啟鏡頭, 擷取音訊, 載入靜態選隊圖, and 載入測試圖 together. 辨認敵方隊伍 and the status pill stay. Settings checkbox **辨認時儲存遊戲畫面** (default off, `localStorage` `pkmn-champions-save-recognize-frames`) downloads the full capture frame used by manual 辨認敵方隊伍 and by auto-recognize. The file is `recognize-frame-YYYYMMDD-HHMMSS-mmm.png` via the browser download (Electron uses the same download; it lands in the system Downloads folder). ROI geometry is unchanged.
 
 v1.2: **敵方隊伍** dense cards use leftover panel height — `grid-template-rows: repeat(3, minmax(0, 1fr))` so the 2×3 grid fills the column instead of leaving a void under tiny type. Species/form/meta/stats/move labels are ~+1–2px vs v1.1; sprite, type icons, and 3×2 move buttons are slightly larger. All 6 cards still fit **without enemy-panel scroll** at ~900–1080px content height. Left column (16:9 capture, expanded 速度軸), ally cards, and Traditional Chinese copy are unchanged.
 

@@ -362,15 +362,19 @@ export function PokemonCard({
     </div>
   );
 
+  const speciesValue = pokemon.speciesKey || '';
+  const speciesKnown =
+    !speciesValue || (speciesOptions ?? []).some((opt) => opt.key === speciesValue);
   const speciesEl = onSpeciesOverride ? (
     <select
       className="pkmn-card__species-select"
-      value={pokemon.speciesKey || ''}
+      value={speciesValue}
       onChange={(e) => onSpeciesOverride(e.target.value)}
       onClick={(e) => e.stopPropagation()}
       aria-label={variant === 'enemy' ? '手動覆寫種族' : '選擇種族'}
     >
       {variant === 'enemy' ? <option value="">未識別</option> : null}
+      {!speciesKnown ? <option value={speciesValue}>{speciesTitle}</option> : null}
       {(speciesOptions ?? []).map((opt) => (
         <option key={opt.key} value={opt.key}>
           {opt.label}
