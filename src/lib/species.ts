@@ -29,6 +29,8 @@ export interface SpeciesData {
 /**
  * Atlas / PokéAPI / dex-key aliases → canonical allowlist showdownId.
  * Male Basculegion is `basculegion` (dex 902 form 0); female is `basculegionf`.
+ * Male Indeedee is `indeedee` (dex 876 form 0); female is `indeedeef`.
+ * Showdown writes the female as `Indeedee-F`, which must not stay on the offline stub key.
  */
 export const SPECIES_ID_ALIASES: Record<string, string> = {
   'basculegion-male': 'basculegion',
@@ -40,6 +42,17 @@ export const SPECIES_ID_ALIASES: Record<string, string> = {
   'basculegion-female': 'basculegionf',
   '902-1': 'basculegionf',
   '902-female': 'basculegionf',
+  'indeedee-male': 'indeedee',
+  indeedeemale: 'indeedee',
+  indeedeem: 'indeedee',
+  '876': 'indeedee',
+  '876-0': 'indeedee',
+  '876-male': 'indeedee',
+  'indeedee-f': 'indeedeef',
+  'indeedee-female': 'indeedeef',
+  indeedeefemale: 'indeedeef',
+  '876-1': 'indeedeef',
+  '876-female': 'indeedeef',
   'mimikyu-disguised': 'mimikyu',
   mimikyudisguised: 'mimikyu',
   '778': 'mimikyu',
@@ -75,7 +88,8 @@ export const SPECIES_DB: SpeciesData[] = [
   { key: 'koraidon', nameZh: '故勒頓', nameEn: 'Koraidon', nationalDex: 1007, types: ['格鬥', '龍'], baseStats: { hp: 100, atk: 135, def: 115, spa: 85, spd: 100, spe: 135 } },
   { key: 'garchomp', nameZh: '烈咬陸鯊', nameEn: 'Garchomp', nationalDex: 445, types: ['龍', '地面'], baseStats: { hp: 108, atk: 130, def: 95, spa: 80, spd: 85, spe: 102 } },
   { key: 'amoonguss', nameZh: '敗露球菇', nameEn: 'Amoonguss', nationalDex: 591, types: ['草', '毒'], baseStats: { hp: 114, atk: 85, def: 70, spa: 85, spd: 80, spe: 30 } },
-  { key: 'indeedee-f', nameZh: '愛管侍-雌', nameEn: 'Indeedee-F', nationalDex: 876, types: ['超能力', '一般'], baseStats: { hp: 70, atk: 55, def: 65, spa: 95, spd: 105, spe: 85 } },
+  { key: 'indeedee', nameZh: '愛管侍', nameEn: 'Indeedee', nationalDex: 876, formKey: 'indeedee-male', formLabel: '雄性的樣子', types: ['超能力', '一般'], baseStats: { hp: 60, atk: 65, def: 55, spa: 105, spd: 95, spe: 95 } },
+  { key: 'indeedeef', nameZh: '愛管侍', nameEn: 'Indeedee-F', nationalDex: 876, formKey: 'indeedee-female', formLabel: '雌性的樣子', types: ['超能力', '一般'], baseStats: { hp: 70, atk: 55, def: 65, spa: 95, spd: 105, spe: 85 } },
   { key: 'tornadus', nameZh: '龍捲雲', nameEn: 'Tornadus', nationalDex: 641, types: ['飛行'], baseStats: { hp: 79, atk: 115, def: 70, spa: 125, spd: 80, spe: 111 } },
   { key: 'chien-pao', nameZh: '古劍豹', nameEn: 'Chien-Pao', nationalDex: 1002, types: ['惡', '冰'], baseStats: { hp: 80, atk: 120, def: 80, spa: 90, spd: 65, spe: 135 } },
   { key: 'ting-lu', nameZh: '古鼎鹿', nameEn: 'Ting-Lu', nationalDex: 1003, types: ['惡', '地面'], baseStats: { hp: 155, atk: 110, def: 125, spa: 55, spd: 80, spe: 45 } },
@@ -126,6 +140,13 @@ function reindexSpeciesMaps() {
     addAlias((s.formKey || '').replace(/-/g, ''), s);
     if (s.formLabel) addAlias(`${s.nameEn}-${s.formLabel}`.replace(/\s+/g, '-'), s);
     for (const f of s.forms || []) {
+      // Sibling grouping copies every dex-mate's form onto this record.
+      // Only the showdownId owner may claim those aliases (Indeedee-F must
+      // not register as Indeedee male, and vice versa).
+      const owner = (f.showdownId || '').trim().toLowerCase();
+      if (owner && owner !== s.key.toLowerCase() && SPECIES_DB.some((o) => o.key.toLowerCase() === owner)) {
+        continue;
+      }
       addAlias(f.formKey, s);
       addAlias(f.showdownId, s);
       addAlias((f.formKey || '').replace(/-/g, ''), s);

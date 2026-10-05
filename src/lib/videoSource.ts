@@ -407,3 +407,35 @@ export function grabImageSource(
   ctx.drawImage(source, 0, 0, width, height);
   return c;
 }
+
+/** `recognize-frame-YYYYMMDD-HHMMSS-mmm.png` — browser/Electron download (Downloads). */
+export function recognizeFrameFilename(when = new Date()): string {
+  const pad = (n: number, w = 2) => String(n).padStart(w, '0');
+  const stamp = [
+    when.getFullYear(),
+    pad(when.getMonth() + 1),
+    pad(when.getDate()),
+  ].join('');
+  const clock = [pad(when.getHours()), pad(when.getMinutes()), pad(when.getSeconds())].join('');
+  return `recognize-frame-${stamp}-${clock}-${pad(when.getMilliseconds(), 3)}.png`;
+}
+
+/**
+ * Save the full game/capture frame that recognition just used.
+ * Web and Electron both use a browser download (no extra filesystem bridge).
+ */
+export function downloadRecognizeFrame(canvas: HTMLCanvasElement, when = new Date()): void {
+  let href = '';
+  try {
+    href = canvas.toDataURL('image/png');
+  } catch {
+    return;
+  }
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = recognizeFrameFilename(when);
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
