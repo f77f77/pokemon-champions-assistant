@@ -556,7 +556,7 @@ export default function App() {
                     checked={showAvControls}
                     onChange={(e) => toggleAvControls(e.target.checked)}
                   />
-                  顯示鏡頭／音訊控制
+                  顯示鏡頭／音訊／載入圖
                 </label>
                 <label className="settings__check">
                   <input type="checkbox" checked={autoRecognize} onChange={toggleAutoRecognize} />
